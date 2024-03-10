@@ -2,3 +2,4 @@ discord
 matplotlib
 python-dotenv
 requests
+dateparser
