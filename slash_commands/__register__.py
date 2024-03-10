@@ -10,9 +10,9 @@ class register(commands.Cog):
     @discord.app_commands.command(
         name="register", description="register to track your coding time"
     )
-    @discord.app_commands.describe(name="your full name", api_key="wakatime api key")
+    @discord.app_commands.describe(name="your full name", github="link to your github profile", api_key="wakatime api key")
     async def register_command(
-        self, interaction: discord.Interaction, name: str, api_key: str
+        self, interaction: discord.Interaction, name: str, github: str, api_key: str
     ):
         await interaction.response.defer()
         user_data = UserData.read(interaction.user.id)
@@ -63,7 +63,7 @@ class register(commands.Cog):
 
         user_data.token = api_key
         user_data.update()
-        UserData(name=name, coins=0, token=api_key, ledger={}).update()
+        UserData(name=name, coins=0, token=api_key, github=github, ledger={}).update()
 
         await interaction.followup.send("User Created successfully!")
 
