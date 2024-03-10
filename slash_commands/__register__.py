@@ -1,6 +1,6 @@
 import discord, requests, base64
 from discord.ext import commands
-from data.models import UserData
+from models import UserData
 
 
 class register(commands.Cog):

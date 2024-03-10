@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from data.models import WeekData, UserData
+from models import WeekData, UserData
 
 
 class leaderbaord(commands.Cog):

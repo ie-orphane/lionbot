@@ -1,7 +1,7 @@
 from discord.ext import tasks, commands
 from datetime import datetime, UTC
 from utils import clr, color
-from data.models import WeekData
+from models import WeekData
 
 
 @tasks.loop(minutes=5)

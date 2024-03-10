@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from data.models import UserData, WeekData
+from models import UserData, WeekData
 from utils import color
 
 

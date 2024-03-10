@@ -2,7 +2,7 @@ from datetime import datetime, UTC
 from utils import open_file, get_files, clr
 from discord.ext import tasks
 from help import get_week, Week
-from data.models import UserData, WeekData, LedgerData, GeekData
+from models import UserData, WeekData, LedgerData, GeekData
 
 
 @tasks.loop(minutes=15)
@@ -10,12 +10,10 @@ async def weekly_data():
 
     weeks_file = get_files("data/weeks")
 
-    current_week: Week = get_week(week_argument=20)
-    # current_week: Week = get_week(week_argument="beforelast")
+    current_week: Week = get_week(week_argument="beforelast")
     week_count = current_week.count
 
-    # if datetime.now(UTC).weekday() == 0 and week_count not in weeks_file:
-    if datetime.now(UTC).weekday() == 6 and week_count not in weeks_file:
+    if datetime.now(UTC).weekday() == 0 and week_count not in weeks_file:
         print(
             f"{clr.black(f'{datetime.now(UTC):%Y-%m-%d %H:%M:%S}')} {clr.blue('Info')}     {clr.yellow('Data')}  Updating..."
         )
