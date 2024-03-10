@@ -52,7 +52,7 @@ lionsServer = Server(1178675428257435658, 1181590862858301441, 11815908674468577
 leaderboard_servers = [codingServer, lionsServer]
 
 
-def leaderboard_image(template, text_color, background_color, image_name, data: dict, heading_data: dict):
+def leaderboard_image(template, text_color, background_color, image_name, data: dict, heading_data: dict = ...):
     """
         - template = Literal['first', 'last']
     
@@ -74,25 +74,29 @@ def leaderboard_image(template, text_color, background_color, image_name, data: 
           ybottom = -.5
           x = -1
           heading = f"ax.set_title('Week {heading_data['count']}  -  {heading_data['start']}  ~ {heading_data['end']}', pad=0, loc='center', va='top', fontsize=13, weight='bold', color=text_color)"
-          
-        case 'last':
+        
+        case 'middle':
           data = data[11:][::-1]
           ybottom = -1
           x = 0
-          heading = f"plt.figtext(.5, .075, 'Last Update  -  {heading_data['time']}', fontsize=7.5,  ha='center', color=text_color)"
+          heading = ""
 
+        case 'last':
+          ybottom = -1
+          x = 0
+          heading = f"plt.figtext(.45, .125, 'Last Update  -  {heading_data['time']}', fontsize=7.5,  ha='center', color=text_color)"
 
-  # setting variables
+    # setting variables
     magic_height = 300
-    w = 945
-    h = 874
-    dpi = 80
-    rows = 13  # number of rows that we want
+    w = 767
+    h = 474 if len(data) == 11 else 154
+    rows = len(data) + 2  # number of rows that we want
     cols = 8  # number of columns that we want
 
     # setting structure
-    fig, ax = plt.subplots(dpi=dpi, facecolor=background_color)
-    fig.set_size_inches(magic_height*w*1.5/(h*dpi), magic_height/dpi)
+    fig, ax = plt.subplots(facecolor=background_color)
+    # fig.set_size_inches(magic_height*w*1.5/(h*dpi), magic_height/dpi)
+    fig.set_size_inches(w/100, h/100)
 
     ax.set_ylim(ybottom, rows)  #  y limits
     ax.set_xlim(0, cols)  #  X limits
@@ -124,12 +128,13 @@ def leaderboard_image(template, text_color, background_color, image_name, data: 
     ax.plot([.25, cols - .25], [.5 + x, .5 + x], ls="-", lw=1, c=text_color)
 
     # adds multiple lines below each row
-    for index in range(11):
-        if index != 0:
-            ax.plot([.25, cols - .2], [index + .5 + x, index + .5 + x], ls='-', lw='.375', c=text_color)
+    if len(data) == 11:
+      for index in range(11):
+          if index != 0:
+              ax.plot([.25, cols - .2], [index + .5 + x, index + .5 + x], ls='-', lw='.375', c=text_color)
 
     # save the figure as an image
-    fig.savefig(f'assets/{image_name}.png', format='png', dpi=h/magic_height*dpi)
+    fig.savefig(f'assets/{image_name}.png', format='png')
 
     plt.close(fig)
 

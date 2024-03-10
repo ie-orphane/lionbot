@@ -27,8 +27,8 @@ class Bot(commands.Bot):
         print(f"\nWe have logged in as {self.user}")
 
         weekly_data.start()
-        # geek_of_the_week.start(self)
-        # leaderboard.start(self)
+        geek_of_the_week.start(self)
+        leaderboard.start(self)
 
     async def on_message(self, message: discord.Message):
         def is_student_of(class_name: str, author: discord.Member | discord.User):

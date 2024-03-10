@@ -2,10 +2,11 @@ import discord
 from discord.ext import commands, tasks
 from help import *
 
+
 @tasks.loop(minutes=15)
 async def leaderboard(bot: commands.Bot):
     print(
-        f"\n{const.black(datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S'))} {const.yellow('Info')}     {const.magenta('Leaderboard')}  Updating leaderboard..."
+        f"{const.black(datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S'))} {const.yellow('Info')}     {const.magenta('Leaderboard')}  Updating leaderboard..."
     )
 
     data: dict = get_data()
@@ -15,8 +16,51 @@ async def leaderboard(bot: commands.Bot):
     params = {"start": current_week.readable_start, "end": current_week.readable_end}
 
     Time = datetime.now(UTC)
-    users = []
 
+    coach = get_data(439859822859386881)
+
+    print(f"{coach.full_name:<20}", end=" ")
+    fetch_time = datetime.now(UTC)
+
+    coach_summary = coach.session.get("users/current/summaries", params=params).json()
+
+    print(datetime.now(UTC) - fetch_time)
+
+    languages = {}
+
+    try:
+        for day in coach_summary["data"]:
+            for lang in day["languages"]:
+                if lang["name"] == "Other":
+                    break
+
+                try:
+                    languages[lang["name"]] += lang["total_seconds"]
+                except:
+                    languages[lang["name"]] = lang["total_seconds"]
+    except:
+        print(coach, coach_summary)
+
+    languages = [
+        lang for lang, _ in sorted(languages.items(), key=lambda x: x[1], reverse=True)
+    ]
+    if len(languages) > 4:
+        languages = languages[:4]
+    languages = ", ".join(languages)
+
+    total_txt: str = coach_summary["cumulative_total"]["text"]
+    total_txt = (
+        total_txt.replace(" hrs", "h").replace(" mins", "min").replace(" secs", "s")
+    )
+
+    coach = {
+        "": 0,
+        "Coder": coach.full_name,
+        "Total": total_txt,
+        "Languages": languages,
+    }
+
+    users = []
     for user in data.values():
         if user.verified and user.student:
             print(f"{user.full_name:<20}", end=" ")
@@ -54,7 +98,11 @@ async def leaderboard(bot: commands.Bot):
             languages = ", ".join(languages)
 
             total_txt: str = user_summary["cumulative_total"]["text"]
-            total_txt = total_txt.replace(" hrs", "h").replace(" mins", "min").replace(" secs", "s")
+            total_txt = (
+                total_txt.replace(" hrs", "h")
+                .replace(" mins", "min")
+                .replace(" secs", "s")
+            )
 
             users.append(
                 [
@@ -90,38 +138,48 @@ async def leaderboard(bot: commands.Bot):
         },
     )
 
+    # middle leaderboard image
+    leaderboard_image("middle", "white", "black", "middle_leaderboard", users)
+
     # bottom leaderboard image
     leaderboard_image(
-        "last", "white", "black", "bottom_leaderboard", users, {"time": current_time}
+        "last", "white", "black", "bottom_leaderboard", [coach], {"time": current_time}
     )
 
+    leaderboard_channel = bot.get_channel(1178675428257435658)
+    msgs = [1216399895943057448, 1216399898199724175, 1216399906776813618]
+    imgs = ["top_leaderboard.png", "middle_leaderboard.png", "bottom_leaderboard.png"]
 
-    leaderboard_channels: dict = open_file("data/data.json")["channels"]
+    for id, img in zip(msgs, imgs):
+        file = discord.File(f"assets/{img}", filename=img)
+        message: discord.Message = await leaderboard_channel.fetch_message(id)
+        await message.edit(content="", attachments=[file])
 
-    for channel_id, messages in leaderboard_channels.items():
-        leaderboard_channel = bot.get_channel(int(channel_id))
+    print(f"{str(leaderboard_channel):<21} {leaderboard_channel.guild}")
 
-        if leaderboard_channel:
-            top_leaderboard = discord.File(
-                "assets/top_leaderboard.png", filename="top_leaderboard.png"
-            )
-            bottom_leaderboard = discord.File(
-                "assets/bottom_leaderboard.png", filename="bottom_leaderboard.png"
-            )
+    # leaderboard_channels: dict = open_file("data/data.json")["channels"]
 
-            leaderboard_top: discord.Message = await leaderboard_channel.fetch_message(
-                messages["top"]
-            )
-            leaderboard_bottom: discord.Message = (
-                await leaderboard_channel.fetch_message(messages["bottom"])
-            )
+    # for channel_id, messages in leaderboard_channels.items():
+    #     leaderboard_channel = bot.get_channel(int(channel_id))
 
-            await leaderboard_top.edit(attachments=[top_leaderboard])
-            await leaderboard_bottom.edit(attachments=[bottom_leaderboard])
-            print(
-                f"{str(leaderboard_channel):<21} {leaderboard_channel.guild}"
-            )
+    #     if leaderboard_channel:
+    #         top_leaderboard = discord.File(
+    #             "assets/top_leaderboard.png", filename="top_leaderboard.png"
+    #         )
+    #         bottom_leaderboard = discord.File(
+    #             "assets/bottom_leaderboard.png", filename="bottom_leaderboard.png"
+    #         )
+
+    #         leaderboard_top: discord.Message = await leaderboard_channel.fetch_message(
+    #             messages["top"]
+    #         )
+    #         leaderboard_bottom: discord.Message = (
+    #             await leaderboard_channel.fetch_message(messages["bottom"])
+    #         )
+
+    #         await leaderboard_top.edit(attachments=[top_leaderboard])
+    #         await leaderboard_bottom.edit(attachments=[bottom_leaderboard])
 
     print(
-        f"\n{const.black(datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S'))} {const.blue('Info')}     {const.magenta('Leaderboard')}  Leaderboard updated!"
+        f"{const.black(datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S'))} {const.blue('Info')}     {const.magenta('Leaderboard')}  Leaderboard updated!"
     )
