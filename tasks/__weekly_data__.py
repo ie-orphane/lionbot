@@ -7,7 +7,6 @@ from models import UserData, WeekData, LedgerData, GeekData
 
 @tasks.loop(minutes=15)
 async def weekly_data():
-
     weeks_file = get_files("data/weeks")
 
     current_week: Week = get_week(week_argument="beforelast")

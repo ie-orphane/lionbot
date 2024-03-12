@@ -8,6 +8,7 @@ class Random(commands.Cog):
         self.bot = bot
 
     @discord.app_commands.command(name="random", description="pick random student(s)")
+    @discord.app_commands.default_permissions(administrator=True)
     @discord.app_commands.describe(count="how much? (all number supported)")
     async def profile_command(
         self,
