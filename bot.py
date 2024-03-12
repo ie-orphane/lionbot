@@ -1,13 +1,13 @@
 import discord, os
 from dotenv import load_dotenv
 from discord.ext import commands
-from tasks import leaderboard, geek_of_the_week, weekly_data
+from tasks import leaderboard, geek_of_the_week, weekly_data, dead_channel
+
 
 class Bot(commands.Bot):
 
     def __init__(self):
         super().__init__(command_prefix="-", intents=discord.Intents.all())
-
 
     # add slash commands
     async def setup_hook(self: commands.Bot) -> None:
@@ -16,7 +16,7 @@ class Bot(commands.Bot):
             for command_file in os.listdir("slash_commands")
             if command_file not in ["__pycache__", "__init__.py"]
         ]
-        
+
         for extension in initial_extensions:
             await self.load_extension(extension)
 
@@ -26,9 +26,10 @@ class Bot(commands.Bot):
     async def on_ready(self):
         print(f"\nWe have logged in as {self.user}")
 
-        weekly_data.start()
-        geek_of_the_week.start(self)
-        leaderboard.start(self)
+        await dead_channel.start(self)
+        # await weekly_data.start()
+        # await geek_of_the_week.start(self)
+        # await leaderboard.start(self)
 
     async def on_message(self, message: discord.Message):
         def is_student_of(class_name: str, author: discord.Member | discord.User):

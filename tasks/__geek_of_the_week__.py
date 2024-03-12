@@ -49,7 +49,7 @@ async def geek_of_the_week(bot: commands.Bot):
             geek_id = geek.id
             break
 
-        if [geek_id] == list(map(lambda x: x.id, geek_role.members)):
+        if [geek_id] == [member.id for member in geek_role.members]:
             return
 
         print(
