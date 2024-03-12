@@ -6,8 +6,8 @@ from models import WeekData
 
 @tasks.loop(minutes=5)
 async def geek_of_the_week(bot: commands.Bot):
+    last_week = list(sorted(WeekData.read_all(), key=lambda x: x.id))[-1]
 
-    last_week = WeekData.read_all()[-1]
     for guild in bot.guilds:
         geek_role = None
         black_list_role = None
@@ -49,11 +49,6 @@ async def geek_of_the_week(bot: commands.Bot):
             geek_id = geek.id
             break
 
-        print(
-            [geek_id],
-            [member.id for member in geek_role.members],
-            [geek_id] == [member.id for member in geek_role.members],
-        )
         if [geek_id] == [member.id for member in geek_role.members]:
             return
 
