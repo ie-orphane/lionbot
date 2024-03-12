@@ -49,6 +49,11 @@ async def geek_of_the_week(bot: commands.Bot):
             geek_id = geek.id
             break
 
+        print(
+            [geek_id],
+            [member.id for member in geek_role.members],
+            [geek_id] == [member.id for member in geek_role.members],
+        )
         if [geek_id] == [member.id for member in geek_role.members]:
             return
 
