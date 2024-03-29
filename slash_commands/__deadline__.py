@@ -3,7 +3,8 @@ from discord.ext import commands
 from datetime import datetime, timedelta, UTC
 from models import DeadData
 from utils import color
-
+commands.Cog.app_command
+discord.app_commands.Command
 
 class Deadline(commands.Cog):
     def __init__(self, bot):
@@ -11,6 +12,7 @@ class Deadline(commands.Cog):
 
     @discord.app_commands.command(name="deadline", description="set a deadline")
     @discord.app_commands.default_permissions(administrator=True)
+    @discord.app_commands.guild_only()
     @discord.app_commands.describe(
         channel="channel to close",
         day="dealine day",

@@ -41,7 +41,7 @@ class wallet(commands.Cog):
 
         await interaction.response.defer()
 
-        txt = f"{member.mention}{', you balance is' if member == interaction.user else ' has a balance of'} **{user_data.coins}**"
+        txt = f"{member.mention}{', you balance is' if member == interaction.user else ' has a balance of'} **{user_data.coins}** <:lioncoin:1219417317419651173>"
         if ledger and member == interaction.user:
             txt += f"\n\n***ledger***\n{'\n'.join([ 
                     f"- {ledger:%m} {' '*3} **{ledger:%t}{ledger.amount}**" for ledger in user_data.ledger

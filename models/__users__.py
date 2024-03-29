@@ -17,7 +17,7 @@ class LedgerData(Model):
                 )
                 return formatted_datetime
             case "%t":
-                type_converter = {"deposit": "+"}
+                type_converter = {"deposit": "+", "receive": "+", "send": "-"}
                 return type_converter[self.type]
 
 
@@ -28,6 +28,7 @@ class UserData(Data):
     coins: int
     token: str
     github: str
+    portfolio: str
     ledger: list[LedgerData]
 
     @classmethod

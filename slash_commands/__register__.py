@@ -10,7 +10,12 @@ class register(commands.Cog):
     @discord.app_commands.command(
         name="register", description="register to track your coding time"
     )
-    @discord.app_commands.describe(name="your full name", github="link to your github profile", api_key="wakatime api key")
+    @discord.app_commands.guild_only()
+    @discord.app_commands.describe(
+        name="your full name",
+        github="link to your github profile",
+        api_key="wakatime api key",
+    )
     async def register_command(
         self, interaction: discord.Interaction, name: str, github: str, api_key: str
     ):
