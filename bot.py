@@ -48,7 +48,7 @@ class Bot(commands.Bot):
         if message.content.startswith(self.user.mention):
             await message.channel.send("I'm here!")
 
-        elif message.content.lower() in ["hello", "hi", "hey", "good morning"]:
+        elif message.content.lower() in ["salam", "hello", "hi", "hey", "good morning"]:
             if is_student_of("coding", message.author):
                 await message.channel.send(
                     f"{message.author.mention}, great to see you coding!"

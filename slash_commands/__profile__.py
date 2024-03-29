@@ -43,10 +43,13 @@ class profile(commands.Cog):
             lang
             for lang, _ in sorted(languages.items(), key=lambda x: x[1], reverse=True)
         ][0]
-        
+
         profile_embed = discord.Embed(
             color=color.blue,
-            description=f"class: Coding - Web Development II\nfavorite language: **{fav_language}**\nsocials: [github]({user_data.github})",
+            description=(
+                f"class: Coding - Web Development II\nfavorite language: **{fav_language}**"
+                f"\nsocials: [github]({user_data.github}) {'' if user_data.portfolio is None else f'[portfolio]({user_data.portfolio})'}"
+            ),
         )
         profile_embed.set_author(name=user_data.name, icon_url=member.avatar)
 
