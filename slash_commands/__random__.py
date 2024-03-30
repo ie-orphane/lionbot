@@ -1,6 +1,7 @@
 import discord, random
 from discord.ext import commands
 from models import UserData
+from utils import open_file
 
 
 class Random(commands.Cog):
@@ -10,16 +11,34 @@ class Random(commands.Cog):
     @discord.app_commands.command(name="random", description="pick random student(s)")
     @discord.app_commands.default_permissions(administrator=True)
     @discord.app_commands.guild_only()
-    @discord.app_commands.describe(count="how much? (all number supported)")
+    @discord.app_commands.describe(count="how much? (all number supported)", exclusive="pick non-repetitive student(s)")
+    @discord.app_commands.choices(
+        exclusive=[
+            discord.app_commands.Choice(name="True", value=1),
+            discord.app_commands.Choice(name="False", value=0),
+        ]
+    )
     async def profile_command(
         self,
         interaction: discord.Interaction,
-        count: discord.app_commands.Range[int, 1, 22],
+        count: discord.app_commands.Range[int, 1, 22] = 1,
+        exclusive: int = 0,
     ):
         await interaction.response.defer()
 
         users = UserData.read_all()
+
+        if exclusive:
+            selected_users: list = open_file("data/selected_users.json")
+            if len(selected_users) == 22:
+                selected_users = []
+            users: list = [user for user in users if user.id not in selected_users]
+
         random.shuffle(users)
+
+        if exclusive:
+            selected_users.extend([user.id for user in users[:count]])
+            open_file("data/selected_users.json", selected_users)
 
         users_mention = "\n".join([f"<@{user.id}>" for user in users[:count]])
         await interaction.followup.send(users_mention)

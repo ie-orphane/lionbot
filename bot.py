@@ -24,7 +24,7 @@ class Bot(commands.Bot):
         print(f"{len(sync)} Slash Command(s) Synced")
 
     async def on_ready(self):
-        print(f"\nWe have logged in as {self.user}")
+        print(f"We have logged in as {self.user}")
 
         dead_channel.start(self)
         weekly_data.start()
