@@ -162,4 +162,4 @@ cython_debug/
 data/
 test/
 assets/
-
+slash_commands/__test__.py

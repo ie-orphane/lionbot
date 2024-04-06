@@ -11,9 +11,9 @@ async def dead_channel(bot: commands.Bot):
 
         if dead.time == now:
             deadchannel = bot.get_channel(dead.channel)
-            await deadchannel.set_permissions(
-                deadchannel.guild.default_role, send_messages=False
-            )
+            deadrole = deadchannel.guild.get_role(dead.role)
+            
+            await deadchannel.set_permissions(deadrole, send_messages=False)
             dead.remove()
             print(
                 f"{clr.black(now.strftime('%Y-%m-%d %H:%M:%S'))} {clr.blue('Info')}     {clr.magenta('Dead')}  {deadchannel} closed!"
