@@ -2,6 +2,8 @@ import discord, os
 from dotenv import load_dotenv
 from discord.ext import commands
 from tasks import leaderboard, geek_of_the_week, weekly_data, dead_channel
+from utils import clr
+from datetime import datetime, UTC
 
 
 class Bot(commands.Bot):
@@ -21,10 +23,14 @@ class Bot(commands.Bot):
             await self.load_extension(extension)
 
         sync = await self.tree.sync()
-        print(f"{len(sync)} Slash Command(s) Synced")
+        print(
+            f"{clr.black(datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S'))} {clr.blue('Info')}     {clr.magenta('Cogs')}  {len(sync)} Slash Command(s) Synced"
+        )
 
     async def on_ready(self):
-        print(f"We have logged in as {self.user}")
+        print(
+            f"{clr.black(datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S'))} {clr.blue('Info')}     {clr.magenta('Bot')}  We have logged in as {self.user}"
+        )
 
         dead_channel.start(self)
         weekly_data.start()
