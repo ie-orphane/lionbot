@@ -52,7 +52,7 @@ class Send(commands.Cog):
                 f"{day_select.values[0]} {hours:0>2}:{minutes:0>2}:00+00:00"
             )
 
-            await file.save(f"assets/files/{file.filename}")
+            await file.save(f"./assets/files/{file.filename}")
             FileData.create(channel=channel.id, time=deadtime, name=file.filename)
 
             await interaction.followup.edit_message(

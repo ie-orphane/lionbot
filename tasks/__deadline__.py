@@ -22,7 +22,7 @@ async def dead_channel(bot: commands.Bot):
         now = datetime.now(UTC).replace(second=0, microsecond=0)
         if file.time == now:
             filechannel = bot.get_channel(file.channel)
-            await filechannel.send(file=discord.File(f"assets/files/{file.name}"))
+            await filechannel.send(file=discord.File(f"./assets/files/{file.name}"))
             file.remove()
             print(
                 f"{clr.black(now.strftime('%Y-%m-%d %H:%M:%S'))} {clr.blue('Info')}     {clr.magenta('File')}  {file.name} sended to {filechannel}!"

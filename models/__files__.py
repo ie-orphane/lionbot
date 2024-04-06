@@ -18,7 +18,7 @@ class FileData(Model):
 
     @classmethod
     def exists(cls, name: int) -> bool:
-        return name in os.listdir("assets/files")
+        return name in os.listdir("./assets/files")
 
     @classmethod
     def create(cls, **data) -> None:
@@ -42,6 +42,6 @@ class FileData(Model):
     def remove(self) -> None:
         files = FileData.read_all()
         files.remove(self)
-        os.remove(f"assets/files/{self.name}")
+        os.remove(f"./assets/files/{self.name}")
         with open(f"{self.BASE}.json", "w") as file:
             json.dump(files, file, cls=ModelEncoder, indent=2)
