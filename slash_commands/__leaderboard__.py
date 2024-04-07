@@ -27,7 +27,8 @@ class leaderbaord(commands.Cog):
         await interaction.response.defer()
 
         week_select = discord.ui.Select(
-            options=[
+            options=[discord.SelectOption(label="all", value="all")]
+            + [
                 discord.SelectOption(
                     label=f"{week_data:%l}     week #{week_data.id}", value=week_data.id
                 )
@@ -40,23 +41,44 @@ class leaderbaord(commands.Cog):
 
         async def week_callback(_interaction: discord.Interaction):
             week = week_select.values[0]
-            week_data = WeekData.read(week)
-
             table = (
                 f"{' '*3}  |  {'Geek':^19}  |  {'Time':^9}  "
                 f"\n{'-'*3}--|--{'-'*19}--|--{'-'*9}--"
             )
 
-            for rank, geek_data in enumerate(week_data.geeks, 1):
-                geek_name = UserData.read(geek_data.id).name
-                table += f"\n{rank:>3}  |  {formate_name(geek_name):<19.19}  |  {formate_time(geek_data.amount):^9}"
+            if week == "all":
+                weeks_data = WeekData.read_all()
+
+                geeks_data = {}
+                for week_data in weeks_data:
+                    for geek_data in week_data.geeks:
+                        try:
+                            geeks_data[geek_data.id] += geek_data.amount
+                        except KeyError:
+                            geeks_data[geek_data.id] = geek_data.amount
+
+                geeks_data = [
+                    {"amount": amount, "name": UserData.read(id).name}
+                    for id, amount in geeks_data.items()
+                ]
+                geeks_data.sort(key=lambda x: x['amount'], reverse=True)
+
+                for rank, geek_data in enumerate(geeks_data, 1):
+                    table += f"\n{rank:>3}  |  {formate_name(geek_data['name']):<19.19}  |  {formate_time(geek_data['amount']):^9}"
+
+            else:
+                week_data = WeekData.read(week)
+
+                for rank, geek_data in enumerate(week_data.geeks, 1):
+                    geek_name = UserData.read(geek_data.id).name
+                    table += f"\n{rank:>3}  |  {formate_name(geek_name):<19.19}  |  {formate_time(geek_data.amount):^9}"
 
             await interaction.followup.edit_message(
                 message_id=message.id,
                 content=None,
                 embed=discord.Embed(
                     color=discord.Color.yellow(),
-                    description=f"```week {week} {' '*3} {week_data:%l}\n\n{table}```",
+                    description=f"```{'all weeks' if week == 'all' else f'week {week} {" "*3} {week_data:%l}'}\n\n{table}```",
                 ),
                 view=None,
             )
@@ -67,7 +89,7 @@ class leaderbaord(commands.Cog):
         view.add_item(week_select)
 
         message = await interaction.followup.send(
-            "## Select the deadline week:", view=view, ephemeral=True
+            "## Select the leaderboard week:", view=view, ephemeral=True
         )
 
 
