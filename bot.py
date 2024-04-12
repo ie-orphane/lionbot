@@ -32,10 +32,10 @@ class Bot(commands.Bot):
             f"{clr.black(datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S'))} {clr.blue('Info')}     {clr.magenta('Bot')}  We have logged in as {self.user}"
         )
 
-        dead_channel.start(self)
-        weekly_data.start()
-        geek_of_the_week.start(self)
-        leaderboard.start(self)
+        # dead_channel.start(self)
+        # weekly_data.start()
+        # geek_of_the_week.start(self)
+        # leaderboard.start(self)
 
     async def on_message(self, message: discord.Message):
         def is_student_of(class_name: str, author: discord.Member | discord.User):

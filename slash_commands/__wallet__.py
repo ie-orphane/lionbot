@@ -14,17 +14,11 @@ class wallet(commands.Cog):
     @discord.app_commands.describe(
         ledger="show wallet ledger", member="choose a member"
     )
-    @discord.app_commands.choices(
-        ledger=[
-            discord.app_commands.Choice(name="True", value=1),
-            discord.app_commands.Choice(name="False", value=0),
-        ]
-    )
     async def wallet_command(
         self,
         interaction: discord.Interaction,
         member: discord.Member | None = None,
-        ledger: int = 0,
+        ledger: bool = False,
     ):
         member = member or interaction.user
         user_data = UserData.read(member.id)
@@ -41,17 +35,21 @@ class wallet(commands.Cog):
 
         await interaction.response.defer()
 
-        txt = f"{member.mention}{', you balance is' if member == interaction.user else ' has a balance of'} **{user_data.coins}** <:lioncoin:1219417317419651173>"
-        if ledger and member == interaction.user:
-            txt += f"\n\n***ledger***\n{'\n'.join([ 
-                    f"- {ledger:%m} {' '*3} **{ledger:%t}{ledger.amount}**" for ledger in user_data.ledger
-                ])}"
-
         walletEmbed = discord.Embed(
             color=color.yellow,
-            description=txt,
-        )
-        walletEmbed.set_author(name=user_data.name, icon_url=member.avatar)
+            description=f"{member.mention}{', you balance is' if member == interaction.user else ' has a balance of'} **{user_data.coins}** <:lioncoin:1219417317419651173>",
+        ).set_author(name=user_data.name, icon_url=member.avatar)
+
+        if ledger and member == interaction.user:
+            walletEmbed.add_field(
+                name="ledger",
+                value="\n".join(
+                    [
+                        f"{ledger:%d} {ledger:%m} **{ledger:%t}{ledger.amount}**"
+                        for ledger in user_data.ledger
+                    ]
+                ),
+            )
 
         await interaction.followup.send(embed=walletEmbed)
 

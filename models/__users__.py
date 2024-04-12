@@ -11,11 +11,16 @@ class LedgerData(Model):
 
     def __format__(self, __format_spec: str) -> str:
         match __format_spec:
-            case "%m":
-                formatted_datetime = datetime.fromisoformat(self.moment).strftime(
-                    "%Y/%m/%d %H:%M:%S"
+            case "%d":
+                formatted_date = (
+                    f"{datetime.fromisoformat(self.moment).strftime('%d %b %Y'):<13}"
                 )
-                return formatted_datetime
+                return formatted_date
+            case "%m":
+                formatted_time = (
+                    f"{datetime.fromisoformat(self.moment).strftime('%H:%M:%S'):<10}"
+                )
+                return formatted_time
             case "%t":
                 type_converter = {"deposit": "+", "receive": "+", "send": "-"}
                 return type_converter[self.type]
