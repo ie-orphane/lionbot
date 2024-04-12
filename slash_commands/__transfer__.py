@@ -1,8 +1,7 @@
 import discord
 from discord.ext import commands
-from models import UserData
+from models import UserData, LedgerData
 from utils import color
-from models import LedgerData
 from datetime import datetime, UTC
 
 

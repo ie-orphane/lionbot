@@ -1,11 +1,15 @@
 import json, os
 
+
 class Model:
     def __init__(self, **kwargs) -> None:
         self.__dict__ = kwargs
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__} {self.__dict__}"
+    
+    def __eq__(self, other: object) -> bool:
+        return self.__dict__ == other.__dict__
 
     def __to_dict__(self):
         return self.__dict__

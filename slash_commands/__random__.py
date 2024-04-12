@@ -12,17 +12,11 @@ class Random(commands.Cog):
     @discord.app_commands.default_permissions(administrator=True)
     @discord.app_commands.guild_only()
     @discord.app_commands.describe(count="how much? (all number supported)", exclusive="pick non-repetitive student(s)")
-    @discord.app_commands.choices(
-        exclusive=[
-            discord.app_commands.Choice(name="True", value=1),
-            discord.app_commands.Choice(name="False", value=0),
-        ]
-    )
     async def profile_command(
         self,
         interaction: discord.Interaction,
         count: discord.app_commands.Range[int, 1, 22] = 1,
-        exclusive: int = 0,
+        exclusive: bool = False,
     ):
         await interaction.response.defer()
 

@@ -13,3 +13,5 @@ cyan = Colour.from_str("#0dcaf0")
 black = Colour.from_str("#000")
 white = Colour.from_str("#fff")
 gray = Colour.from_str("#6c757d")
+
+all = [blue, indigo, purple, pink, red, orange, yellow, green, teal, cyan, black, white, gray]
