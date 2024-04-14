@@ -7,7 +7,7 @@ class Model:
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__} {self.__dict__}"
-    
+
     def __eq__(self, other: object) -> bool:
         return self.__dict__ == other.__dict__
 
@@ -24,7 +24,7 @@ class ModelEncoder(json.JSONEncoder):
 
 class Data(Model):
     def __to_dict__(self):
-        data_dict = self.__dict__
+        data_dict = self.__dict__.copy()
         del data_dict["id"]
         return data_dict
 
@@ -45,3 +45,8 @@ class Data(Model):
     def update(self):
         with open(f"{self.BASE}/{self.id}.json", "w") as file:
             json.dump(self, file, cls=ModelEncoder, indent=2)
+        return self
+
+    def delete(self):
+        os.remove(f"./{self.BASE}/{self.id}.json")
+        return self
