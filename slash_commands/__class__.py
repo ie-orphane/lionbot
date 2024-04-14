@@ -24,7 +24,7 @@ class Class(
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=color.red,
-                    description=f"class {name} already exists",
+                    description=f"class **{name}** already exists",
                 ),
                 ephemeral=True,
             )
@@ -37,7 +37,7 @@ class Class(
         await interaction.followup.send(
             embed=discord.Embed(
                 colour=colour,
-                description=f"class {name} created succefully!",
+                description=f"class **{name}** created succefully!",
             ),
             ephemeral=True,
         )
@@ -54,7 +54,7 @@ class Class(
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=color.red,
-                    description=f"class {name} not found!",
+                    description=f"class **{name}** not found!",
                 ),
                 ephemeral=True,
             )
@@ -62,20 +62,52 @@ class Class(
 
         for role in interaction.guild.roles:
             if role.name == name.lower():
-                role.delete()
+                await role.delete()
         new_class.delete()
 
         await interaction.followup.send(
             embed=discord.Embed(
                 colour=color.green,
-                description=f"class {name} deleted succefully!",
+                description=f"class **{name}** deleted succefully!",
+            ),
+        )
+
+    @discord.app_commands.command(name="delete", description="delete a class")
+    @discord.app_commands.default_permissions(administrator=True)
+    @discord.app_commands.guild_only()
+    @discord.app_commands.describe(name="the name of the class")
+    async def delete_class_command(self, interaction: discord.Interaction, name: str):
+        await interaction.response.defer()
+
+        new_class = ClassData.read(name.lower())
+        if new_class is None:
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    color=color.red,
+                    description=f"class **{name}** not found!",
+                ),
+                ephemeral=True,
+            )
+            return
+
+        for role in interaction.guild.roles:
+            if role.name == name.lower():
+                await role.delete()
+        new_class.delete()
+
+        await interaction.followup.send(
+            embed=discord.Embed(
+                colour=color.green,
+                description=f"class **{name}** deleted succefully!",
             ),
         )
 
     @discord.app_commands.command(name="assign", description="assign user to a class")
     @discord.app_commands.default_permissions(administrator=True)
     @discord.app_commands.guild_only()
-    @discord.app_commands.describe(name="the name of the class")
+    @discord.app_commands.describe(
+        name="the name of the class", student="user to assign"
+    )
     async def assign_class_command(
         self, interaction: discord.Interaction, name: str, student: discord.Member
     ):
@@ -102,7 +134,7 @@ class Class(
                 ephemeral=True,
             )
             return
-        
+
         if student_user in current_class.students:
             await interaction.followup.send(
                 embed=discord.Embed(
@@ -113,11 +145,59 @@ class Class(
             )
             return
 
-        current_class.add_student(student_user)
+        current_class.students.append(student_user)
+        current_class.update()
+
         await interaction.followup.send(
             embed=discord.Embed(
                 color=color.green,
-                description=f"user {student.mention} added to {current_class.id}!",
+                description=f"{student.mention} added to **{current_class.id}**!",
+            ),
+            ephemeral=True,
+        )
+
+    @discord.app_commands.command(
+        name="unassign", description="unassign user to a class"
+    )
+    @discord.app_commands.default_permissions(administrator=True)
+    @discord.app_commands.guild_only()
+    @discord.app_commands.describe(
+        name="the name of the class", student="student to unassign"
+    )
+    async def unassign_class_command(
+        self, interaction: discord.Interaction, name: str, student: discord.Member
+    ):
+        await interaction.response.defer()
+
+        current_class = ClassData.read(name.lower())
+        if current_class is None:
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    color=color.red,
+                    description=f"class **{name}** not found!",
+                ),
+                ephemeral=True,
+            )
+            return
+
+        student_user = StudentData.read(student.id)
+        if student_user is None or student_user not in current_class.students:
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    color=color.red,
+                    description=f"{student.mention} not found!",
+                ),
+                ephemeral=True,
+            )
+            return
+
+        current_class.students.remove(student_user)
+        current_class.update()
+
+        await interaction.followup.send(
+            embed=discord.Embed(
+                color=color.green,
+                description=f"{student.mention} removed from **{current_class.id}**!",
             ),
             ephemeral=True,
         )

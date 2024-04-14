@@ -28,7 +28,3 @@ class ClassData(Data):
                 return cls(id=id, **data)
         except FileNotFoundError:
             return None
-
-    def add_student(self, student: StudentData):
-        self.students.append(student)
-        self.update()
