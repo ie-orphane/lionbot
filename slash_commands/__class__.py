@@ -5,16 +5,10 @@ from utils import color
 import random
 
 
-class Class(
-    commands.GroupCog,
-    name="class",
-    group_name="class",
-    description="class",
-    group_description="class",
-):
+@discord.app_commands.guild_only()
+@discord.app_commands.default_permissions(administrator=True)
+class Class(commands.GroupCog, name="class"):
     @discord.app_commands.command(name="add", description="add new class")
-    @discord.app_commands.default_permissions(administrator=True)
-    @discord.app_commands.guild_only()
     @discord.app_commands.describe(name="the name of the class")
     async def add_class_command(self, interaction: discord.Interaction, name: str):
         await interaction.response.defer()
@@ -43,8 +37,6 @@ class Class(
         )
 
     @discord.app_commands.command(name="delete", description="delete a class")
-    @discord.app_commands.default_permissions(administrator=True)
-    @discord.app_commands.guild_only()
     @discord.app_commands.describe(name="the name of the class")
     async def delete_class_command(self, interaction: discord.Interaction, name: str):
         await interaction.response.defer()
@@ -73,19 +65,18 @@ class Class(
         )
 
     @discord.app_commands.command(name="assign", description="assign to a class")
-    @discord.app_commands.guild_only()
-    @discord.app_commands.describe(role="the class to assign to")
+    @discord.app_commands.describe(name="the class to assign to")
     async def assign_class_command(
-        self, interaction: discord.Interaction, role: discord.Role
+        self, interaction: discord.Interaction, name: discord.Role
     ):
         await interaction.response.defer()
 
-        current_class = ClassData.read(role.name.lower())
+        current_class = ClassData.read(name.name.lower())
         if current_class is None:
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=color.red,
-                    description=f"class **{role.name}** not found!",
+                    description=f"class **{name.name}** not found!",
                 ),
                 ephemeral=True,
             )
@@ -112,7 +103,7 @@ class Class(
             )
             return
 
-        await interaction.user.add_roles(role)
+        await interaction.user.add_roles(name)
         current_class.students.append(student_user)
         current_class.update()
 
@@ -127,8 +118,6 @@ class Class(
     @discord.app_commands.command(
         name="unassign", description="unassign student from a class"
     )
-    @discord.app_commands.default_permissions(administrator=True)
-    @discord.app_commands.guild_only()
     @discord.app_commands.describe(
         name="the name of the class", student="student to unassign"
     )
