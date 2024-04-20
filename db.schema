@@ -1,4 +1,4 @@
 #!/bin/bash
 
-FOLDERS=("users" "classes")
-FILES=("leaderboards" "channels")
+FOLDERS=("users")
+FILES=("leaderboards")
