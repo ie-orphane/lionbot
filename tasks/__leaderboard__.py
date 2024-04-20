@@ -32,7 +32,7 @@ async def leaderboard(bot: commands.Bot):
         {"": index, **user[1]} for index, user in enumerate(users_summary, start=1)
     ]
 
-    # top leaderboard image
+    # top and bottom global leaderboard image
     leaderboard_image(
         "top",
         "global",
@@ -41,18 +41,18 @@ async def leaderboard(bot: commands.Bot):
         start=current_week.human_readable_start,
         end=current_week.human_readable_end,
     )
-
-    users_summary = list(
-        filter(lambda x: x[1]["Coder"] != "Forkani Mahdi", users_summary)
-    )
-    users = [
-        {"": index, **user[1]} for index, user in enumerate(users_summary, start=1)
-    ]
-
-    # middle leaderboard image
     leaderboard_image("bottom", "global", users[11:], time=current_time)
 
-    # top leaderboard image
+
+    users = [
+        {"": index, **user[1]}
+        for index, user in enumerate(
+            filter(lambda x: x[1]["Coder"] != "Forkani Mahdi", users_summary), start=1
+        )
+    ]
+
+
+    # top and bottom codding II leaderboard image
     leaderboard_image(
         "top",
         "codingII",
@@ -61,8 +61,6 @@ async def leaderboard(bot: commands.Bot):
         start=current_week.human_readable_start,
         end=current_week.human_readable_end,
     )
-
-    # middle leaderboard image
     leaderboard_image("bottom", "codingII", users[11:], time=current_time)
 
     leaderboards_data: list[dict] = open_file("./data/leaderboards.json")
