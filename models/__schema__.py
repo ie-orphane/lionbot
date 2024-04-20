@@ -31,22 +31,22 @@ class Data(Model):
     @classmethod
     def read(cls, id: int | str):
         try:
-            with open(f"{cls.BASE}/{id}.json", "r") as file:
+            with open(f"./data/{cls.BASE}/{id}.json", "r") as file:
                 return cls(id=int(id), **json.load(file))
         except FileNotFoundError:
             return None
 
     @classmethod
-    def read_all(self):
-        files = os.listdir(self.BASE)
+    def read_all(cls):
+        files = os.listdir(f"./data/{cls.BASE}")
         ids = [file[: file.index(".")] for file in files]
-        return [self.read(id) for id in ids]
+        return [cls.read(id) for id in ids]
 
     def update(self):
-        with open(f"{self.BASE}/{self.id}.json", "w") as file:
+        with open(f".data/{self.BASE}/{self.id}.json", "w") as file:
             json.dump(self, file, cls=ModelEncoder, indent=2)
         return self
 
     def delete(self):
-        os.remove(f"./{self.BASE}/{self.id}.json")
+        os.remove(f"./data/{self.BASE}/{self.id}.json")
         return self

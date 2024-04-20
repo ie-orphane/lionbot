@@ -1,7 +1,7 @@
 import discord, os
 from dotenv import load_dotenv
 from discord.ext import commands
-from tasks import leaderboard, geek_of_the_week, weekly_data, dead_channel
+from tasks import leaderboard
 from utils import clr
 from datetime import datetime, UTC
 
@@ -14,8 +14,8 @@ class Bot(commands.Bot):
     # add slash commands
     async def setup_hook(self: commands.Bot) -> None:
         initial_extensions = [
-            "slash_commands." + command_file[:-3]
-            for command_file in os.listdir("slash_commands")
+            "cogs." + command_file[:-3]
+            for command_file in os.listdir("cogs")
             if command_file not in ["__pycache__", "__init__.py"]
         ]
 
@@ -32,9 +32,6 @@ class Bot(commands.Bot):
             f"{clr.black(datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S'))} {clr.blue('Info')}     {clr.magenta('Bot')}  We have logged in as {self.user}"
         )
 
-        dead_channel.start(self)
-        weekly_data.start()
-        geek_of_the_week.start(self)
         leaderboard.start(self)
 
     async def on_message(self, message: discord.Message):
@@ -71,4 +68,9 @@ TOKEN = os.getenv("TOKEN")
 
 
 if __name__ == "__main__":
-    Bot().run(TOKEN)
+    if TOKEN:
+        Bot().run(TOKEN)
+    else:
+        print(
+            f"{clr.black(datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S'))} {clr.red('Error')}     {clr.magenta('Bot')}  .env missed TOKEN"
+        )

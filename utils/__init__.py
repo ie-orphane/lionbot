@@ -1,3 +1,3 @@
-from utils.__helpers__ import open_file, get_files, data_to_table
+import utils.__discord_colors__ as dclr
 import utils.__colorful__ as clr
-import utils.__colors__ as color
+from utils.__helpers__ import get_week, leaderboard_image, open_file
