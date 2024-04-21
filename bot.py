@@ -1,9 +1,9 @@
-import discord, os
+import discord
+import os
 from dotenv import load_dotenv
 from discord.ext import commands
-from tasks import leaderboard
-from utils import clr
-from datetime import datetime, UTC
+from tasks import leaderboard, weekly_data
+from utils import clr, log
 
 
 class Bot(commands.Bot):
@@ -23,16 +23,13 @@ class Bot(commands.Bot):
             await self.load_extension(extension)
 
         sync = await self.tree.sync()
-        print(
-            f"{clr.black(datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S'))} {clr.blue('Info')}     {clr.magenta('Cogs')}  {len(sync)} Slash Command(s) Synced"
-        )
+        print(log('Info', clr.blue, 'Cogs', f"{len(sync)} Slash Command(s) Synced"))
 
     async def on_ready(self):
-        print(
-            f"{clr.black(datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S'))} {clr.blue('Info')}     {clr.magenta('Bot')}  We have logged in as {self.user}"
-        )
+        print(log('Info', clr.blue, 'Bot', f'Logged in as {self.user}'))
 
-        leaderboard.start(self)
+        # leaderboard.start(self)
+        weekly_data.start()
 
     async def on_message(self, message: discord.Message):
         def is_student_of(class_name: str, author: discord.Member | discord.User):
@@ -52,15 +49,9 @@ class Bot(commands.Bot):
             await message.channel.send("I'm here!")
 
         elif message.content.lower() in ["salam", "hello", "hi", "hey", "good morning"]:
-            if is_student_of("coding", message.author):
-                await message.channel.send(
-                    f"{message.author.mention}, great to see you coding!"
-                )
-
-            else:
-                await message.channel.send(
-                    f"{message.author.mention}, great to see you here!"
-                )
+            await message.channel.send(
+                f"{message.author.mention}, great to see you {'coding' if is_student_of("coding", message.author) else 'here'}!"
+            )
 
 
 load_dotenv()
@@ -71,6 +62,4 @@ if __name__ == "__main__":
     if TOKEN:
         Bot().run(TOKEN)
     else:
-        print(
-            f"{clr.black(datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S'))} {clr.red('Error')}     {clr.magenta('Bot')}  .env missed TOKEN"
-        )
+        print(log('Error', clr.red, 'Bot', '.env missed TOKEN'))

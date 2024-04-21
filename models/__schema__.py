@@ -43,7 +43,7 @@ class Data(Model):
         return [cls.read(id) for id in ids]
 
     def update(self):
-        with open(f".data/{self.BASE}/{self.id}.json", "w") as file:
+        with open(f"./data/{self.BASE}/{self.id}.json", "w") as file:
             json.dump(self, file, cls=ModelEncoder, indent=2)
         return self
 

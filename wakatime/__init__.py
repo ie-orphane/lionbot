@@ -12,7 +12,7 @@ def get_week_summary(api_key: str, params: dict, name: str):
     response = requests.get(url, params=params, headers=headers)
 
     if response.status_code != 200:
-        (f"Error {response.status_code} : {response.text}")
+        print(f"Error {response.status_code} : {response.text}")
         return
 
     summary = response.json()

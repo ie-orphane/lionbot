@@ -1,16 +1,14 @@
 import discord
 import wakatime
 from discord.ext import commands, tasks
-from utils import clr, get_week, leaderboard_image, open_file
+from utils import clr, get_week, leaderboard_image, open_file, log
 from datetime import datetime, UTC
 from models import UserData
 
 
 @tasks.loop(minutes=15)
 async def leaderboard(bot: commands.Bot):
-    print(
-        f"{clr.black(datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S'))} {clr.yellow('Info')}     {clr.magenta('Leaderboard')}  Updating leaderboard..."
-    )
+    print(log("Task", clr.yellow, "Leaderboard", "Updating..."))
 
     current_time = f"{datetime.now(UTC):%A  %d  %b    %I:%M  %p}"
     current_time = current_time.replace("AM", "am").replace("PM", "pm")
@@ -43,14 +41,12 @@ async def leaderboard(bot: commands.Bot):
     )
     leaderboard_image("bottom", "global", users[11:], time=current_time)
 
-
     users = [
         {"": index, **user[1]}
         for index, user in enumerate(
             filter(lambda x: x[1]["Coder"] != "Forkani Mahdi", users_summary), start=1
         )
     ]
-
 
     # top and bottom codding II leaderboard image
     leaderboard_image(
@@ -77,6 +73,4 @@ async def leaderboard(bot: commands.Bot):
 
         print(f"{str(leaderboard_channel):<21} {leaderboard_channel.guild}")
 
-    print(
-        f"{clr.black(datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S'))} {clr.blue('Info')}     {clr.magenta('Leaderboard')}  Leaderboard updated!"
-    )
+    print(log("Task", clr.green, "Leaderboard", "updated!"))

@@ -1,7 +1,20 @@
 import pickle
 import json
-from datetime import datetime, timedelta, date
+import os
+from datetime import datetime, timedelta, date, UTC
 import matplotlib.pyplot as plt
+from utils import clr
+from typing import Literal
+
+
+def log(type: Literal["Info", "Error", "Task"], func, name: str, message: str):
+    log_time = clr.black(datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S"))
+
+    return f"{log_time} {func(type)}    {clr.magenta(name)} {message}"
+
+
+def get_files(path: str, praser=int):
+    return [praser(file[: file.index(".")]) for file in os.listdir(path)]
 
 
 def open_file(file_path, data=None):
