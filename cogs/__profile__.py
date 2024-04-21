@@ -36,7 +36,7 @@ class profile(commands.Cog):
                 description=(
                     f'{"### class:\n> **Coding** - Web Development **II**\n" if user_data.training == "codingII" else ""}'
                     f"### coins:\n> **{'**.'.join(str(user_data.coins).split('.'))} <:lioncoin:1219417317419651173>\n"
-                    f"### socials:\n- [<:github:1231551666075996190> github]({user_data.github})\n"
+                    f"### socials:\n- [<:github:1231551666075996190>  github]({user_data.github})\n"
                     f'{f"- [portfolio]({user_data.portfolio})" if user_data.portfolio else ""}'
                 ),
             ).set_author(name=user_data.name, icon_url=member.avatar)
