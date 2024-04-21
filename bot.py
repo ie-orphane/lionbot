@@ -2,7 +2,7 @@ import discord
 import os
 from dotenv import load_dotenv
 from discord.ext import commands
-from tasks import leaderboard, weekly_data
+from tasks import leaderboard, weekly_data, geek_of_the_week
 from utils import clr, log
 
 
@@ -28,8 +28,9 @@ class Bot(commands.Bot):
     async def on_ready(self):
         print(log('Info', clr.blue, 'Bot', f'Logged in as {self.user}'))
 
-        leaderboard.start(self)
-        weekly_data.start()
+        # leaderboard.start(self)
+        geek_of_the_week.start(self)
+        # weekly_data.start()
 
     async def on_message(self, message: discord.Message):
         def is_student_of(class_name: str, author: discord.Member | discord.User):
