@@ -1,4 +1,3 @@
-#!/bin/bash
 
-FOLDERS=("users")
+FOLDERS=("users" "weeks")
 FILES=("leaderboards")

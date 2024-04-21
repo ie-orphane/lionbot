@@ -28,7 +28,7 @@ class Bot(commands.Bot):
     async def on_ready(self):
         print(log('Info', clr.blue, 'Bot', f'Logged in as {self.user}'))
 
-        # leaderboard.start(self)
+        leaderboard.start(self)
         weekly_data.start()
 
     async def on_message(self, message: discord.Message):
