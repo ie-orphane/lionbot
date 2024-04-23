@@ -2,8 +2,10 @@ import discord
 import os
 from dotenv import load_dotenv
 from discord.ext import commands
-from tasks import leaderboard, weekly_data, geek_of_the_week
-from utils import clr, log
+from tasks import leaderboard, weekly_data, geek_of_the_week, deadline
+from utils import clr
+from typing import Literal
+from datetime import datetime, UTC
 
 
 class Bot(commands.Bot):
@@ -11,8 +13,12 @@ class Bot(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix="-", intents=discord.Intents.all())
 
+    def log(self, type: Literal["Info", "Error", "Task"], func, name: str, message: str):
+        log_time = clr.black(datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S"))
+        print(f"{log_time} {func(type)}    {clr.magenta(name)} {message}")
+
     # add slash commands
-    async def setup_hook(self: commands.Bot) -> None:
+    async def setup_hook(self) -> None:
         initial_extensions = [
             "cogs." + command_file[:-3]
             for command_file in os.listdir("cogs")
@@ -23,14 +29,16 @@ class Bot(commands.Bot):
             await self.load_extension(extension)
 
         sync = await self.tree.sync()
-        print(log('Info', clr.blue, 'Cogs', f"{len(sync)} Slash Command(s) Synced"))
+
+        self.log('Info', clr.blue, 'Cogs', f"{len(sync)} Slash Command(s) Synced")
 
     async def on_ready(self):
-        print(log('Info', clr.blue, 'Bot', f'Logged in as {self.user}'))
+        self.log('Info', clr.blue, 'Bot', f'Logged in as {self.user}')
 
-        leaderboard.start(self)
-        geek_of_the_week.start(self)
+        deadline.start(self)
         weekly_data.start()
+        geek_of_the_week.start(self)
+        leaderboard.start(self)
 
     async def on_message(self, message: discord.Message):
         def is_student_of(class_name: str, author: discord.Member | discord.User):
@@ -60,7 +68,8 @@ TOKEN = os.getenv("TOKEN")
 
 
 if __name__ == "__main__":
+    bot = Bot()
     if TOKEN:
-        Bot().run(TOKEN)
+        bot.run(TOKEN)
     else:
-        print(log('Error', clr.red, 'Bot', '.env missed TOKEN'))
+        bot.log('Error', clr.red, 'Bot', '.env missed TOKEN')

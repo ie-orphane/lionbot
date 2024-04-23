@@ -1,8 +1,8 @@
 from datetime import date
-from models.__schema__ import Data
+from models.__schema__ import Collection
 
 
-class WeekData(Data):
+class WeekData(Collection):
     BASE = "weeks"
     id: int
     start: str

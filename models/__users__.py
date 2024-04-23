@@ -1,7 +1,7 @@
-from models.__schema__ import Data
+from models.__schema__ import Collection
 
 
-class UserData(Data):
+class UserData(Collection):
     BASE = "users"
     id: int
     name: str
