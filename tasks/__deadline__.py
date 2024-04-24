@@ -22,8 +22,8 @@ async def deadline(bot):
     for file in FileData.read_all():
         now = datetime.now(UTC).replace(second=0, microsecond=0)
         if file.time == now:
-            bot.log("Task", clr.yellow, "File", f"sending")
+            bot.log("Task", clr.yellow, "File", "sending")
             filechannel = bot.get_channel(file.channel)
-            await filechannel.send(file=discord.File(f"./assets/files/{file.name}"))
+            await filechannel.send(file=discord.File(f"./assets/files/{file.id}"))
             file.remove()
-            bot.log("Task", clr.green, "File", f"{file.name} sended to {filechannel}!")
+            bot.log("Task", clr.green, "File", f"{file.id} sended to {filechannel}!")

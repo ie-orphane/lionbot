@@ -28,6 +28,6 @@ class FileData(Document):
     def remove(self) -> None:
         files = FileData.read_all()
         files.remove(self)
-        os.remove(f"./assets/files/{self.name}")
-        with open(f"{self.BASE}.json", "w") as file:
+        os.remove(f"./assets/files/{self.id}")
+        with open(f"./data/{self.BASE}.json", "w") as file:
             json.dump(files, file, cls=ModelEncoder, indent=2)
