@@ -12,6 +12,7 @@ class Bot(commands.Bot):
 
     def __init__(self):
         super().__init__(command_prefix="-", intents=discord.Intents.all())
+        self.coin = "<:lioncoin:1219417317419651173>"
 
     def log(self, type: Literal["Info", "Error", "Task"], func, name: str, message: str):
         log_time = clr.black(datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S"))
