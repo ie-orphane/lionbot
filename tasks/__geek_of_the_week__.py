@@ -1,10 +1,11 @@
 from discord.ext import tasks, commands
-from utils import clr, dclr, log
+from utils import clr, log, COLOR
 from models import WeekData
 
 
 @tasks.loop(minutes=5)
 async def geek_of_the_week(bot: commands.Bot):
+    discord_color = COLOR()
     last_week = list(sorted(WeekData.read_all(), key=lambda x: x.id))[-1]
 
     for guild in bot.guilds:
@@ -22,11 +23,11 @@ async def geek_of_the_week(bot: commands.Bot):
             # if not found create new one
             if not geek_role:
                 geek_role = await guild.create_role(
-                    name="Geek of the week", color=dclr.yellow
+                    name="Geek of the week", color=discord_color.yellow
                 )
             if not black_list_role:
                 black_list_role = await guild.create_role(
-                    name="Black List", color=dclr.black
+                    name="Black List", color=discord_color.black
                 )
 
             geek_id = None

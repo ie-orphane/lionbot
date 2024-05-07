@@ -1,17 +1,15 @@
 import discord
-from discord.ext import commands
 from models import UserData
-from utils import dclr
 from typing import Union
+import requests
+from bot.config import Emoji
+from cogs import Cog
 
 
-class profile(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-
-    @discord.app_commands.command(name="profile", description="view your profile")
+class Profile(Cog):
+    @discord.app_commands.command(description="view your profile")
     @discord.app_commands.describe(member="see member profile")
-    async def profile_command(
+    async def profile(
         self,
         interaction: discord.Interaction,
         member: Union[discord.Member, discord.User] = None,
@@ -19,29 +17,49 @@ class profile(commands.Cog):
         await interaction.response.defer()
 
         member = member or interaction.user
-        user_data = UserData.read(member.id)
+        user = UserData.read(member.id)
 
-        if user_data is None:
+        if user is None:
             await interaction.followup.send(
                 embed=discord.Embed(
-                    color=dclr.red,
+                    color=self.color.red,
                     description=f"{member.mention}{', you are' if member == interaction.user else ' is'} not registered yet!",
                 )
             )
             return
 
+        favorite_language = ""
+        wakatime_url = ""
+
+        if user.token:
+            response = requests.get(
+                url="https://wakatime.com/api/v1/users/current/stats/all_time",
+                headers={
+                    "Authorization": f"Basic {user.token}",
+                    "Content-Type": "application/json",
+                },
+            )
+
+            if response.ok:
+                user_data = response.json()["data"]
+                wakatime_url = f"https://wakatime.com/@{user_data['user_id']}"
+                if languages := user_data["languages"]:
+                    favorite_language = sorted(languages, key=lambda x: x["total_seconds"])[-1]
+
         await interaction.followup.send(
             embed=discord.Embed(
-                color=dclr.yellow,
+                color=self.color.yellow,
                 description=(
-                    f'{"### class:\n> **Coding** - Web Development **II**\n" if user_data.training == "codingII" else ""}'
-                    f"### coins:\n> **{'**.'.join(str(user_data.coins).split('.'))} <:lioncoin:1219417317419651173>\n"
-                    f"### socials:\n- [<:github:1231551666075996190>  github]({user_data.github})\n"
-                    f'{f"- [portfolio]({user_data.portfolio})" if user_data.portfolio else ""}'
+                    f'{"### class:\n> **Coding** - Web Development **II**\n" if user.training == "codingII" else ""}'
+                    f"### coins:\n> **{'**.'.join(str(user.coins).split('.'))} {Emoji.coin}\n"
+                    f'{f"### favorite language:\n> {favorite_language['name'].lower()}\n" if favorite_language else ""}'
+                    f"### socials:\n- [{Emoji.github}  github]({user.github})\n"
+                    f'{f"- [{Emoji.wakatime}  wakatime]({wakatime_url})\n" if wakatime_url else ""}'
+                    f'{f"- [portfolio]({user.portfolio})" if user.portfolio else ""}'
                 ),
-            ).set_author(name=user_data.name, icon_url=member.avatar)
+            ).set_author(name=user.name, icon_url=member.avatar)
         )
 
 
-async def setup(bot: commands.Bot):
-    await bot.add_cog(profile(bot))
+async def setup(bot):
+    await bot.add_cog(Profile(bot))
