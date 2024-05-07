@@ -1,4 +1,0 @@
-
-FOLDERS=("users" "weeks")
-FILES=("leaderboards" "files" "channels" "challenges")
-CONFIG=true
