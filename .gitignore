@@ -163,3 +163,5 @@ cython_debug/
 data/
 test/
 assets/
+test.py
+bot/config.py

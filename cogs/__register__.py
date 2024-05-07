@@ -1,28 +1,24 @@
-import discord, requests
-from discord.ext import commands
+import discord
+import requests
 from models import UserData
-from utils import dclr
 from string import ascii_letters
+from cogs import Cog
 
-class Register(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
 
-    @discord.app_commands.command(
-        name="register", description="register to track your coding time"
-    )
+class Register(Cog):
+    @discord.app_commands.command(description="register to track your coding time")
     @discord.app_commands.guild_only()
     @discord.app_commands.describe(
         name="your full name",
         github="your github user name",
-        api_key="Wakatime api key",
+        waka_token="Wakatime api key",
     )
-    async def register_command(
+    async def register(
         self,
         interaction: discord.Interaction,
         name: discord.app_commands.Range[str, 5, 25],
         github: str,
-        api_key: str,
+        waka_token: str,
     ):
         await interaction.response.defer()
 
@@ -31,16 +27,16 @@ class Register(commands.Cog):
         if user_data is not None:
             await interaction.followup.send(
                 embed=discord.Embed(
-                    color=dclr.red,
+                    color=self.color.red,
                     description=f"{interaction.user.mention}, you are already registered!",
                 )
             )
             return
-        
+
         if [char for char in name if char not in ascii_letters + " "]:
             await interaction.followup.send(
                 embed=discord.Embed(
-                    color=dclr.red,
+                    color=self.color.red,
                     description=f"Invalid name **{name}**!",
                 )
             )
@@ -49,27 +45,27 @@ class Register(commands.Cog):
         response = requests.get(
             url="https://wakatime.com/api/v1/users/current",
             headers={
-                "Authorization": f"Basic {api_key}",
+                "Authorization": f"Basic {waka_token}",
                 "Content-Type": "application/json",
             },
         )
 
-        if response.status_code != 200:
+        if not response.ok:
             print(f"Error {interaction.user}: {response.status_code}, {response.text}")
             await interaction.followup.send(
                 embed=discord.Embed(
-                    color=dclr.red,
-                    description=f"Invalid Wakatime API KEY `{api_key}`!",
+                    color=self.color.red,
+                    description=f"Invalid Wakatime API KEY `{waka_token}`!",
                 )
             )
             return
 
         response = requests.get(url=f"https://api.github.com/users/{github}")
-        if response.status_code != 200:
+        if not response.ok:
             print(f"Error {interaction.user}: {response.status_code}, {response.text}")
             await interaction.followup.send(
                 embed=discord.Embed(
-                    color=dclr.red,
+                    color=self.color.red,
                     description=f"Invalid github username **{github}**!",
                 )
             )
@@ -79,7 +75,7 @@ class Register(commands.Cog):
             id=interaction.user.id,
             name=" ".join([word.capitalize() for word in name.split()]),
             coins=0,
-            token=api_key,
+            token=waka_token,
             github=response.json()["html_url"],
             training=None,
             portfolio=None,
@@ -87,11 +83,11 @@ class Register(commands.Cog):
 
         await interaction.followup.send(
             embed=discord.Embed(
-                color=dclr.green,
+                color=self.color.green,
                 description=f"{interaction.user.mention}, your registred successfully!",
             )
         )
 
 
-async def setup(bot: commands.Bot):
+async def setup(bot):
     await bot.add_cog(Register(bot))

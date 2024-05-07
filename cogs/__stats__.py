@@ -1,32 +1,18 @@
 import discord
-from discord.ext import commands
+import requests
 from typing import Literal
 from datetime import datetime, UTC, timedelta
-from utils import dclr
 from models import UserData
-import requests
+from cogs import Cog
+from bot.config import Emoji
 
 
-class Stats(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-        self.emojis = {
-            "Bash": "<:bash:1181688823030239262> ",
-            "SCSS": "<:sass:1181690282304090152> ",
-            "Sass": "<:sass:1181690282304090152> ",
-            "CSS": "<:css:1181688880735457390> ",
-            "HTML": "<:html:1181688836166783057> ",
-            "JavaScript": "<:js:1181689391551348836> ",
-            "Markdown": "<:markdown:1181685547308159076> ",
-            "Python": "<:python:1181689899649335307> ",
-            "Text": "<:text:1181906243107946546> ",
-        }
-
-    @discord.app_commands.command(name="stats", description="Show your WakaTime stats")
+class Stats(Cog):
+    @discord.app_commands.command(description="Show your WakaTime stats")
     @discord.app_commands.describe(
         duration="Choose a duration", member="Choose a member"
     )
-    async def stats_command(
+    async def stats(
         self,
         interaction: discord.Interaction,
         member: discord.Member = None,
@@ -35,26 +21,25 @@ class Stats(commands.Cog):
         ] = "last 24 hours",
     ):
         await interaction.response.defer()
-        duration = duration.replace(' ', '_')
+        duration = duration.replace(" ", "_")
 
         member = member or interaction.user
         user = UserData.read(member.id)
 
-        # user not registered yet
         if user is None:
             await interaction.followup.send(
                 embed=discord.Embed(
-                    color=dclr.red,
+                    color=self.color.red,
                     description=f"{member.mention}{', you are' if member == interaction.user  else ' is'} not registered yet!",
                 ),
                 ephemeral=True,
             )
             return
-        
+
         if user.token is None:
             await interaction.followup.send(
                 embed=discord.Embed(
-                    color=dclr.red,
+                    color=self.color.red,
                     description=f"{member.mention}, can't found your wakatime API KEY!",
                 ),
                 ephemeral=True,
@@ -86,7 +71,7 @@ class Stats(commands.Cog):
                 headers=headers,
             )
 
-            if not response.status_code != 200:
+            if not response.ok:
                 print(f"Error {response.status_code} : {response.text}")
                 return
 
@@ -121,7 +106,7 @@ class Stats(commands.Cog):
             bold = "**" if index < 3 else ""
 
             if lang["minutes"] != 0:
-                logo = self.emojis.get(lang["name"], "")
+                logo = Emoji.languages.get(lang["name"], "")
                 languages.append(f"{logo}{bold}{lang['name']}{bold}  -  {lang['text']}")
 
             if lang["name"] == "Other":
@@ -130,7 +115,7 @@ class Stats(commands.Cog):
 
         await interaction.followup.send(
             embed=discord.Embed(
-                color=dclr.yellow,
+                color=self.color.yellow,
                 description=f"### total:\n> {total}\n### Daily avarage:\n> {daily_average}\n\n### Languages:\n>>> {languages}",
             )
             .set_author(
@@ -142,5 +127,5 @@ class Stats(commands.Cog):
         )
 
 
-async def setup(bot: commands.Bot):
+async def setup(bot):
     await bot.add_cog(Stats(bot))
