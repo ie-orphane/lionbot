@@ -1,6 +1,15 @@
-from models.__schema__ import Collection
-from models.__challenges__ import ChallengeData
+from models.__schema__ import Collection, Relation
+from models.__challenges__ import ChallengeData, ChallengeFields
 import random
+from datetime import datetime, UTC
+
+
+class UserChallenge(Relation, ChallengeFields):
+    MODEL = ChallengeData
+    requested: datetime
+    submited: datetime = None
+    approved: datetime = None
+
 
 class UserData(Collection):
     BASE = "users"
@@ -11,7 +20,75 @@ class UserData(Collection):
     github: str
     portfolio: str
     training: str
+    _challenges: dict[str, dict]
 
     @property
-    def random_challenge(self):
-        return random.choice(ChallengeData.read_all())
+    def master_message(self):
+        return random.choice(
+            [
+                "New champion crowned! You've conquered every challenge!",
+                "The challenges are weeping - you've defeated them all!",
+                "100% complete! You've conquered every challenge!",
+                "No challenge was a match for you - you finished them all!",
+                "Domination achieved! You've completed every single challenge!",
+                "You've officially graduated from challenge-land!",
+                "You did it! All challenges conquered!",
+                "Challenge master alert! You've completed everything!",
+                "High fives all around - you finished all the challenges!",
+            ]
+        )
+
+    @property
+    def approve_message(self):
+        return random.choice(
+            [
+                "**Congrats!** Your code just passed the test with **flying bytes**?\nYou're ready to **tackle** the challenge!",
+                "**Level Up!** Your code has been approved.\nGet ready for the **next challenge**!",
+                "> ❛**The only way to do great work is to love what you do.**❜\n> - Steve Jobs\n**We see your dedication!** Code has been approved",
+                "We see all the **hard work** you put into **your code**.\n**Challenge** has been approved. Keep up the **good work**!",
+            ]
+        )
+
+    @property
+    def challenges(self):
+        return [
+            UserChallenge(challenge_id, **challenge_data)
+            for challenge_id, challenge_data in self._challenges.items()
+        ]
+
+    @property
+    def current_challenge(self) -> UserChallenge | None:
+        for challenge in self.challenges:
+            if challenge.approved is None:
+                return challenge
+
+    def request_challenge(self):
+
+        if not self._challenges:
+            challenge = ChallengeData.read(179350)
+            self._challenges.update(
+                {challenge.id: {"requested": str(datetime.now(UTC))}}
+            )
+            self.update()
+            return challenge
+
+        challenges = ChallengeData.read_all()
+
+        if len(challenges) == len(self._challenges.keys()):
+            return None
+
+        while True:
+            challenge = random.choice(challenges)
+            if str(challenge.id) not in self._challenges.keys():
+                self._challenges.update(
+                    {challenge.id: {"requested": str(datetime.now(UTC))}}
+                )
+                self.update()
+                return challenge
+
+    def get_challenge(self, challenge_id: str | int):
+        try:
+            challenge_data = self._challenges[str(challenge_id)]
+            return UserChallenge(challenge_id, **challenge_data)
+        except KeyError:
+            return None

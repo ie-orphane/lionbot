@@ -84,10 +84,6 @@ class Stats(Cog):
         else:
             response = requests.get(
                 url=f"https://wakatime.com/api/v1/users/current/stats/{duration}",
-                params={
-                    "start": (datetime.now(UTC) - timedelta(days=1)).date(),
-                    "end": datetime.now(UTC).date(),
-                },
                 headers=headers,
             )
 
@@ -101,22 +97,25 @@ class Stats(Cog):
             duration = user_stats["human_readable_range"]
             langs = user_stats["languages"]
 
-        languages = []
-        for index, lang in enumerate(langs):
-            bold = "**" if index < 3 else ""
+        languages = {
+            lang["name"]: lang["text"] for lang in langs if lang["name"] != "Other" if lang["total_seconds"] >= 60
+        }
 
-            if lang["minutes"] != 0:
-                logo = Emoji.languages.get(lang["name"], "")
-                languages.append(f"{logo}{bold}{lang['name']}{bold}  -  {lang['text']}")
-
-            if lang["name"] == "Other":
-                break
-        languages = "\n".join(languages)
+        languages = "\n".join(
+            [
+                (
+                    f"{Emoji.languages.get(lang, " ")}"
+                    f"{lang:^{sorted(map(lambda x: len(x), languages.keys()))[-1] + 2}}-"
+                    f"{amount:^{sorted(map(lambda x: len(x), languages.values()))[-1] + 2}}"
+                )
+                for lang, amount in languages.items()
+            ]
+        )
 
         await interaction.followup.send(
             embed=discord.Embed(
                 color=self.color.yellow,
-                description=f"### total:\n> {total}\n### Daily avarage:\n> {daily_average}\n\n### Languages:\n>>> {languages}",
+                description=f"**Total**: {total}\n**Daily Average**: {daily_average}\n**Languages**:\n>>> {languages}",
             )
             .set_author(
                 name=user_data["display_name"],
@@ -125,7 +124,6 @@ class Stats(Cog):
             )
             .set_footer(text=f"duration  -  {duration}")
         )
-
 
 async def setup(bot):
     await bot.add_cog(Stats(bot))

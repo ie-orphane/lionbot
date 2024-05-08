@@ -15,6 +15,11 @@ class Model:
         return self.__dict__
 
 
+class Relation(Model):
+    def __init__(self, id: str | int, **kwargs) -> None:
+        self.__dict__ = {**kwargs, **self.MODEL.read(id).__dict__}
+
+
 class ModelEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Model):

@@ -2,8 +2,10 @@ import discord
 import subprocess
 from discord.ext import commands
 from models import UserData
-from bot.config import CHANNELS, Emoji
+from bot.config import CHANNELS, Emoji, COMMAND
 from cogs import COLOR
+from datetime import datetime, UTC
+
 
 @discord.app_commands.guild_only()
 class Challenge(commands.GroupCog, name="challenge"):
@@ -22,11 +24,36 @@ class Challenge(commands.GroupCog, name="challenge"):
                 embed=discord.Embed(
                     color=self.color.red,
                     description=f"{interaction.user.mention}, you are' not registered yet!",
+                ).set_footer(text="use /register instead")
+            )
+            return
+        
+        current_challenge = user.current_challenge
+        if current_challenge is not None:
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    color=self.color.red,
+                    description=(
+                        f"### {interaction.user.mention}, you already requested a challenge!\n"
+                        f"**Instructions**\n```txt\n{current_challenge.instructions}```\n"
+                        f"{f"**Input**\n```js\n{current_challenge.input}```\n" if current_challenge.input else ""}"
+                        f"**Output**\n```bash\n{current_challenge.output}```\n"
+                        f"**Rewards**: {current_challenge.reward} {Emoji.coin}"
+                    ),
                 )
             )
             return
 
-        challenge = user.random_challenge
+        challenge = user.request_challenge()
+
+        if challenge is None:
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    color=self.color.yellow,
+                    description=f"### {interaction.user.mention}\n**{user.master_message}**",
+                )
+            )
+            return
 
         await interaction.followup.send(
             embed=discord.Embed(
@@ -51,18 +78,28 @@ class Challenge(commands.GroupCog, name="challenge"):
                 embed=discord.Embed(
                     color=self.color.red,
                     description=f"{interaction.user.mention}, you are' not registered yet!",
-                )
+                ).set_footer(text="use /register instead")
             )
             return
         
-        result = subprocess.run(["bun", "-e", code], text=True, capture_output=True)
+        current_challenge = user.current_challenge
+        if current_challenge is None:
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    color=self.color.red,
+                    description=f"{interaction.user.mention}, you don't have any challenge to submit!",
+                ).set_footer(text="use /challenge request instead")
+            )
+            return
+        
+        result = subprocess.run([COMMAND, "-e", code], text=True, capture_output=True)
 
         if result.stderr:
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=self.color.red,
                     title="Failed to submit the code !",
-                    description=f"```bash\n{"\n".join(result.stderr.splitlines()[:-1])}\n```",
+                    description=f"```bash\n{"\n".join(result.stderr.splitlines()[:-3])}\n```",
                 )
             )
             return
@@ -80,11 +117,15 @@ class Challenge(commands.GroupCog, name="challenge"):
         await self.bot.get_channel(CHANNELS.challenges).send(
             embed=discord.Embed(
                 color=self.color.orange,
-                description=f"**Code**:\n```js\n{code}\n```\n**Result**:\n```bash\n{result.stdout}\n```",
-            )
-            .set_footer(text=f"challenge code: {user.id}-{0}")
-            .set_author(name=user.name, icon_url=interaction.user.avatar)
+                description=(
+                    f"**Code**:\n```js\n{code}\n```\n**Result**:\n```bash\n{result.stdout}\n```"
+                    f"\n**Challenge Code**: ```txt\n{user.id}-{current_challenge.id}\n```"
+                ),
+            ).set_author(name=user.name, icon_url=interaction.user.avatar)
         )
+
+        user._challenges[str(current_challenge.id)].update({"submited": str(datetime.now(UTC))})
+        user.update()
 
         await interaction.followup.send(
             embed=discord.Embed(
@@ -94,11 +135,71 @@ class Challenge(commands.GroupCog, name="challenge"):
             )
         )
 
-    @discord.app_commands.command(description="validate a challenge code")
-    async def validate(self, interaction: discord.Interaction, code: str):
+    @discord.app_commands.command(description="approve a challenge code")
+    async def approve(self, interaction: discord.Interaction, challenge_code: str):
         await interaction.response.defer()
 
-        await self.bot.get_channel(CHANNELS.challenges).send(f"```js\n{code}```")
+        if challenge_code.count('-') != 1:
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    color=self.color.red,
+                    description=f"`{challenge_code}` is an invalid code challenge",
+                )
+            )
+            return
+        
+        user_id, challenge_id = challenge_code.split("-")
+
+        user = UserData.read(user_id)
+        if user is None:
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    color=self.color.red,
+                    description=f"User with ID `{user_id}` not found !",
+                )
+            )
+            return
+        
+        challenge = user.get_challenge(challenge_id)
+
+        if challenge is None:
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    color=self.color.red,
+                    description=f"{user.name} has no challenge `{challenge_id}` !",
+                )
+            )
+            return
+        
+        if challenge.approved:
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    color=self.color.red,
+                    description=f"Challenge `{challenge_id}` already approved!",
+                )
+            )
+            return
+        
+        user._challenges[challenge_id].update({"approved": str(datetime.now(UTC))})
+        user.coins += challenge.reward
+        user.update()
+
+        try:
+            discord_user = await self.bot.fetch_user(user_id)
+            await discord_user.send(
+                embed=discord.Embed(
+                    color=self.color.yellow,
+                    description=user.approve_message,
+            ))
+        except Exception as e:
+            print(f"Error: {[e]}")
+
+        await interaction.followup.send(
+            embed=discord.Embed(
+                color=self.color.green,
+                description=f"**{user.name}**'s current challenge has been approved !",
+            )
+        )
 
 
 async def setup(bot: commands.Bot):

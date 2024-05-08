@@ -12,3 +12,4 @@ class COLOR:
         self.black = 0x000
         self.white = 0xFFF
         self.gray = 0x6C757D
+        self.blue = 0x2563eb
