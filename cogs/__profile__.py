@@ -44,21 +44,44 @@ class Profile(Cog):
                 user_data = response.json()["data"]
                 wakatime_url = f"https://wakatime.com/@{user_data['user_id']}"
                 if languages := user_data["languages"]:
-                    favorite_language = sorted(languages, key=lambda x: x["total_seconds"])[-1]
+                    favorite_language = sorted(
+                        languages, key=lambda x: x["total_seconds"]
+                    )[-1]
 
-        await interaction.followup.send(
-            embed=discord.Embed(
-                color=self.color.yellow,
-                description=(
-                    f'{"### class:\n> **Coding** - Web Development **II**\n" if user.training == "codingII" else ""}'
-                    f"### coins:\n> **{'**.'.join(str(user.coins).split('.'))} {Emoji.coin}\n"
-                    f'{f"### favorite language:\n> {favorite_language['name'].lower()}\n" if favorite_language else ""}'
-                    f"### socials:\n- [{Emoji.github}  github]({user.github})\n"
-                    f'{f"- [{Emoji.wakatime}  wakatime]({wakatime_url})\n" if wakatime_url else ""}'
-                    f'{f"- [portfolio]({user.portfolio})" if user.portfolio else ""}'
-                ),
-            ).set_author(name=user.name, icon_url=member.avatar)
+        embed = discord.Embed(
+            color=self.color.yellow,
+        ).set_author(name=user.name, icon_url=member.avatar)
+
+        if user.training == "codingII":
+            embed.add_field(
+                name="Class",
+                value="> **Coding** - Web Development **II**",
+                inline=False,
+            )
+
+        embed.add_field(name="Points", value=f"> **{user.points}** {Emoji.star}")
+        embed.add_field(
+            name="Coins",
+            value=f"> **{'**.'.join(str(user.coins).split('.'))} {Emoji.coin}",
         )
+
+        if favorite_language:
+            embed.add_field(
+                name="Favorite Language",
+                value=f"> {Emoji.languages[favorite_language['name']]} {favorite_language['name']}",
+                inline=False,
+            )
+
+        embed.add_field(
+            name="Socials",
+            value=(
+                f"- [{Emoji.github}  github]({user.github})\n"
+                f'{f"- [{Emoji.wakatime}  wakatime]({wakatime_url})\n" if wakatime_url else ""}'
+                f'{f"- [portfolio]({user.portfolio})" if user.portfolio else ""}'
+            ),
+        )
+
+        await interaction.followup.send(embed=embed)
 
 
 async def setup(bot):

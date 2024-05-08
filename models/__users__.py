@@ -16,6 +16,7 @@ class UserData(Collection):
     id: int
     name: str
     coins: int
+    points: int
     token: str
     github: str
     portfolio: str

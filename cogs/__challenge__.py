@@ -181,7 +181,8 @@ class Challenge(commands.GroupCog, name="challenge"):
             return
         
         user._challenges[challenge_id].update({"approved": str(datetime.now(UTC))})
-        user.coins += challenge.reward
+        user.coins += challenge.coins
+        user.points += challenge.points
         user.update()
 
         try:

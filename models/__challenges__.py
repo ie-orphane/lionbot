@@ -6,7 +6,8 @@ class ChallengeFields:
     instructions: str
     input: str = None
     output: str
-    reward: int
+    coins: int
+    points: int
 
 
 class ChallengeData(Collection, ChallengeFields):
