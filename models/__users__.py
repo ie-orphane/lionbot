@@ -51,6 +51,12 @@ class UserData(Collection):
         )
 
     @property
+    def rank(self):
+        for rank, data in list(ChallengeData.RANKS.items())[::-1]:
+            if self.points >= data["max"]:
+                return rank
+
+    @property
     def challenges(self):
         return [
             UserChallenge(challenge_id, **challenge_data)
@@ -66,26 +72,29 @@ class UserData(Collection):
     def request_challenge(self):
 
         if not self._challenges:
-            challenge = ChallengeData.read(179350)
+            challenge = ChallengeData.read(308082)
             self._challenges.update(
                 {challenge.id: {"requested": str(datetime.now(UTC))}}
             )
             self.update()
             return challenge
 
-        challenges = ChallengeData.read_all()
+        rank = self.rank
+        challenges = ChallengeData.by_rank(rank)
 
-        if len(challenges) == len(self._challenges.keys()):
+        if len(challenges) == ChallengeData.ALL:
             return None
 
-        while True:
-            challenge = random.choice(challenges)
-            if str(challenge.id) not in self._challenges.keys():
-                self._challenges.update(
-                    {challenge.id: {"requested": str(datetime.now(UTC))}}
-                )
-                self.update()
-                return challenge
+        challenge = random.choice(
+            [
+                challenge
+                for challenge in challenges
+                if str(challenge.id) not in self._challenges.keys()
+            ]
+        )
+        self._challenges.update({challenge.id: {"requested": str(datetime.now(UTC))}})
+        self.update()
+        return challenge
 
     def get_challenge(self, challenge_id: str | int):
         try:

@@ -38,7 +38,7 @@ class Challenge(commands.GroupCog, name="challenge"):
                         f"**Instructions**\n```txt\n{current_challenge.instructions}```\n"
                         f"{f"**Input**\n```js\n{current_challenge.input}```\n" if current_challenge.input else ""}"
                         f"**Output**\n```bash\n{current_challenge.output}```\n"
-                        f"**Rewards**: {current_challenge.reward} {Emoji.coin}"
+                        f"**Rewards**: {current_challenge.points} {Emoji.star} & {current_challenge.coins} {Emoji.coin}"
                     ),
                 )
             )
@@ -62,7 +62,7 @@ class Challenge(commands.GroupCog, name="challenge"):
                     f"**Instructions**\n```txt\n{challenge.instructions}```\n"
                     f"{f"**Input**\n```js\n{challenge.input}```\n" if challenge.input else ""}"
                     f"**Output**\n```bash\n{challenge.output}```\n"
-                    f"**Rewards**: {challenge.reward} {Emoji.coin}"
+                    f"**Rewards**: {challenge.points} {Emoji.star} & {challenge.coins} {Emoji.coin}"
                 ),
             ).set_footer(text="happy coding !"),
             ephemeral=True,
