@@ -64,7 +64,7 @@ class Challenge(commands.GroupCog, name="challenge"):
                     f"{f"**Input**\n```js\n{challenge.input}```\n" if challenge.input else ""}"
                     f"**Output**\n```bash\n{challenge.output}```\n"
                     f"**Rewards**: {challenge.points} {Emoji.star} & {challenge.coins} {Emoji.coin}\n"
-                    f"**Difficulty**: {current_challenge.difficulty}"
+                    f"**Difficulty**: {challenge.difficulty}"
                 ),
             ).set_footer(text="happy coding !"),
             ephemeral=True,
