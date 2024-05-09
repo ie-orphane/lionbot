@@ -38,7 +38,8 @@ class Challenge(commands.GroupCog, name="challenge"):
                         f"**Instructions**\n```txt\n{current_challenge.instructions}```\n"
                         f"{f"**Input**\n```js\n{current_challenge.input}```\n" if current_challenge.input else ""}"
                         f"**Output**\n```bash\n{current_challenge.output}```\n"
-                        f"**Rewards**: {current_challenge.points} {Emoji.star} & {current_challenge.coins} {Emoji.coin}"
+                        f"**Rewards**: {current_challenge.points} {Emoji.star} & {current_challenge.coins} {Emoji.coin}\n"
+                        f"**Difficulty**: {current_challenge.difficulty}"
                     ),
                 )
             )
@@ -62,7 +63,8 @@ class Challenge(commands.GroupCog, name="challenge"):
                     f"**Instructions**\n```txt\n{challenge.instructions}```\n"
                     f"{f"**Input**\n```js\n{challenge.input}```\n" if challenge.input else ""}"
                     f"**Output**\n```bash\n{challenge.output}```\n"
-                    f"**Rewards**: {challenge.points} {Emoji.star} & {challenge.coins} {Emoji.coin}"
+                    f"**Rewards**: {challenge.points} {Emoji.star} & {challenge.coins} {Emoji.coin}\n"
+                    f"**Difficulty**: {current_challenge.difficulty}"
                 ),
             ).set_footer(text="happy coding !"),
             ephemeral=True,
@@ -92,6 +94,15 @@ class Challenge(commands.GroupCog, name="challenge"):
             )
             return
         
+        if current_challenge.submited is not None:
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    color=self.color.red,
+                    description=f"{interaction.user.mention}, you already submited the challenge!",
+                ).set_footer(text="be patient!")
+            )
+            return
+        
         result = subprocess.run([COMMAND, "-e", code], text=True, capture_output=True)
 
         if result.stderr:
@@ -118,10 +129,15 @@ class Challenge(commands.GroupCog, name="challenge"):
             embed=discord.Embed(
                 color=self.color.orange,
                 description=(
+                    f"**Challange**\n```\nInstructions:\n{current_challenge.instructions}\n"
+                    f"{'Input:\n' + current_challenge.input if current_challenge.input else ""}\n"
+                    f"Output:\n{current_challenge.output}```\n"
                     f"**Code**:\n```js\n{code}\n```\n**Result**:\n```bash\n{result.stdout}\n```"
-                    f"\n**Challenge Code**: ```txt\n{user.id}-{current_challenge.id}\n```"
+                    f"\n**Approve Code**: ```txt\n{user.id}-{current_challenge.id}\n```"
                 ),
-            ).set_author(name=user.name, icon_url=interaction.user.avatar)
+            )
+            .set_author(name=user.name, icon_url=interaction.user.avatar)
+            .set_footer(text=f"Difficulty:  {current_challenge.difficulty}")
         )
 
         user._challenges[str(current_challenge.id)].update({"submited": str(datetime.now(UTC))})
@@ -190,7 +206,7 @@ class Challenge(commands.GroupCog, name="challenge"):
             await discord_user.send(
                 embed=discord.Embed(
                     color=self.color.yellow,
-                    description=user.approve_message,
+                    description=f"{user.approve_message}\n\nYou gain **{challenge.coins}** {Emoji.coin} & **{challenge.points}** {Emoji.star}",
             ))
         except Exception as e:
             print(f"Error: {[e]}")

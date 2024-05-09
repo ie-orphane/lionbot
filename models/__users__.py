@@ -2,6 +2,7 @@ from models.__schema__ import Collection, Relation
 from models.__challenges__ import ChallengeData, ChallengeFields
 import random
 from datetime import datetime, UTC
+from utils import RANKS
 
 
 class UserChallenge(Relation, ChallengeFields):
@@ -52,8 +53,8 @@ class UserData(Collection):
 
     @property
     def rank(self):
-        for rank, data in list(ChallengeData.RANKS.items())[::-1]:
-            if self.points >= data["max"]:
+        for rank, data in list(RANKS.items())[::-1]:
+            if self.points >= data.required_points:
                 return rank
 
     @property
@@ -79,10 +80,15 @@ class UserData(Collection):
             self.update()
             return challenge
 
-        rank = self.rank
-        challenges = ChallengeData.by_rank(rank)
+        all_challanges = ChallengeData.read_all()
 
-        if len(challenges) == ChallengeData.ALL:
+        challenges = [
+            challenge_data
+            for challenge_data in all_challanges
+            if challenge_data.rank == self.rank
+        ]
+
+        if len(challenges) == len(all_challanges):
             return None
 
         challenge = random.choice(

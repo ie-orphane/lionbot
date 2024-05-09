@@ -1,12 +1,13 @@
-import json, os
-
+import json
+import os
+import pprint
 
 class Model:
     def __init__(self, **kwargs) -> None:
-        self.__dict__ = kwargs
+        self.__dict__.update(kwargs)
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__} {self.__dict__}"
+        return f"{self.__class__.__name__} {pprint.saferepr(object=self.__dict__)}"
 
     def __eq__(self, other: object) -> bool:
         return self.__dict__ == other.__dict__
@@ -17,7 +18,7 @@ class Model:
 
 class Relation(Model):
     def __init__(self, id: str | int, **kwargs) -> None:
-        self.__dict__ = {**kwargs, **self.MODEL.read(id).__dict__}
+        self.__dict__.update({**kwargs, **self.MODEL.read(id).__dict__})
 
 
 class ModelEncoder(json.JSONEncoder):

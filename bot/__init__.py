@@ -33,10 +33,10 @@ class Bot(commands.Bot):
     async def on_ready(self):
         self.log('Info', clr.blue, 'Bot', f'Logged in as {self.user}')
 
-        # deadline.start(self)
-        # weekly_data.start()
-        # geek_of_the_week.start(self)
-        # leaderboard.start(self)
+        deadline.start(self)
+        weekly_data.start()
+        geek_of_the_week.start(self)
+        leaderboard.start(self)
 
     async def on_message(self, message: discord.Message):
         def is_student_of(class_name: str, author: discord.Member | discord.User):

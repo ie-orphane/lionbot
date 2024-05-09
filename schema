@@ -1,4 +1,4 @@
 CONFIG=true
 DATABASE=true
-FOLDERS=("users" "weeks" "challenges")
-FILES=("leaderboards" "files" "channels")
+FOLDERS=("users" "weeks")
+FILES=("leaderboards" "files" "channels" "challenges")
