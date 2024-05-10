@@ -79,6 +79,7 @@ class Register(Cog):
             github=response.json()["html_url"],
             training=None,
             portfolio=None,
+            points=0,
             _challenges={},
         ).update()
 

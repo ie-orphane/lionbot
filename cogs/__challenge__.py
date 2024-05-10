@@ -147,7 +147,7 @@ class Challenge(commands.GroupCog, name="challenge"):
             embed=discord.Embed(
                 color=self.color.green,
                 title="Code submited successfully !",
-                description=f"**Code**:\n```js\n{code}\n```\n**Result**:\n```bash\n{result.stdout}\n```",
+                description=f"**Result**:\n```bash\n{result.stdout}\n```",
             )
         )
 
