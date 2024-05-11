@@ -151,6 +151,7 @@ class Challenge(commands.GroupCog, name="challenge"):
             )
         )
 
+    @discord.app_commands.default_permissions(administrator=True)
     @discord.app_commands.command(description="approve a challenge code")
     async def approve(self, interaction: discord.Interaction, challenge_code: str):
         await interaction.response.defer()
