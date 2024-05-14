@@ -17,16 +17,20 @@ async def leaderboard(bot: commands.Bot):
 
     Time = datetime.now(UTC)
 
-    users = [
-        wakatime.get_week_summary(api_key=user.token, params=params, name=user.name)
-        for user in UserData.read_all()
-        if user and user.token
-    ]
+    users_summary = []
+    for user in UserData.read_all():
+        if user and user.token:
+            user_summary = wakatime.get_week_summary(
+                api_key=user.token, params=params, name=user.name
+            )
+            if user_summary:
+                users_summary.append(user_summary)
 
     print(f"{str(datetime.now(UTC) - Time):>{14+1+20}}\n")
-    users_summary = sorted(users, key=lambda x: x[0], reverse=True)
 
-    users = [
+    users_summary.sort(key=lambda x: x[0], reverse=True)
+
+    all_users = [
         {"": index, **user[1]} for index, user in enumerate(users_summary, start=1)
     ]
 
@@ -34,12 +38,12 @@ async def leaderboard(bot: commands.Bot):
     leaderboard_image(
         "top",
         "global",
-        users[:11],
+        all_users[:11],
         count=current_week.count,
         start=current_week.human_readable_start,
         end=current_week.human_readable_end,
     )
-    leaderboard_image("bottom", "global", users[11:], time=current_time)
+    leaderboard_image("bottom", "global", all_users[11:], time=current_time)
 
     users = [
         {"": index, **user[1]}
