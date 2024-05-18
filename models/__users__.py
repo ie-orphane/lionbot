@@ -23,6 +23,7 @@ class UserData(Collection):
     portfolio: str
     training: str
     _challenges: dict[str, dict]
+    graduated: bool
 
     @property
     def master_message(self):

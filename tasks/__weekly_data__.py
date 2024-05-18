@@ -17,7 +17,7 @@ async def weekly_data():
 
         geeks = {}
         for user in UserData.read_all():
-            if user.token:
+            if user.token and not user.graduated:
                 user_summary = get_week_summary(
                     api_key=user.token,
                     params={
