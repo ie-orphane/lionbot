@@ -10,14 +10,12 @@ class Register(Cog):
     @discord.app_commands.guild_only()
     @discord.app_commands.describe(
         name="your full name",
-        github="your github user name",
         waka_token="Wakatime api key",
     )
     async def register(
         self,
         interaction: discord.Interaction,
         name: discord.app_commands.Range[str, 5, 25],
-        github: str,
         waka_token: str,
     ):
         await interaction.response.defer()
@@ -37,7 +35,7 @@ class Register(Cog):
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=self.color.red,
-                    description=f"Invalid name **{name}**!",
+                    description=f"Invalid name **{name}**.",
                 )
             )
             return
@@ -55,18 +53,7 @@ class Register(Cog):
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=self.color.red,
-                    description=f"Invalid Wakatime API KEY `{waka_token}`!",
-                )
-            )
-            return
-
-        response = requests.get(url=f"https://api.github.com/users/{github}")
-        if not response.ok:
-            print(f"Error {interaction.user}: {response.status_code}, {response.text}")
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    color=self.color.red,
-                    description=f"Invalid github username **{github}**!",
+                    description=f"Invalid Wakatime API KEY `{waka_token}`.",
                 )
             )
             return
@@ -76,11 +63,12 @@ class Register(Cog):
             name=" ".join([word.capitalize() for word in name.split()]),
             coins=0,
             token=waka_token,
-            github=response.json()["html_url"],
-            training=None,
+            github=None,
+            training="codingIII",
             portfolio=None,
             points=0,
             _challenges={},
+            graduated = False,
         ).update()
 
         await interaction.followup.send(
