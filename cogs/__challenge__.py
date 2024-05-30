@@ -7,13 +7,13 @@ from cogs import COLOR
 from datetime import datetime, UTC
 
 
-@discord.app_commands.guild_only()
 class Challenge(commands.GroupCog, name="challenge"):
     def __init__(self, bot: commands.Bot) -> None:
         super().__init__()
         self.bot = bot
         self.color = COLOR()
 
+    @discord.app_commands.guild_only()
     @discord.app_commands.command(description="request new challenge")
     async def request(self, interaction: discord.Interaction):
         await interaction.response.defer()
@@ -27,7 +27,7 @@ class Challenge(commands.GroupCog, name="challenge"):
                 ).set_footer(text="use /register instead")
             )
             return
-        
+
         current_challenge = user.current_challenge
         if current_challenge is not None:
             await interaction.followup.send(
@@ -70,6 +70,7 @@ class Challenge(commands.GroupCog, name="challenge"):
             ephemeral=True,
         )
 
+    @discord.app_commands.guild_only()
     @discord.app_commands.command(description="submit a challenge code")
     async def submit(self, interaction: discord.Interaction, code: str):
         await interaction.response.defer()
@@ -83,7 +84,7 @@ class Challenge(commands.GroupCog, name="challenge"):
                 ).set_footer(text="use /register instead")
             )
             return
-        
+
         current_challenge = user.current_challenge
         if current_challenge is None:
             await interaction.followup.send(
@@ -93,7 +94,7 @@ class Challenge(commands.GroupCog, name="challenge"):
                 ).set_footer(text="use /challenge request instead")
             )
             return
-        
+
         if current_challenge.submited is not None:
             await interaction.followup.send(
                 embed=discord.Embed(
@@ -102,7 +103,7 @@ class Challenge(commands.GroupCog, name="challenge"):
                 ).set_footer(text="be patient!")
             )
             return
-        
+
         result = subprocess.run([COMMAND, "-e", code], text=True, capture_output=True)
 
         if result.stderr:
@@ -114,7 +115,7 @@ class Challenge(commands.GroupCog, name="challenge"):
                 )
             )
             return
-        
+
         if not result.stdout:
             await interaction.followup.send(
                 embed=discord.Embed(
@@ -124,7 +125,7 @@ class Challenge(commands.GroupCog, name="challenge"):
                 )
             )
             return
-        
+
         await self.bot.get_channel(CHANNELS.challenges).send(
             embed=discord.Embed(
                 color=self.color.orange,
@@ -140,7 +141,9 @@ class Challenge(commands.GroupCog, name="challenge"):
             .set_footer(text=f"Difficulty:  {current_challenge.difficulty}")
         )
 
-        user._challenges[str(current_challenge.id)].update({"submited": str(datetime.now(UTC))})
+        user._challenges[str(current_challenge.id)].update(
+            {"submited": str(datetime.now(UTC))}
+        )
         user.update()
 
         await interaction.followup.send(
@@ -164,7 +167,7 @@ class Challenge(commands.GroupCog, name="challenge"):
                 )
             )
             return
-        
+
         user_id, challenge_id = challenge_code.split("-")
 
         user = UserData.read(user_id)
@@ -176,7 +179,7 @@ class Challenge(commands.GroupCog, name="challenge"):
                 )
             )
             return
-        
+
         challenge = user.get_challenge(challenge_id)
 
         if challenge is None:
@@ -187,7 +190,7 @@ class Challenge(commands.GroupCog, name="challenge"):
                 )
             )
             return
-        
+
         if challenge.approved:
             await interaction.followup.send(
                 embed=discord.Embed(
@@ -196,7 +199,7 @@ class Challenge(commands.GroupCog, name="challenge"):
                 )
             )
             return
-        
+
         user._challenges[challenge_id].update({"approved": str(datetime.now(UTC))})
         user.coins += challenge.coins
         user.points += challenge.points

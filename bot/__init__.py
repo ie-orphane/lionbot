@@ -34,8 +34,8 @@ class Bot(commands.Bot):
         self.log('Info', clr.blue, 'Bot', f'Logged in as {self.user}')
 
         deadline.start(self)
-        weekly_data.start()
-        geek_of_the_week.start(self)
+        # weekly_data.start()
+        # geek_of_the_week.start(self)
         leaderboard.start(self)
 
     async def on_message(self, message: discord.Message):

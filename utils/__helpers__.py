@@ -107,6 +107,11 @@ def leaderboard_image(template: str, image: str, data: list, **heading_data: dic
             x = 0
             heading = f"plt.figtext(.5, .1, 'Last Update  -  {heading_data['time']}', fontsize=7.5,  ha='center', color=text_color)"
 
+        case "middle":
+            ybottom = -1
+            x = 0
+            heading = f""
+
     # setting variables
     w = 785
     h = 43 * len(data)
