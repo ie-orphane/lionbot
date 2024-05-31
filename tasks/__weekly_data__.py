@@ -12,7 +12,7 @@ async def weekly_data():
     current_week: Week = get_week(week_argument="beforelast")
     week_count = current_week.count
 
-    if datetime.now(UTC).weekday() == 4 and week_count not in weeks_file:
+    if datetime.now(UTC).weekday() == 0 and week_count not in weeks_file:
         print(log("Task", clr.yellow, "Data", "Updating..."))
 
         geeks = {}

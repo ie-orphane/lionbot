@@ -62,7 +62,7 @@ class Profile(Cog):
         embed.add_field(name="Points", value=f"> **{user.points}** {Emoji.star}")
         embed.add_field(
             name="Coins",
-            value=f"> **{'**.'.join(str(user.coins).split('.'))} {Emoji.coin}",
+            value=f"> **{'**.'.join(str(user.coins).split('.')) if '.' in str(user.coins) else f'{user.coins}**'} {Emoji.coin}",
         )
 
         if favorite_language:
@@ -75,7 +75,7 @@ class Profile(Cog):
         embed.add_field(
             name="Socials",
             value=(
-                f"- [{Emoji.github}  github]({user.github})\n"
+                f'{f"- [{Emoji.github}  github]({user.github})\n" if user.github else ""}'
                 f'{f"- [{Emoji.wakatime}  wakatime]({wakatime_url})\n" if wakatime_url else ""}'
                 f'{f"- [portfolio]({user.portfolio})" if user.portfolio else ""}'
             ),

@@ -31,17 +31,25 @@ async def geek_of_the_week(bot: commands.Bot):
                 )
 
             geek_ids = []
-            for coders in last_week.geeks.values():
+            for training, coders in last_week.geeks.items():
+                if training == "null":
+                    print(training, coders)
+                    continue
+
                 for id in coders:
                     black_list_member = [
-                        member for member in black_list_role.members if member.id == int(id)
+                        member
+                        for member in black_list_role.members
+                        if member.id == int(id)
                     ]
 
                     if black_list_member:
                         try:
                             await black_list_member[0].remove_roles(geek_role)
                             await black_list_member[0].edit(
-                                nick=black_list_member[0].display_name.replace(" 🏆", "")
+                                nick=black_list_member[0].display_name.replace(
+                                    " 🏆", ""
+                                )
                             )
                         except Exception as e:
                             print(guild, e)
