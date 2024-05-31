@@ -33,7 +33,6 @@ async def geek_of_the_week(bot: commands.Bot):
             geek_ids = []
             for training, coders in last_week.geeks.items():
                 if training == "null":
-                    print(training, coders)
                     continue
 
                 for id in coders:

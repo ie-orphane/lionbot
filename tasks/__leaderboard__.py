@@ -39,7 +39,9 @@ async def leaderboard(bot: commands.Bot):
     users_summary.sort(key=lambda x: x[0], reverse=True)
 
     all_users = [
-        {"": index, **user[1]} for index, user in enumerate(users_summary, start=1)
+        {"": index, **user[1]}
+        for index, user in enumerate(users_summary, start=1)
+        if user[0] != 0
     ]
 
     # top and bottom global leaderboard image
