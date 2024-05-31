@@ -7,7 +7,7 @@ class WeekData(Collection):
     id: int
     start: str
     end: str
-    geeks: dict
+    geeks: dict[str, dict]
 
     def __format__(self, __format_spec: str) -> str:
         match __format_spec:

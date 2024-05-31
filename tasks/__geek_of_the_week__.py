@@ -30,27 +30,28 @@ async def geek_of_the_week(bot: commands.Bot):
                     name="Black List", color=discord_color.black
                 )
 
-            geek_id = None
-            for id in last_week.geeks:
-                black_list_member = [
-                    member for member in black_list_role.members if member.id == int(id)
-                ]
+            geek_ids = []
+            for coders in last_week.geeks.values():
+                for id in coders:
+                    black_list_member = [
+                        member for member in black_list_role.members if member.id == int(id)
+                    ]
 
-                if black_list_member:
-                    try:
-                        await black_list_member[0].remove_roles(geek_role)
-                        await black_list_member[0].edit(
-                            nick=black_list_member[0].display_name.replace(" 🏆", "")
-                        )
-                    except Exception as e:
-                        print(guild, e)
+                    if black_list_member:
+                        try:
+                            await black_list_member[0].remove_roles(geek_role)
+                            await black_list_member[0].edit(
+                                nick=black_list_member[0].display_name.replace(" 🏆", "")
+                            )
+                        except Exception as e:
+                            print(guild, e)
 
-                    continue
+                        continue
 
-                geek_id = int(id)
-                break
+                    geek_ids.append(int(id))
+                    break
 
-            if [geek_id] == [member.id for member in geek_role.members]:
+            if geek_ids == [member.id for member in geek_role.members]:
                 continue
 
             print(log("Task", clr.yellow, "Geek Role", "Updating"))
@@ -65,7 +66,7 @@ async def geek_of_the_week(bot: commands.Bot):
                     print(guild, e)
 
             for member in guild.members:
-                if member.id == geek_id:
+                if member.id in geek_ids:
                     try:
                         await member.add_roles(geek_role)
                         await member.edit(nick=member.display_name + " 🏆")

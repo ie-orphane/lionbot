@@ -7,12 +7,12 @@ from wakatime import get_week_summary
 
 @tasks.loop(minutes=15)
 async def weekly_data():
-    weeks_file = get_files("data/weeks")
+    weeks_file = get_files("./data/weeks")
 
     current_week: Week = get_week(week_argument="beforelast")
     week_count = current_week.count
 
-    if datetime.now(UTC).weekday() == 0 and week_count not in weeks_file:
+    if datetime.now(UTC).weekday() == 4 and week_count not in weeks_file:
         print(log("Task", clr.yellow, "Data", "Updating..."))
 
         geeks = {}
@@ -28,21 +28,33 @@ async def weekly_data():
                 )
 
                 if user_summary:
-                    geeks[user.id] = user_summary[0]
+                    geeks.setdefault(user.training, {})
+                    geeks[user.training][user.id] = user_summary[0]
 
         # update users data
-        for id, amount in geeks.items():
-            user_data = UserData.read(id)
-            if amount >= 18900:
-                user_data.coins += amount / 2022
-                user_data.update()
+        for coders in geeks.values():
+            for id, amount in coders.items():
+                user_data = UserData.read(id)
+                if amount >= 18900:
+                    user_data.coins += amount / 2022
+                    user_data.update()
+
+        print(
+            {
+                training: dict(sorted(coders.items(), key=lambda x: x[1], reverse=True))
+                for training, coders in geeks.items()
+            }
+        )
 
         # update weeks data
         WeekData(
             id=current_week.count,
             start=current_week.readable_start,
             end=current_week.readable_end,
-            geeks=dict(sorted(geeks.items(), key=lambda x: x[1], reverse=True)),
+            geeks={
+                training: dict(sorted(coders.items(), key=lambda x: x[1], reverse=True))
+                for training, coders in geeks.items()
+            },
         ).update()
 
         print(log("Task", clr.green, "Data", "updated!"))
