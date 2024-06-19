@@ -44,23 +44,24 @@ async def leaderboard(bot: commands.Bot):
         if user[0] != 0
     ]
 
-    # top and bottom global leaderboard image
-    leaderboard_image(
-        "top",
-        "global",
-        all_users[: len(all_users) // 3],
-        count=current_week.count,
-        start=current_week.human_readable_start,
-        end=current_week.human_readable_end,
-    )
-    leaderboard_image(
-        "middle",
-        "global",
-        all_users[len(all_users) // 3 : 2 * len(all_users) // 3],
-    )
-    leaderboard_image(
-        "bottom", "global", all_users[2 * len(all_users) // 3 :], time=current_time
-    )
+    if len(all_users) > 0:
+        # top and bottom global leaderboard image
+        leaderboard_image(
+            "top",
+            "global",
+            all_users[: len(all_users) // 3],
+            count=current_week.count,
+            start=current_week.human_readable_start,
+            end=current_week.human_readable_end,
+        )
+        leaderboard_image(
+            "middle",
+            "global",
+            all_users[len(all_users) // 3 : 2 * len(all_users) // 3],
+        )
+        leaderboard_image(
+            "bottom", "global", all_users[2 * len(all_users) // 3 :], time=current_time
+        )
 
     for training, coders in trainings.items():
         users = [

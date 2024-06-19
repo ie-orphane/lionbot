@@ -39,13 +39,6 @@ async def weekly_data():
                     user_data.coins += amount / 2022
                     user_data.update()
 
-        print(
-            {
-                training: dict(sorted(coders.items(), key=lambda x: x[1], reverse=True))
-                for training, coders in geeks.items()
-            }
-        )
-
         # update weeks data
         WeekData(
             id=current_week.count,

@@ -58,7 +58,12 @@ async def geek_of_the_week(bot: commands.Bot):
                     geek_ids.append(int(id))
                     break
 
-            if geek_ids == [member.id for member in geek_role.members]:
+            identical = True
+            for member_id in [member.id for member in geek_role.members]:
+                if member_id not in geek_ids:
+                    identical = False
+                    break
+            if identical:
                 continue
 
             print(log("Task", clr.yellow, "Geek Role", "Updating"))
