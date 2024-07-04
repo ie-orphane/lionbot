@@ -8,93 +8,103 @@ from models import UserData
 
 @tasks.loop(minutes=15)
 async def leaderboard(bot: commands.Bot):
-    print(log("Task", clr.yellow, "Leaderboard", "Updating..."))
+    try:
+        print(log("Task", clr.yellow, "Leaderboard", "Updating..."))
 
-    current_time = f"{datetime.now(UTC):%A  %d  %b    %I:%M  %p}"
-    current_time = current_time.replace("AM", "am").replace("PM", "pm")
-    current_week = get_week()
-    params = {"start": current_week.readable_start, "end": current_week.readable_end}
+        current_time = f"{datetime.now(UTC):%A  %d  %b    %I:%M  %p}"
+        current_time = current_time.replace("AM", "am").replace("PM", "pm")
+        current_week = get_week()
+        params = {
+            "start": current_week.readable_start,
+            "end": current_week.readable_end,
+        }
 
-    Time = datetime.now(UTC)
+        Time = datetime.now(UTC)
 
-    users_summary = []
-    trainings: dict[str, list] = {}
+        users_summary = []
+        trainings: dict[str, list] = {}
 
-    for user in UserData.read_all():
-        if user and user.token:
-            try:
-                user_summary = wakatime.get_week_summary(
-                    api_key=user.token, params=params, name=user.name
-                )
-                if user_summary:
-                    users_summary.append(user_summary)
-                    if user.training:
-                        trainings.setdefault(user.training, [])
-                        trainings[user.training].append(user.name)
-            except Exception as e:
-                print(e)
+        for user in UserData.read_all():
+            if user and user.token:
+                try:
+                    user_summary = wakatime.get_week_summary(
+                        api_key=user.token, params=params, name=user.name
+                    )
+                    if user_summary:
+                        users_summary.append(user_summary)
+                        if user.training:
+                            trainings.setdefault(user.training, [])
+                            trainings[user.training].append(user.name)
+                except Exception as e:
+                    print(e)
 
-    print(f"{str(datetime.now(UTC) - Time):>{14+1+20}}\n")
+        print(f"{str(datetime.now(UTC) - Time):>{14+1+20}}\n")
 
-    users_summary.sort(key=lambda x: x[0], reverse=True)
+        users_summary.sort(key=lambda x: x[0], reverse=True)
 
-    all_users = [
-        {"": index, **user[1]}
-        for index, user in enumerate(users_summary, start=1)
-        if user[0] != 0
-    ]
-
-    if len(all_users) > 0:
-        # top and bottom global leaderboard image
-        leaderboard_image(
-            "top",
-            "global",
-            all_users[: len(all_users) // 3],
-            count=current_week.count,
-            start=current_week.human_readable_start,
-            end=current_week.human_readable_end,
-        )
-        leaderboard_image(
-            "middle",
-            "global",
-            all_users[len(all_users) // 3 : 2 * len(all_users) // 3],
-        )
-        leaderboard_image(
-            "bottom", "global", all_users[2 * len(all_users) // 3 :], time=current_time
-        )
-
-    for training, coders in trainings.items():
-        users = [
+        all_users = [
             {"": index, **user[1]}
-            for index, user in enumerate(
-                filter(lambda x: x[1]["Coder"] in coders, users_summary), start=1
-            )
+            for index, user in enumerate(users_summary, start=1)
+            if user[0] != 0
         ]
 
-        leaderboard_image(
-            "top",
-            training,
-            users[: len(users) // 2],
-            count=current_week.count,
-            start=current_week.human_readable_start,
-            end=current_week.human_readable_end,
-        )
-        leaderboard_image(
-            "bottom", training, users[len(users) // 2 :], time=current_time
-        )
-
-    leaderboards_data: list[dict] = open_file("./data/leaderboards.json")
-
-    for leaderboard_data in leaderboards_data:
-        leaderboard_channel = bot.get_channel(leaderboard_data["channel"])
-        for img, id in leaderboard_data["messages"].items():
-            file = discord.File(
-                f"./assets/images/{leaderboard_data['alias']}_{img}_leaderboard.png",
-                filename=f"{img}_leaderboard.png",
+        if len(all_users) > 0:
+            # top and bottom global leaderboard image
+            leaderboard_image(
+                "top",
+                "global",
+                all_users[: len(all_users) // 3],
+                count=current_week.count,
+                start=current_week.human_readable_start,
+                end=current_week.human_readable_end,
             )
-            message: discord.Message = await leaderboard_channel.fetch_message(id)
-            await message.edit(content="", attachments=[file])
+            leaderboard_image(
+                "middle",
+                "global",
+                all_users[len(all_users) // 3 : 2 * len(all_users) // 3],
+            )
+            leaderboard_image(
+                "bottom",
+                "global",
+                all_users[2 * len(all_users) // 3 :],
+                time=current_time,
+            )
 
-        print(f"{str(leaderboard_channel):<21} {leaderboard_channel.guild}")
+        for training, coders in trainings.items():
+            users = [
+                {"": index, **user[1]}
+                for index, user in enumerate(
+                    filter(lambda x: x[1]["Coder"] in coders, users_summary), start=1
+                )
+            ]
 
-    print(log("Task", clr.green, "Leaderboard", "updated!"))
+            leaderboard_image(
+                "top",
+                training,
+                users[: len(users) // 2],
+                count=current_week.count,
+                start=current_week.human_readable_start,
+                end=current_week.human_readable_end,
+            )
+            leaderboard_image(
+                "bottom", training, users[len(users) // 2 :], time=current_time
+            )
+
+        leaderboards_data: list[dict] = open_file("./data/leaderboards.json")
+
+        for leaderboard_data in leaderboards_data:
+            leaderboard_channel = bot.get_channel(leaderboard_data["channel"])
+            for img, id in leaderboard_data["messages"].items():
+                file = discord.File(
+                    f"./assets/images/{leaderboard_data['alias']}_{img}_leaderboard.png",
+                    filename=f"{img}_leaderboard.png",
+                )
+                message: discord.Message = await leaderboard_channel.fetch_message(id)
+                await message.edit(content="", attachments=[file])
+
+            print(f"{str(leaderboard_channel):<21} {leaderboard_channel.guild}")
+
+        print(log("Task", clr.green, "Leaderboard", "updated!"))
+
+    except Exception as e:
+        print(f"Task Error : leaderboard : {e}")
