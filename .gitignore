@@ -160,7 +160,7 @@ cython_debug/
 #.idea/
 
 # discord.py
-data
+data*/
 test/
 assets/
 test.py

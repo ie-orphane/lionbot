@@ -154,74 +154,73 @@ class Challenge(commands.GroupCog, name="challenge"):
             )
         )
 
-    @discord.app_commands.default_permissions(administrator=True)
-    @discord.app_commands.command(description="approve a challenge code")
-    async def approve(self, interaction: discord.Interaction, challenge_code: str):
-        await interaction.response.defer()
+    # @discord.app_commands.default_permissions(administrator=True)
+    # @discord.app_commands.command(description="approve a challenge code")
+    # async def approve(self, interaction: discord.Interaction, challenge_code: str):
+    #     await interaction.response.defer()
 
-        if challenge_code.count('-') != 1:
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    color=self.color.red,
-                    description=f"`{challenge_code}` is an invalid code challenge",
-                )
-            )
-            return
+    #     if challenge_code.count('-') != 1:
+    #         await interaction.followup.send(
+    #             embed=discord.Embed(
+    #                 color=self.color.red,
+    #                 description=f"`{challenge_code}` is an invalid code challenge",
+    #             )
+    #         )
+    #         return
 
-        user_id, challenge_id = challenge_code.split("-")
+    #     user_id, challenge_id = challenge_code.split("-")
 
-        user = UserData.read(user_id)
-        if user is None:
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    color=self.color.red,
-                    description=f"User with ID `{user_id}` not found !",
-                )
-            )
-            return
+    #     user = UserData.read(user_id)
+    #     if user is None:
+    #         await interaction.followup.send(
+    #             embed=discord.Embed(
+    #                 color=self.color.red,
+    #                 description=f"User with ID `{user_id}` not found !",
+    #             )
+    #         )
+    #         return
 
-        challenge = user.get_challenge(challenge_id)
+    #     challenge = user.get_challenge(challenge_id)
 
-        if challenge is None:
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    color=self.color.red,
-                    description=f"{user.name} has no challenge `{challenge_id}` !",
-                )
-            )
-            return
+    #     if challenge is None:
+    #         await interaction.followup.send(
+    #             embed=discord.Embed(
+    #                 color=self.color.red,
+    #                 description=f"{user.name} has no challenge `{challenge_id}` !",
+    #             )
+    #         )
+    #         return
 
-        if challenge.approved:
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    color=self.color.red,
-                    description=f"Challenge `{challenge_id}` already approved!",
-                )
-            )
-            return
+    #     if challenge.approved:
+    #         await interaction.followup.send(
+    #             embed=discord.Embed(
+    #                 color=self.color.red,
+    #                 description=f"Challenge `{challenge_id}` already approved!",
+    #             )
+    #         )
+    #         return
 
-        user._challenges[challenge_id].update({"approved": str(datetime.now(UTC))})
-        user.coins += challenge.coins
-        user.points += challenge.points
-        user.update()
+    #     user._challenges[challenge_id].update({"approved": str(datetime.now(UTC))})
+    #     user.coins += challenge.coins
+    #     user.points += challenge.points
+    #     user.update()
 
-        try:
-            discord_user = await self.bot.fetch_user(user_id)
-            await discord_user.send(
-                embed=discord.Embed(
-                    color=self.color.yellow,
-                    description=f"{user.approve_message}\n\nYou gain **{challenge.coins}** {Emoji.coin} & **{challenge.points}** {Emoji.star}",
-            ))
-        except Exception as e:
-            print(f"Error: {[e]}")
+    #     try:
+    #         discord_user = await self.bot.fetch_user(user_id)
+    #         await discord_user.send(
+    #             embed=discord.Embed(
+    #                 color=self.color.yellow,
+    #                 description=f"{user.approve_message}\n\nYou gain **{challenge.coins}** {Emoji.coin} & **{challenge.points}** {Emoji.star}",
+    #         ))
+    #     except Exception as e:
+    #         print(f"Error: {[e]}")
 
-        await interaction.followup.send(
-            embed=discord.Embed(
-                color=self.color.green,
-                description=f"**{user.name}**'s current challenge has been approved !",
-            )
-        )
-
+    #     await interaction.followup.send(
+    #         embed=discord.Embed(
+    #             color=self.color.green,
+    #             description=f"**{user.name}**'s current challenge has been approved !",
+    #         )
+    #     )
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Challenge(bot))
