@@ -16,12 +16,13 @@ class ChallengeFields:
     name: str
     level: str
     text: str
-    file: str
-    points: int = 101
-    coins: int = 269
     language: Language
-    exe: str
     tests: list[Test]
+    additionales: str = None
+    forbidden: list[str] = None
+    coins: int = 269
+    file: str
+    exe: str
 
 
 class ChallengeData(Model, ChallengeFields):

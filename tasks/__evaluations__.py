@@ -47,10 +47,14 @@ async def evaluations(bot: Bot):
         if result == "OK":
             feedback += f"\n{completed_process.stdout}"
             evaluation.user.add_coins(evaluation.challenge.coins, "challange reward")
-            evaluation.user.points += evaluation.challenge.points
 
         evaluation.user._challenge.update(
-            {"evaluated": str(datetime.now(UTC)), "result": result, "log": feedback}
+            {
+                "evaluated": str(datetime.now(UTC)),
+                "solution": evaluation.solution,
+                "result": result,
+                "log": feedback,
+            }
         )
 
         evaluation.user._challenges.append(evaluation.user._challenge)
@@ -67,8 +71,8 @@ async def evaluations(bot: Bot):
                         description=(
                             f"{MESSAGE.succeeding}\n\nChallenge : **{evaluation.challenge.name}"
                             f"**\nLanguage : {evaluation.challenge.language}\nLevel : "
-                            f"{evaluation.challenge.level}\nResult : **{result}**\nRewards **{evaluation.challenge.coins}"
-                            f"** {Emoji.coin} & **{evaluation.challenge.points}** {Emoji.star}"
+                            f"{evaluation.challenge.level}\nResult : **{result}**\n"
+                            f"Reward : **{evaluation.challenge.coins}** {Emoji.coin}"
                         ),
                     )
                     if result == "OK"

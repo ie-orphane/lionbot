@@ -59,7 +59,6 @@ class Profile(Cog):
                 inline=False,
             )
 
-        embed.add_field(name="Points", value=f"> **{user.points}** {Emoji.star}")
         embed.add_field(
             name="Coins",
             value=f"> **{'**.'.join(str(user.coins).split('.')) if '.' in str(user.coins) else f'{user.coins}**'} {Emoji.coin}",

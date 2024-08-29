@@ -11,7 +11,9 @@ class UserChallenge(Relation, ChallengeFields):
     requested: datetime
     submited: datetime = None
     evaluated: datetime = None
-    result: Literal["OK", "KO", "ERROR", "TIMEOUT", "DEAD"] = None
+    result: Literal["OK", "KO", "ERROR", "TIMEOUT", "DEAD", "FORBIDDEN"] = None
+    log: str = None
+    solution: str = None
 
     def __init__(self, langauge: Language, level: int, **kwargs) -> None:
         self.__dict__.update({**kwargs, **self.MODEL.read(langauge, level).__dict__})
@@ -22,7 +24,6 @@ class UserData(Collection):
     id: int
     name: str
     coins: int
-    points: int
     token: str
     github: str
     portfolio: str

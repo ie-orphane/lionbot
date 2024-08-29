@@ -66,8 +66,8 @@ class Register(Cog):
             github=None,
             training=None,
             portfolio=None,
-            points=0,
             _challenges=[],
+            _challenge=None
             graduated=False,
         ).update()
 

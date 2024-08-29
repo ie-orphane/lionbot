@@ -46,7 +46,7 @@ class Challenge(commands.GroupCog, name="challenge"):
                         f"### {interaction.user.mention}, you already requested a challenge!\n"
                         f"```txt\n{current_challenge.text}```\n"
                         f"**Level**: {current_challenge.level}\n"
-                        f"**Rewards**: {current_challenge.points} {Emoji.star} & {current_challenge.coins} {Emoji.coin}"
+                        f"**Reward**: {current_challenge.coins} {Emoji.coin}"
                     ),
                 )
             )
@@ -68,7 +68,7 @@ class Challenge(commands.GroupCog, name="challenge"):
                 description=(
                     f"```txt\n{challenge.text}```\n"
                     f"**Level**: {challenge.level}\n"
-                    f"**Rewards**: {challenge.points} {Emoji.star} & {challenge.coins} {Emoji.coin}"
+                    f"**Reward**: {challenge.coins} {Emoji.coin}"
                 ),
             ).set_footer(text="as always follow the law and doubt your code!"),
             ephemeral=True,
