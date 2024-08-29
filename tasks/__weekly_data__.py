@@ -35,7 +35,7 @@ async def weekly_data():
         for id, amount in geeks.items():
             user_data = UserData.read(id)
             if amount >= 18900:
-                user_data.coins += amount / 2022
+                user_data.add_coins(amount / 2022, "coding gain")
                 user_data.update()
 
         # update weeks data

@@ -64,11 +64,11 @@ class Register(Cog):
             coins=0,
             token=waka_token,
             github=None,
-            training="codingIII",
+            training=None,
             portfolio=None,
             points=0,
-            _challenges={},
-            graduated = False,
+            _challenges=[],
+            graduated=False,
         ).update()
 
         await interaction.followup.send(

@@ -5,7 +5,7 @@ from bot.config import GUILD
 
 @tasks.loop(minutes=5)
 async def geek_of_the_week(bot: commands.Bot):
-    discord_color = COLOR()
+    discord_color = COLOR
     last_week = list(sorted(WeekData.read_all(), key=lambda x: x.id))[-1]
 
     guild = bot.get_guild(GUILD)

@@ -1,4 +1,6 @@
 CONFIG=true
 DATABASE=true
 FOLDERS=("users" "weeks" "projects")
-FILES=("leaderboards" "files" "channels" "challenges")
+JSON=("leaderboards" "files" "channels" "challenges" "evaluations")
+CSV=("logs")
+ASSETS=("files" "images" "subjects" "solutions")

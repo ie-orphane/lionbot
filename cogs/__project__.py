@@ -76,7 +76,7 @@ class Project(commands.GroupCog, name="project"):
     def __init__(self, bot: commands.Bot) -> None:
         super().__init__()
         self.bot = bot
-        self.color = COLOR()
+        self.color = COLOR
 
     @discord.app_commands.command(description="list all projects")
     async def all(self, interaction: discord.Interaction):

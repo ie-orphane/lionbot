@@ -59,8 +59,8 @@ class Transfer(Cog):
             )
             return
 
-        user_data.coins -= amount
-        recipient_data.coins += amount
+        user_data.sub_coins(amount, "transfer")
+        recipient_data.add_coins(amount, "transfer")
 
         user_data.update()
         recipient_data.update()

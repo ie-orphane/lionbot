@@ -3,7 +3,7 @@ from utils import COLOR
 
 
 class Cog(commands.Cog):
-    color = COLOR()
+    color = COLOR
 
     def __init__(self, bot: commands.Bot) -> None:
         super().__init__()

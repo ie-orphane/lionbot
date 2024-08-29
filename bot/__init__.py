@@ -1,18 +1,21 @@
 import discord
 import os
 from discord.ext import commands
-from tasks import leaderboard, weekly_data, geek_of_the_week, deadline
+from tasks import leaderboard, weekly_data, geek_of_the_week, deadline, evaluations
 from utils import clr
 from typing import Literal
 from datetime import datetime, UTC
 from bot.config import GUILD, CHANNELS
+
 
 class Bot(commands.Bot):
 
     def __init__(self):
         super().__init__(command_prefix="-", intents=discord.Intents.all())
 
-    def log(self, type: Literal["Info", "Error", "Task"], func, name: str, message: str):
+    def log(
+        self, type: Literal["Info", "Error", "Task"], func, name: str, message: str
+    ):
         log_time = clr.black(datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S"))
         print(f"{log_time} {func(type)}    {clr.magenta(name)} {message}")
 
@@ -28,15 +31,16 @@ class Bot(commands.Bot):
 
         sync = await self.tree.sync()
 
-        self.log('Info', clr.blue, 'Cogs', f"{len(sync)} Slash Command(s) Synced")
+        self.log("Info", clr.blue, "Cogs", f"{len(sync)} Slash Command(s) Synced")
 
     async def on_ready(self):
-        self.log('Info', clr.blue, 'Bot', f'Logged in as {self.user}')
+        self.log("Info", clr.blue, "Bot", f"Logged in as {self.user}")
 
         deadline.start(self)
-        weekly_data.start()
-        geek_of_the_week.start(self)
-        leaderboard.start(self)
+        # weekly_data.start()
+        # geek_of_the_week.start(self)
+        # leaderboard.start(self)
+        # evaluations.start(self)
 
     async def on_message(self, message: discord.Message):
         def is_student_of(class_name: str, author: discord.Member | discord.User):
@@ -53,7 +57,9 @@ class Bot(commands.Bot):
             return
 
         if message.content.startswith(self.user.mention):
-            message_content = message.content.strip().replace(self.user.mention, "").lower()
+            message_content = (
+                message.content.strip().replace(self.user.mention, "").lower()
+            )
 
             if message_content == "":
                 answer = "I'm here!"

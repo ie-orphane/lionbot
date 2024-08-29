@@ -3,7 +3,7 @@ from discord.ext import commands
 from models import ChannelData, FileData
 from typing import Literal
 from datetime import datetime, UTC, timedelta
-from cogs import COLOR
+from utils import COLOR
 
 
 @discord.app_commands.guild_only()
@@ -12,7 +12,7 @@ class Dead(commands.GroupCog, name="dead"):
     def __init__(self, bot: commands.Bot) -> None:
         super().__init__()
         self.bot = bot
-        self.color = COLOR()
+        self.color = COLOR
 
     @discord.app_commands.command(description="set a dead channel")
     @discord.app_commands.describe(
