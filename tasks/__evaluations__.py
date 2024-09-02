@@ -38,7 +38,7 @@ async def evaluations(bot: Bot):
             for index, test in enumerate(evaluation.challenge.tests, 1):
                 try:
                     completed_process = subprocess.run(
-                        ["sh", evaluation.solution] + test.args,
+                        [evaluation.challenge.runner, evaluation.solution] + test.args,
                         capture_output=True,
                         text=True,
                         timeout=4,

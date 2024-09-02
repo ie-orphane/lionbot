@@ -8,4 +8,4 @@ from utils.__helpers__ import (
     Week,
 )
 from utils.__classes__ import COLOR, MESSAGE, RelativeDateTime
-from utils.__additionals__ import Language, Difficulty, Extension, Coin, Result
+from utils.__additionals__ import Language, Difficulty, Extension, Coin, Result, Runner

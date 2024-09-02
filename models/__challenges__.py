@@ -1,6 +1,6 @@
 import json
 from models.__schema__ import Model
-from utils import Language, Difficulty, Extension, Coin
+from utils import Language, Difficulty, Extension, Coin, Runner
 
 
 class Test(Model):
@@ -23,6 +23,7 @@ class ChallengeData(Model, ChallengeFields):
     BASE: str = "challenges"
     COINS: dict[Difficulty, Coin] = {"easy": 2, "medium": 101, "hard": 199}
     EXTENSION: dict[Language, Extension] = {"shell": "sh"}
+    RUNNER: dict[Language, Runner] = {"shell": "bash"}
 
     @classmethod
     def read(cls, language: Language, level: int | str):
@@ -44,6 +45,10 @@ class ChallengeData(Model, ChallengeFields):
     @property
     def coins(self) -> Coin:
         return self.COINS[self.difficulty]
+
+    @property
+    def runner(self) -> Runner:
+        return self.RUNNER[self.language]
 
     @property
     def file(self) -> str:
