@@ -8,7 +8,7 @@ from utils import clr, log, COLOR, MESSAGE
 from bot.config import Emoji
 
 
-@tasks.loop(minutes=1.75)
+@tasks.loop(minutes=1)
 async def evaluations(bot: Bot):
     for evaluation in EvaluationData.read_all():
         print(
@@ -20,42 +20,105 @@ async def evaluations(bot: Bot):
             )
         )
 
+        feedback = None
         result = "OK"
-        for test in evaluation.challenge.tests:
-            feedback = " ".join(["$>", evaluation.challenge.file] + test.args)
-            try:
-                completed_process = subprocess.run(
-                    ["sh", f"assets/solutions/{evaluation.solution}"] + test.args,
-                    capture_output=True,
-                    text=True,
-                    timeout=4,
-                )
-            except subprocess.TimeoutExpired:
-                result = "TIMEOUT"
-                break
+        if evaluation.challenge.forbidden is not None:
 
-            if completed_process.stderr:
-                feedback += f"\n{completed_process.stderr}"
-                result = "ERROR"
-                break
+            with open(evaluation.solution, "r") as f:
+                solution = f.read()
 
-            if completed_process.stdout != test.expected:
-                feedback += f"\n{completed_process.stdout}"
-                result = "KO"
-                break
+            words = solution.split()
+            for forbidden in evaluation.challenge.forbidden:
+                if forbidden in words:
+                    result = "FORBIDDEN"
+                    print(f"\033[33mForbidden : {forbidden}\033[0m")
+                    break
 
         if result == "OK":
-            feedback += f"\n{completed_process.stdout}"
-            evaluation.user.add_coins(evaluation.challenge.coins, "challange reward")
+            for index, test in enumerate(evaluation.challenge.tests, 1):
+                try:
+                    completed_process = subprocess.run(
+                        ["sh", evaluation.solution] + test.args,
+                        capture_output=True,
+                        text=True,
+                        timeout=4,
+                    )
+                except subprocess.TimeoutExpired:
+                    result = "TIMEOUT"
+                    print(
+                        "\033[33m"
+                        + " ".join(
+                            ["Timeout :", evaluation.challenge.file]
+                            + ['""' if arg == "" else arg for arg in test.args]
+                        )
+                        + "\033[0m"
+                    )
+                    break
+
+                if completed_process.stderr:
+                    feedback = (
+                        " ".join(["\033[1;31m$>", evaluation.challenge.file] + test.args)
+                        + f"\033[0m\t\n{completed_process.stderr}"
+                    )
+                    result = "ERROR"
+                    print(
+                        "\033[31m"
+                        + " ".join(
+                            ["Error :", evaluation.challenge.file]
+                            + ['""' if arg == "" else arg for arg in test.args]
+                        )
+                        + "\033[0m"
+                    )
+                    print(f"{completed_process.stderr}")
+                    break
+
+                if completed_process.stdout != test.expected:
+                    feedback = (
+                        " ".join(["\033[1;31m$>", evaluation.challenge.file] + test.args)
+                        + f"\033[0m\t\n{completed_process.stdout}"
+                    )
+                    result = "KO"
+                    print(f"\u274C [{index}] {test.description}")
+                    print(
+                        " ".join(
+                            ["$", evaluation.challenge.file]
+                            + ['""' if arg == "" else arg for arg in test.args]
+                        )
+                    )
+
+                    print(
+                        "Expected \033[32m{}\033[0m got \033[31m{}\033[0m".format(
+                            test.expected, completed_process.stdout
+                        ).replace("\n", "\\n")
+                    )
+                    break
+
+                print(f"\u2705 [{index}] {test.description}")
+
+            if result == "OK":
+                evaluation.user.add_coins(
+                    evaluation.challenge.coins, "challange reward"
+                )
 
         evaluation.user._challenge.update(
             {
                 "evaluated": str(datetime.now(UTC)),
-                "solution": evaluation.solution,
+                "_solution": evaluation.solution,
                 "result": result,
-                "log": feedback,
             }
         )
+
+        evaluation.user._log = None
+        if feedback is not None:
+            evaluation.user._log = {
+                "langauge": evaluation.challenge.language,
+                "level": evaluation.challenge.level,
+                "name": evaluation.challenge.name,
+                "attempt": evaluation.user.challenge.attempt,
+                "trace": feedback,
+                "cost": evaluation.challenge.coins * 0.07,
+                "result": result,
+            }
 
         evaluation.user._challenges.append(evaluation.user._challenge)
         evaluation.user._challenge = None

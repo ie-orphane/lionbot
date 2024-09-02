@@ -1,39 +1,28 @@
 import json
 from models.__schema__ import Model
-from utils import Language, EXTENSION
+from utils import Language, Difficulty, Extension, Coin
 
 
-class Test:
+class Test(Model):
     description: str
     args: list[str]
     expected: str
-
-    def __init__(self, **kwargs) -> None:
-        self.__dict__.update(kwargs)
 
 
 class ChallengeFields:
     name: str
     level: str
-    text: str
+    _tests: list[dict]
     language: Language
-    tests: list[Test]
+    difficulty: Difficulty
     additionales: str = None
     forbidden: list[str] = None
-    coins: int = 269
-    file: str
-    exe: str
 
 
 class ChallengeData(Model, ChallengeFields):
     BASE: str = "challenges"
-
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.file = f"{self.name}.{self.exe}"
-        self.tests = [Test(**test) for test in self.tests]
-        with open(f"assets/subjects/{self.language}/{self.name}.txt", "r") as file:
-            self.text = file.read()
+    COINS: dict[Difficulty, Coin] = {"easy": 2, "medium": 101, "hard": 199}
+    EXTENSION: dict[Language, Extension] = {"shell": "sh"}
 
     @classmethod
     def read(cls, language: Language, level: int | str):
@@ -45,6 +34,26 @@ class ChallengeData(Model, ChallengeFields):
     def read_all(cls, language: Language):
         with open(f"./data/{cls.BASE}.json", "r") as file:
             return [
-                cls(language=language, exe=EXTENSION[language], **data)
-                for data in json.load(file)[language]
+                cls(language=language, **data) for data in json.load(file)[language]
             ]
+
+    @property
+    def extension(self) -> Extension:
+        return self.EXTENSION[self.language]
+
+    @property
+    def coins(self) -> Coin:
+        return self.COINS[self.difficulty]
+
+    @property
+    def file(self) -> str:
+        return f"{self.name}.{self.extension}"
+
+    @property
+    def tests(self) -> list[Test]:
+        return [Test(**test) for test in self._tests]
+
+    @property
+    def text(self) -> str:
+        with open(f"assets/subjects/{self.language}/{self.name}.ansi", "r") as file:
+            return file.read()

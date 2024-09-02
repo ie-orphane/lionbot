@@ -161,7 +161,6 @@ cython_debug/
 
 # discord.py
 data*/
-test/
+test*
 assets/
-test.py
 bot/config.py

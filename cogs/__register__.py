@@ -67,7 +67,7 @@ class Register(Cog):
             training=None,
             portfolio=None,
             _challenges=[],
-            _challenge=None
+            _challenge=None,
             graduated=False,
         ).update()
 
