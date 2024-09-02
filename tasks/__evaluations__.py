@@ -116,7 +116,7 @@ async def evaluations(bot: Bot):
                 "name": evaluation.challenge.name,
                 "attempt": evaluation.user.challenge.attempt,
                 "trace": feedback,
-                "cost": evaluation.challenge.coins * 0.07,
+                "cost": evaluation.challenge.coins * 0.05,
                 "result": result,
             }
 

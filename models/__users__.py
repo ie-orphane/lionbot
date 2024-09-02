@@ -112,7 +112,7 @@ class UserData(Collection):
         }
 
         if attempt > 7:
-            self.sub_coins(18.561, "challenge cost")
+            self.sub_coins(challenge.coins * 0.07, "challenge cost")
 
         self.update()
 

@@ -1,8 +1,14 @@
+import math
 from discord.ext import tasks
 from datetime import datetime, UTC
 from utils import get_files, clr, get_week, Week, log
 from models import UserData, WeekData
 from wakatime import get_week_summary
+
+
+GOLDEN_RATIO = (1 + math.sqrt(5)) / 2
+THRESHOLD = 19_800
+FACTOR = THRESHOLD / GOLDEN_RATIO
 
 
 @tasks.loop(minutes=15)
@@ -34,8 +40,8 @@ async def weekly_data():
         # update users data
         for id, amount in geeks.items():
             user_data = UserData.read(id)
-            if amount >= 18900:
-                user_data.add_coins(amount / 2022, "coding gain")
+            if amount >= THRESHOLD:
+                user_data.add_coins(amount / FACTOR, "coding gain")
                 user_data.update()
 
         # update weeks data

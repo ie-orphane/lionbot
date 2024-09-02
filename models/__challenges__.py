@@ -21,7 +21,7 @@ class ChallengeFields:
 
 class ChallengeData(Model, ChallengeFields):
     BASE: str = "challenges"
-    COINS: dict[Difficulty, Coin] = {"easy": 2, "medium": 101, "hard": 199}
+    COINS: dict[Difficulty, Coin] = {"easy": 2, "medium": 43, "hard": 101}
     EXTENSION: dict[Language, Extension] = {"shell": "sh"}
     RUNNER: dict[Language, Runner] = {"shell": "bash"}
 
