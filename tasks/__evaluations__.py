@@ -22,17 +22,17 @@ async def evaluations(bot: Bot):
 
         feedback = None
         result = "OK"
-        if evaluation.challenge.forbidden is not None:
 
-            with open(evaluation.solution, "r") as f:
-                solution = f.read()
+        with open(evaluation.solution, "r") as f:
+            solution = f.read()
 
-            words = solution.split()
-            for forbidden in evaluation.challenge.forbidden:
-                if forbidden in words:
-                    result = "FORBIDDEN"
-                    print(f"\033[33mForbidden : {forbidden}\033[0m")
-                    break
+        forbiddens = set(
+            evaluation.challenge.forbidden + evaluation.challenge.not_allowed
+        ).intersection(solution.split())
+
+        if len(forbiddens) > 0:
+            result = "FORBIDDEN"
+            print(f"\033[33mForbidden : {', '.join(forbiddens)}\033[0m")
 
         if result == "OK":
             for index, test in enumerate(evaluation.challenge.tests, 1):
@@ -57,7 +57,14 @@ async def evaluations(bot: Bot):
 
                 if completed_process.stderr:
                     feedback = (
-                        " ".join(["\033[1;31m$>", evaluation.challenge.file] + test.args)
+                        " ".join(
+                            [
+                                "\033[1;31m$>",
+                                evaluation.challenge.runner,
+                                evaluation.challenge.file,
+                            ]
+                            + test.args
+                        )
                         + f"\033[0m\t\n{completed_process.stderr}"
                     )
                     result = "ERROR"
@@ -74,7 +81,14 @@ async def evaluations(bot: Bot):
 
                 if completed_process.stdout != test.expected:
                     feedback = (
-                        " ".join(["\033[1;31m$>", evaluation.challenge.file] + test.args)
+                        " ".join(
+                            [
+                                "\033[1;31m$>",
+                                evaluation.challenge.runner,
+                                evaluation.challenge.file,
+                            ]
+                            + test.args
+                        )
                         + f"\033[0m\t\n{completed_process.stdout}"
                     )
                     result = "KO"
@@ -156,4 +170,4 @@ async def evaluations(bot: Bot):
             log("Task", clr.green, "Evaluation", f"{evaluation.challenge.name} Done!")
         )
 
-    EvaluationData.clear()
+    evaluation.remove()

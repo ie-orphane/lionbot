@@ -195,7 +195,7 @@ class Challenge(commands.GroupCog, name="challenge"):
             for challenge in challenges:
                 if challenge.result == "OK":
                     solved += 1
-                content += f"\t [{challenge.attempt}]  {challenge.result:^9}  {RelativeDateTime(datetime.fromisoformat(challenge.requested)).pretty}\t\n"
+                content += f"\t [{challenge.attempt}]  {challenge.result:^9}  {RelativeDateTime(challenge.requested).pretty}\t\n"
         content = f"Total  : {len(all_challenges)}\nSolved : {solved}\n{content}"
 
         await interaction.followup.send(

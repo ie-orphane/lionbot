@@ -99,7 +99,8 @@ class Message:
 
 class RelativeDateTime:
 
-    def __init__(self, dt: datetime) -> str:
+    def __init__(self, dt_str: str) -> str:
+        dt = datetime.fromisoformat(dt_str)
         now = datetime.now(UTC)
         delta = now - dt
         self.day = delta.days

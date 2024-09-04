@@ -1,11 +1,12 @@
 import discord
 import os
+import contexts
 from discord.ext import commands
 from tasks import leaderboard, weekly_data, geek_of_the_week, deadline, evaluations
 from utils import clr
 from typing import Literal
 from datetime import datetime, UTC
-from bot.config import GUILD, CHANNELS
+from bot.config import GUILD, CHANNELS, USERS
 
 
 class Bot(commands.Bot):
@@ -69,6 +70,10 @@ class Bot(commands.Bot):
                 answer = "^_^"
 
             await message.channel.send(answer)
+            return
+
+        if message.author.id == USERS.fariesus:
+            await contexts.run(self, message)
 
     async def on_member_join(self, member: discord.Member):
         if member.guild.id == GUILD:

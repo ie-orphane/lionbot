@@ -9,12 +9,15 @@ class EvaluationData(Document):
     user: UserData
     challenge: ChallengeData
 
-    # def __to_dict__(self):
-    #     if "challenge" in self.__dict__:
-    #         print(self.__dict__)
-    #         self.__dict__.pop("challenge")
-    #     self.__dict__.update(user=self.user.id)
-    #     return self.__dict__
+    def __to_dict__(self):
+        self.__dict__.update(
+            user=self.user.id,
+            level=self.challenge.level,
+            language=self.challenge.language,
+        )
+        if "challenge" in self.__dict__:
+            self.__dict__.pop("challenge")
+        return self.__dict__
 
     @classmethod
     def read_all(cls):
@@ -27,8 +30,3 @@ class EvaluationData(Document):
                 )
                 for x in json.load(file)
             ]
-
-    @classmethod
-    def clear(self) -> None:
-        with open(f"./data/{self.BASE}.json", "w") as file:
-            json.dump([], file, indent=2)
