@@ -139,10 +139,9 @@ class Challenge(commands.GroupCog, name="challenge"):
 
         user._challenge.update({"submited": str(datetime.now(UTC))})
         EvaluationData.create(
-            user=user.id,
+            user=user,
             solution=solution,
-            language=current_challenge.language,
-            level=current_challenge.level,
+            challenge=current_challenge,
         )
         user._log = None
         user.update()
@@ -200,8 +199,7 @@ class Challenge(commands.GroupCog, name="challenge"):
 
         await interaction.followup.send(
             embed=discord.Embed(
-                color=self.color.yellow,
-                description=f"```txt\n{content}```",
+                color=self.color.yellow, description=f"```txt\n{content}```"
             )
         )
 
@@ -231,7 +229,7 @@ class Challenge(commands.GroupCog, name="challenge"):
 
         for challenge in user.challenges:
             if (
-                challenge.language == user_log.langauge
+                challenge.language == user_log.language
                 and challenge.level == user_log.level
                 and challenge.attempt == user_log.attempt
             ):
@@ -257,6 +255,15 @@ class Challenge(commands.GroupCog, name="challenge"):
                 description=f"{interaction.user.mention}, no logs were found.",
             )
         )
+
+    @discord.app_commands.command(description="challenges guidlines")
+    async def help(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+
+        with open("assets/challenges.md", "r") as f:
+            await interaction.followup.send(
+                embed=discord.Embed(color=self.color.blue, description=f.read())
+            )
 
 
 async def setup(bot: commands.Bot):

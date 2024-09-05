@@ -6,7 +6,7 @@ from utils import Language, Result
 
 class Log(Model):
     name: str
-    langauge: Language
+    language: Language
     level: int
     attempt: int
     trace: str
@@ -24,8 +24,8 @@ class UserChallenge(Relation, ChallengeData, ChallengeFields):
     log: str = None
     _solution: str = None
 
-    def __init__(self, langauge: Language, level: int, **kwargs) -> None:
-        self.__dict__.update({**kwargs, **self.MODEL.read(langauge, level).__dict__})
+    def __init__(self, language: Language, level: int, **kwargs) -> None:
+        self.__dict__.update({**kwargs, **self.MODEL.read(language, level).__dict__})
 
     @property
     def solution(self):
@@ -85,27 +85,42 @@ class UserData(Collection):
         self.update()
         return self.coins
 
-    def request_challenge(self, langauge: Language):
-        all_challenges = ChallengeData.read_all(langauge)
+    def request_challenge(self, language: Language):
+        all_challenges = ChallengeData.read_all(language)
         user_challenges = self.challenges
+
+        all_user_challenges: dict[tuple[int, str], list[UserChallenge]] = {}
+
+        for challenge in user_challenges:
+            if challenge.language == language:
+                all_user_challenges.setdefault((challenge.level, challenge.name), [])
+                all_user_challenges[(challenge.level, challenge.name)].append(
+                    challenge
+                )
+
+        all_user_challenges = dict(
+            sorted(all_user_challenges.items(), key=lambda x: x[0][0])
+        )
 
         level = 0
         attempt = 1
-        for user_challenge in user_challenges:
-            if user_challenge.language == langauge and user_challenge.level == level:
-                if user_challenge.result == "OK":
-                    level += 1
-                    attempt = 1
-                else:
-                    attempt += 1
+        for challenges in all_user_challenges.values():
+            challenges.sort(key=lambda x: x.attempt)
+            for challenge in challenges:
+                if level == challenge.level:
+                    if challenge.result == "OK" :
+                        level += 1
+                        attempt = 1
+                    else:
+                        attempt += 1
 
         if level >= len(all_challenges):
             return None
 
-        challenge = ChallengeData.read(langauge, level)
+        challenge = ChallengeData.read(language, level)
 
         self._challenge = {
-            "langauge": langauge,
+            "language": language,
             "level": level,
             "attempt": attempt,
             "requested": str(datetime.now(UTC)),

@@ -14,6 +14,13 @@ async def run(bot: commands.Bot, message: discord.Message) -> None:
         await message.channel.send("hello chef!")
         return
 
+    if context[0] == "help":
+        await message.channel.send(
+            "```txt\nhelp\nusers\nchallenges\nuser [key:id,login] <value>"
+            "challenge [id,login] <language> <level>```"
+        )
+        return
+
     if context[0] == "users":
         MAX = 23
         users = UserData.read_all()
@@ -97,7 +104,7 @@ async def run(bot: commands.Bot, message: discord.Message) -> None:
             case "login":
                 for user_data in UserData.read_all():
                     if (
-                        "-".join([word[:3].lower() for word in user.name.split()])
+                        "-".join([word[:3].lower() for word in user_data.name.split()])
                         == value
                     ):
                         user = user_data
@@ -116,3 +123,36 @@ async def run(bot: commands.Bot, message: discord.Message) -> None:
                 f"**Coins** : {user.name}\n**Training**: {user.training}\n"
             )
         )
+
+    # challenge [id,login] <value>
+    if context[0] == "challenge":
+        key = context[1]
+        value = context[2]
+        user = None
+
+        match key:
+            case "id":
+                user = UserData.read(value)
+            case "login":
+                for user_data in UserData.read_all():
+                    if (
+                        "-".join([word[:3].lower() for word in user_data.name.split()])
+                        == value
+                    ):
+                        user = user_data
+            case _:
+                await message.channel.send(f"Unkown Proprety : {key}")
+                return
+
+        if user is None:
+            await message.channel.send(f"Not found : {value}")
+            return
+
+        for challenge in user.challenges:
+            with open(challenge.solution, "r") as file:
+                await message.channel.send(
+                    embed=discord.Embed(
+                        title=f"{challenge.level} : {challenge.name}",
+                        description=f"```{challenge.extension}\n{file.read()}```",
+                    )
+                )

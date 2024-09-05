@@ -125,7 +125,7 @@ async def evaluations(bot: Bot):
         evaluation.user._log = None
         if feedback is not None:
             evaluation.user._log = {
-                "langauge": evaluation.challenge.language,
+                "language": evaluation.challenge.language,
                 "level": evaluation.challenge.level,
                 "name": evaluation.challenge.name,
                 "attempt": evaluation.user.challenge.attempt,
@@ -170,4 +170,4 @@ async def evaluations(bot: Bot):
             log("Task", clr.green, "Evaluation", f"{evaluation.challenge.name} Done!")
         )
 
-    evaluation.remove()
+        evaluation.remove()
