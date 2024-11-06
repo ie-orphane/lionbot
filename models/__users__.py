@@ -1,7 +1,7 @@
 from models.__schema__ import Collection, Relation, Model
 from models.__challenges__ import ChallengeData, ChallengeFields
 from datetime import datetime, UTC
-from utils import Language, Result
+from utils import Language, Result, Social
 
 
 class Log(Model):
@@ -35,6 +35,19 @@ class UserChallenge(Relation, ChallengeData, ChallengeFields):
         )
 
 
+class UserSocials:
+    github: str = None
+    portfolio: str = None
+    linkedin: str = None
+
+    def __init__(self, **kwargs) -> None:
+        self.__dict__.update(kwargs)
+
+    def exists(self, social: Social) -> bool:
+        link = self.__dict__.get(social)
+        return link is not None
+
+
 class UserData(Collection):
     BASE = "users"
     id: int
@@ -48,6 +61,11 @@ class UserData(Collection):
     _challenges: list[dict]
     _challenge: dict | None
     _log: dict | None
+    _socials: dict
+
+    @property
+    def socials(self):
+        return UserSocials(**self._socials)
 
     @property
     def challenge(self):
@@ -94,9 +112,7 @@ class UserData(Collection):
         for challenge in user_challenges:
             if challenge.language == language:
                 all_user_challenges.setdefault((challenge.level, challenge.name), [])
-                all_user_challenges[(challenge.level, challenge.name)].append(
-                    challenge
-                )
+                all_user_challenges[(challenge.level, challenge.name)].append(challenge)
 
         all_user_challenges = dict(
             sorted(all_user_challenges.items(), key=lambda x: x[0][0])
@@ -108,7 +124,7 @@ class UserData(Collection):
             challenges.sort(key=lambda x: x.attempt)
             for challenge in challenges:
                 if level == challenge.level:
-                    if challenge.result == "OK" :
+                    if challenge.result == "OK":
                         level += 1
                         attempt = 1
                     else:

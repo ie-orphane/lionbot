@@ -16,8 +16,8 @@ async def run(bot: commands.Bot, message: discord.Message) -> None:
 
     if context[0] == "help":
         await message.channel.send(
-            "```txt\nhelp\nusers\nchallenges\nuser [key:id,login] <value>"
-            "challenge [id,login] <language> <level>```"
+            "```txt\nhelp\nusers\nchallenges\nuser [key:id,login] <value>\n"
+            "challenge [id,login] <value>```"
         )
         return
 
@@ -149,10 +149,11 @@ async def run(bot: commands.Bot, message: discord.Message) -> None:
             return
 
         for challenge in user.challenges:
-            with open(challenge.solution, "r") as file:
-                await message.channel.send(
-                    embed=discord.Embed(
-                        title=f"{challenge.level} : {challenge.name}",
-                        description=f"```{challenge.extension}\n{file.read()}```",
+            if challenge._solution:
+                with open(challenge.solution, "r") as file:
+                    await message.channel.send(
+                        embed=discord.Embed(
+                            title=f"{challenge.level} : {challenge.name}",
+                            description=f"```{challenge.extension}\n{file.read()}```",
+                        )
                     )
-                )
