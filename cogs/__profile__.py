@@ -52,7 +52,7 @@ class Profile(Cog):
             color=self.color.yellow,
         ).set_author(name=user.name, icon_url=member.avatar)
 
-        if user.training.startswith("coding"):
+        if user.training and user.training.startswith("coding"):
             embed.add_field(
                 name="Class",
                 value=f"> **Coding** - Web Development **{user.training.removeprefix("coding")}**",
