@@ -63,12 +63,11 @@ class Register(Cog):
             name=" ".join([word.capitalize() for word in name.split()]),
             coins=0,
             token=waka_token,
-            github=None,
             training=None,
-            portfolio=None,
+            graduated=False,
             _challenges=[],
             _challenge=None,
-            graduated=False,
+            _socials={},
         ).update()
 
         await interaction.followup.send(
