@@ -1,3 +1,6 @@
+import re
+import requests
+from urllib.parse import urlparse
 from models.__schema__ import Collection, Relation, Model
 from models.__challenges__ import ChallengeData, ChallengeFields
 from datetime import datetime, UTC
@@ -38,7 +41,6 @@ class UserChallenge(Relation, ChallengeData, ChallengeFields):
 class UserSocials:
     github: str = None
     portfolio: str = None
-    linkedin: str = None
 
     def __init__(self, **kwargs) -> None:
         self.__dict__.update(kwargs)
@@ -49,6 +51,22 @@ class UserSocials:
     def exists(self, social: Social) -> bool:
         link = self.__dict__.get(social)
         return link is not None
+
+    @staticmethod
+    def isvalid(link: str) -> bool:
+        tokens = urlparse(link)
+        return all(
+            getattr(tokens, qualifying_attr) for qualifying_attr in ("scheme", "netloc")
+        )
+
+    def extract_username_from_url(url):
+        # Use regex to extract the username from the GitHub URL
+        match = re.search(r"github\.com/([^/]+)", url)
+        if match:
+            return match.group(1)
+        else:
+            print("Invalid GitHub URL")
+            return None
 
 
 class UserData(Collection):
@@ -151,3 +169,28 @@ class UserData(Collection):
         self.update()
 
         return challenge
+
+    def add_social(self, social: Social, link: str):
+        is_valid_link = UserSocials.isvalid(link)
+
+        match social:
+            case "github":
+                url = "https://api.github.com/users/"
+                if is_valid_link:
+                    if match := re.search(r"github\.com/([^/]+)", link):
+                        url += match.group(1)
+                    else:
+                        return None
+                else:
+                    url += link
+                response = requests.get(url)
+                if not response.ok:
+                    return None
+                if not (link := response.json().get("html_url")):
+                    return None
+            case "portfolio":
+                if not is_valid_link:
+                    return None
+        self._socials[social] = link
+        self.update()
+        return link
