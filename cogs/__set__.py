@@ -6,15 +6,15 @@ from bot.config import Emoji
 
 
 @discord.app_commands.default_permissions(send_messages=False)
-class Socials(commands.GroupCog, name="socials"):
+class Set(commands.GroupCog, name="set"):
     def __init__(self, bot: commands.Bot) -> None:
         super().__init__()
         self.bot = bot
         self.color = COLOR
 
-    @discord.app_commands.command(description="add a new social link")
+    @discord.app_commands.command(description="set a new social link")
     @discord.app_commands.describe(link="social link")
-    async def add(self, interaction: discord.Interaction, social: Social, link: str):
+    async def social(self, interaction: discord.Interaction, social: Social, link: str):
         await interaction.response.defer()
         user = UserData.read(interaction.user.id)
 
@@ -24,15 +24,6 @@ class Socials(commands.GroupCog, name="socials"):
                     color=self.color.red,
                     description=f"{interaction.user.mention}, you are not registered yet!",
                 ).set_footer(text="use /register instead")
-            )
-            return
-
-        if user.socials.exists(social):
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    color=self.color.red,
-                    description=f"**{social}** social already added to your profile !",
-                )
             )
             return
 
@@ -55,4 +46,4 @@ class Socials(commands.GroupCog, name="socials"):
 
 
 async def setup(bot: commands.Bot):
-    await bot.add_cog(Socials(bot))
+    await bot.add_cog(Set(bot))
