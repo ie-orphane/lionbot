@@ -43,6 +43,9 @@ class UserSocials:
     def __init__(self, **kwargs) -> None:
         self.__dict__.update(kwargs)
 
+    def __iter__(self):
+        return iter(self.__dict__.items())
+
     def exists(self, social: Social) -> bool:
         link = self.__dict__.get(social)
         return link is not None

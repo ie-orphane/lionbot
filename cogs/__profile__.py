@@ -52,10 +52,10 @@ class Profile(Cog):
             color=self.color.yellow,
         ).set_author(name=user.name, icon_url=member.avatar)
 
-        if user.training == "codingII":
+        if user.training.startswith("coding"):
             embed.add_field(
                 name="Class",
-                value="> **Coding** - Web Development **II**",
+                value=f"> **Coding** - Web Development **{user.training.removeprefix("coding")}**",
                 inline=False,
             )
 
@@ -71,12 +71,15 @@ class Profile(Cog):
                 inline=False,
             )
 
+        user._socials["wakatime"] = wakatime_url
         embed.add_field(
             name="Socials",
-            value=(
-                f'{f"- [{Emoji.github}  github]({user.github})\n" if user.github else ""}'
-                f'{f"- [{Emoji.wakatime}  wakatime]({wakatime_url})\n" if wakatime_url else ""}'
-                f'{f"- [portfolio]({user.portfolio})" if user.portfolio else ""}'
+            value="\n".join(
+                [
+                    f"- [{Emoji.get(social)}{social}]({link})"
+                    for social, link in user.socials
+                    if link
+                ]
             ),
         )
 
