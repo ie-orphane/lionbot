@@ -164,3 +164,4 @@ data*/
 test*
 assets/
 bot/config.py
+.vscode/
