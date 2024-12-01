@@ -45,6 +45,7 @@ async def blacklist(bot: commands.Bot):
             "amout": GOLDEN_RATIO ** ((random_ordinal - start) / 2),
             "ends_in": random.randint(MIN_END_TIME, MAX_END_TIME),
             "started": False,
+            "claimed_by": None,
         }
 
         open_file("data/blacklist.json", weeks)
