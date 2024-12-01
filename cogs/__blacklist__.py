@@ -63,7 +63,7 @@ class Blacklist(commands.GroupCog, name="blacklist"):
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=self.color.red,
-                    description=f"{interaction.user.mention}, the event already claimed by <@{geeK_id}>.",
+                    description=f"{interaction.user.mention}, the event already finished\nClaimed by <@{geeK_id}>.",
                 ).set_footer(text="maybe the next week!")
             )
             return
@@ -73,7 +73,7 @@ class Blacklist(commands.GroupCog, name="blacklist"):
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=self.color.red,
-                    description=f"{interaction.user.mention}, the event didn't started yet.",
+                    description=f"{interaction.user.mention}, the event didn't started yet ⏲️.",
                 ).set_footer(text="be patient!")
             )
             return
@@ -84,7 +84,7 @@ class Blacklist(commands.GroupCog, name="blacklist"):
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=self.color.red,
-                    description=f"{interaction.user.mention}, the event already finished.",
+                    description=f"{interaction.user.mention}, the event already finished ⏰.",
                 ).set_footer(text="maybe next week!")
             )
             return
@@ -98,7 +98,7 @@ class Blacklist(commands.GroupCog, name="blacklist"):
         await interaction.followup.send(
             embed=discord.Embed(
                 color=self.color.green,
-                description=f"{interaction.user.mention}, congarts;\nYou get your freedom!",
+                description=f"{interaction.user.mention}, congarts 🥳!\nYou are free now.",
             ),
         )
 
