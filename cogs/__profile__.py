@@ -7,6 +7,7 @@ from cogs import Cog
 
 
 class Profile(Cog):
+    @discord.app_commands.guild_only()
     @discord.app_commands.command(description="view your profile")
     @discord.app_commands.describe(member="see member profile")
     async def profile(

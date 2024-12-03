@@ -8,6 +8,7 @@ from bot.config import Emoji
 
 
 class Stats(Cog):
+    @discord.app_commands.guild_only()
     @discord.app_commands.command(description="Show your WakaTime stats")
     @discord.app_commands.describe(
         duration="Choose a duration", member="Choose a member"

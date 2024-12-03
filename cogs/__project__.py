@@ -7,8 +7,8 @@ from discord.ext import commands
 
 
 class Send(Cog):
-    @discord.app_commands.command(description="send a project")
     @discord.app_commands.guild_only()
+    @discord.app_commands.command(description="send a project")
     @discord.app_commands.describe(id="the project's ID")
     async def send_project(self, interaction: discord.Interaction, id: str, link: str):
         await interaction.response.defer()

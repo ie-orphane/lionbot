@@ -5,6 +5,7 @@ from cogs import Cog
 
 
 class Transfer(Cog):
+    @discord.app_commands.guild_only()
     @discord.app_commands.command(description="transfer coins to anthor geek")
     @discord.app_commands.describe(amount="choose an amount", member="choose a geek")
     async def transfer(

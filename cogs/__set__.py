@@ -6,7 +6,7 @@ from utils import Social, COLOR
 from bot.config import Emoji
 
 
-@discord.app_commands.default_permissions(send_messages=False)
+@discord.app_commands.guild_only()
 class Set(commands.GroupCog, name="set"):
     def __init__(self, bot: commands.Bot) -> None:
         super().__init__()
@@ -68,7 +68,7 @@ class Set(commands.GroupCog, name="set"):
                 )
             )
             return
-        
+
         user.token = waka_token
         user.update()
 

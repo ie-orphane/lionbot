@@ -5,7 +5,7 @@ from utils import COLOR, open_file, get_week
 import datetime as dt
 
 
-@discord.app_commands.default_permissions(send_messages=False)
+@discord.app_commands.guild_only()
 class Blacklist(commands.GroupCog, name="blacklist"):
     def __init__(self, bot: commands.Bot) -> None:
         super().__init__()
