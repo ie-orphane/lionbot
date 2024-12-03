@@ -1,12 +1,11 @@
-import math
 from discord.ext import tasks
 from datetime import datetime, UTC
 from utils import get_files, clr, get_week, Week, log
 from models import UserData, WeekData
 from wakatime import get_week_summary
+from constants import GOLDEN_RATIO
 
 
-GOLDEN_RATIO = (1 + math.sqrt(5)) / 2
 THRESHOLD = 19_800
 FACTOR = THRESHOLD / GOLDEN_RATIO
 

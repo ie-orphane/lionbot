@@ -1,13 +1,13 @@
-import math
 import discord
 import datetime as dt
 from discord.ext import commands
 from models import UserData
 from utils import COLOR, open_file, get_week
 from bot.config import Emoji
+from constants import GOLDEN_RATIO
 
-GOLDEN_RATIO = (1 + math.sqrt(5)) / 2
-AMOUNT = GOLDEN_RATIO ** 11
+
+AMOUNT = GOLDEN_RATIO**11
 
 
 @discord.app_commands.guild_only()
@@ -64,7 +64,7 @@ class Blacklist(commands.GroupCog, name="blacklist"):
                     )
                 )
                 return
-        
+
             await interaction.user.remove_roles(black_list_role)
 
             user.sub_coins(current_week["amout"], "blacklist out")
@@ -106,7 +106,7 @@ class Blacklist(commands.GroupCog, name="blacklist"):
                 ).set_footer(text="maybe next week!")
             )
             return
-        
+
         if user.coins < current_week["amout"]:
             await interaction.followup.send(
                 embed=discord.Embed(

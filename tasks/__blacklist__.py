@@ -1,17 +1,16 @@
 import random
-import math
 import datetime as dt
 from discord.ext import tasks, commands
 from utils import get_week, open_file, clr, log, COLOR
 from bot.config import CHANNELS, Emoji
+from constants import GOLDEN_RATIO
+
 
 START_HOUR_UTC, START_MINUTE_UTC = 8, 30
 END_HOUR_UTC, END_MINUTE_UTC = 16, 0
 
 MIN_END_TIME = 60 * 1
 MAX_END_TIME = 60 * 5
-
-GOLDEN_RATIO = (1 + math.sqrt(5)) / 2
 
 
 @tasks.loop(seconds=15)
