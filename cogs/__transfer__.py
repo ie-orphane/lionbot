@@ -13,6 +13,17 @@ class Transfer(Cog):
     ):
         await interaction.response.defer()
 
+        if amount <= 0:
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    title=f"transfer denied",
+                    color=self.color.red,
+                    description=f"{interaction.user.mention}, invalid amount of coins to transfer",
+                ).set_footer(text="the minimum amount is 1."),
+                ephemeral=True,
+            )
+            return
+
         if member == interaction.user:
             await interaction.followup.send(
                 embed=discord.Embed(
