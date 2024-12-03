@@ -18,7 +18,7 @@ class Transfer(Cog):
                 embed=discord.Embed(
                     title=f"transfer denied",
                     color=self.color.red,
-                    description=f"{interaction.user.mention}, invalid amount of coins to transfer",
+                    description=f"{interaction.user.mention}, **{amount}** is an invalid amount!",
                 ).set_footer(text="the minimum amount is 1."),
                 ephemeral=True,
             )
