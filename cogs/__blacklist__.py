@@ -1,8 +1,13 @@
+import math
 import discord
+import datetime as dt
 from discord.ext import commands
 from models import UserData
 from utils import COLOR, open_file, get_week
-import datetime as dt
+from bot.config import Emoji
+
+GOLDEN_RATIO = (1 + math.sqrt(5)) / 2
+AMOUNT = GOLDEN_RATIO ** 11
 
 
 @discord.app_commands.guild_only()
@@ -51,11 +56,24 @@ class Blacklist(commands.GroupCog, name="blacklist"):
         current_week = weeks.get(str(this_week.count))
 
         if current_week is None:
+            if user.coins < AMOUNT:
+                await interaction.followup.send(
+                    embed=discord.Embed(
+                        color=self.color.red,
+                        description=f"{interaction.user.mention}, you don't have ehough coins!\nYou need **{AMOUNT - user.coins}** {Emoji.coin} more.",
+                    )
+                )
+                return
+        
+            await interaction.user.remove_roles(black_list_role)
+
+            user.sub_coins(current_week["amout"], "blacklist out")
+
             await interaction.followup.send(
                 embed=discord.Embed(
-                    color=self.color.red,
-                    description=f"{interaction.user.mention}, no event for this week.",
-                ).set_footer(text="maybe the next week!")
+                    color=self.color.green,
+                    description=f"{interaction.user.mention}, congarts 🥳!\nYou are free now.\nYou paied {AMOUNT} {Emoji.coin}.",
+                ),
             )
             return
 
@@ -88,6 +106,15 @@ class Blacklist(commands.GroupCog, name="blacklist"):
                 ).set_footer(text="maybe next week!")
             )
             return
+        
+        if user.coins < current_week["amout"]:
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    color=self.color.red,
+                    description=f"{interaction.user.mention}, you need {current_week["amout"] - user.coins} {Emoji.coin} more.",
+                )
+            )
+            return
 
         await interaction.user.remove_roles(black_list_role)
 
@@ -98,7 +125,7 @@ class Blacklist(commands.GroupCog, name="blacklist"):
         await interaction.followup.send(
             embed=discord.Embed(
                 color=self.color.green,
-                description=f"{interaction.user.mention}, congarts 🥳!\nYou are free now.",
+                description=f"{interaction.user.mention}, congarts 🥳!\nYou paied {current_week["amout"]} {Emoji.coin}\nYou are free now.",
             ),
         )
 
