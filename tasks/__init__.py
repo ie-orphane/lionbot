@@ -22,27 +22,34 @@ ALL_TASKS: dict[str, Callable[[commands.Bot], Coroutine]] = {
     "blacklist": blacklist,
 }
 
-load_dotenv("./.env")
-
-TASKS: str | None = os.getenv("TASKS")
 
 
 def start(bot: commands.Bot) -> None:
+    load_dotenv(".env")
+    TASKS: str | None = os.getenv("TASKS")
+
+    if TASKS is None:
+        bot.log("Error", clr.red, "Task", ".env missed TASKS")
+        return
+
+    if TASKS != "ALL" and (not (TASKS.startswith("[") and TASKS.endswith("]"))):
+        bot.log("Error", clr.red, "Task", "invalid format of TASKS")
+        return
+
     tasks: list = []
 
-    if TASKS:
-        if TASKS == "ALL":
-            tasks = list(ALL_TASKS.items())
-        elif TASKS.startswith("[") and TASKS.endswith("]"):
-            try:
+    if TASKS == "ALL":
+        tasks = list(ALL_TASKS.items())
+    elif TASKS.startswith("[") and TASKS.endswith("]"):
+        try:
 
-                tasks = [
-                    (task_name, task)
-                    for task_name, task in ALL_TASKS.items()
-                    if task_name in json.loads(TASKS)
-                ]
-            except json.decoder.JSONDecodeError:
-                bot.log("Error", clr.red, "Task", "failed to load tasks!")
+            tasks = [
+                (task_name, task)
+                for task_name, task in ALL_TASKS.items()
+                if task_name in json.loads(TASKS)
+            ]
+        except json.decoder.JSONDecodeError:
+            bot.log("Error", clr.red, "Task", "failed to load tasks!")
 
     bot.log(
         "Info", clr.yellow, "Task", f"loading {", ".join(map(lambda x: x[0], tasks))}."
