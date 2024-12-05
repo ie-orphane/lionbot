@@ -18,7 +18,9 @@ class Bot(commands.Bot):
         self, type: Literal["Info", "Error", "Task"], func, name: str, message: str
     ):
         log_time = clr.black(datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S"))
-        print(f"{log_time} {func(type)}    {clr.magenta(name)} {message}")
+        print(
+            f"{log_time} {func(type)}{' ' * (8 - len(type))} {clr.magenta(name)} {message}"
+        )
 
     async def setup_hook(self) -> None:
         initial_extensions = [
@@ -36,14 +38,7 @@ class Bot(commands.Bot):
 
     async def on_ready(self):
         self.log("Info", clr.blue, "Bot", f"Logged in as {self.user}")
-
-        tasks.deadline.start(self)
-        tasks.weekly_data.start()
-        tasks.geek_of_the_week.start(self)
-        tasks.leaderboard.start(self)
-        tasks.evaluations.start(self)
-        tasks.blacklist.start(self)
-        
+        tasks.start(self)
 
     async def on_message(self, message: discord.Message):
         def is_student_of(class_name: str, author: discord.Member | discord.User):

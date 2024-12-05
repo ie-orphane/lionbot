@@ -1,7 +1,8 @@
 from discord.ext import tasks, commands
-from utils import clr, log, COLOR
+from utils import clr, COLOR
 from models import WeekData
 from bot.config import GUILD
+
 
 @tasks.loop(minutes=5)
 async def geek_of_the_week(bot: commands.Bot):
@@ -34,18 +35,14 @@ async def geek_of_the_week(bot: commands.Bot):
         geek_id = None
         for id in last_week.geeks:
             black_list_member = [
-                member
-                for member in black_list_role.members
-                if member.id == int(id)
+                member for member in black_list_role.members if member.id == int(id)
             ]
 
             if black_list_member:
                 try:
                     await black_list_member[0].remove_roles(geek_role)
                     await black_list_member[0].edit(
-                        nick=black_list_member[0].display_name.replace(
-                            " 🏆", ""
-                        )
+                        nick=black_list_member[0].display_name.replace(" 🏆", "")
                     )
                 except Exception as e:
                     print(guild, e)
@@ -59,7 +56,7 @@ async def geek_of_the_week(bot: commands.Bot):
             if member.id == geek_id:
                 return
 
-        print(log("Task", clr.yellow, "Geek Role", "Updating"))
+        bot.log("Task", clr.yellow, "Geek Role", "Updating")
 
         for geek_memeber in geek_role.members:
             try:
@@ -76,7 +73,7 @@ async def geek_of_the_week(bot: commands.Bot):
                     await member.add_roles(geek_role)
                     await member.edit(nick=member.display_name + " 🏆")
                 except Exception as e:
-                    print(log("Task", clr.red, "Geek Role", f"Failed : {e}"))
+                    bot.log("Task", clr.red, "Geek Role", f"Failed : {e}")
                     return
 
-        print(log("Task", clr.green, "Geek Role", "Updated!"))
+        bot.log("Task", clr.green, "Geek Role", "Updated!")

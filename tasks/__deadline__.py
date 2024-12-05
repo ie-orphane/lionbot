@@ -1,14 +1,12 @@
 import discord
-from discord.ext import tasks
-import discord.ext
-import discord.ext.commands
+from discord.ext import tasks, commands
 from models import ChannelData, FileData, UserData
 from datetime import datetime, UTC, timedelta
 from utils import clr, COLOR, MESSAGE
 
 
 @tasks.loop(seconds=15)
-async def deadline(bot):
+async def deadline(bot: commands.Bot):
     for channel in ChannelData.read_all():
         now = datetime.now(UTC).replace(second=0, microsecond=0)
         if channel.time == now:

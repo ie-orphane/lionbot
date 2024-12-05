@@ -1,23 +1,20 @@
 import subprocess
 import discord
-from discord.ext import tasks
-from discord.ext.commands import Bot
+from discord.ext import tasks, commands
 from models import EvaluationData
 from datetime import datetime, UTC
-from utils import clr, log, COLOR, MESSAGE
+from utils import clr, COLOR, MESSAGE
 from bot.config import Emoji
 
 
 @tasks.loop(minutes=1)
-async def evaluations(bot: Bot):
+async def evaluations(bot: commands.Bot):
     for evaluation in EvaluationData.read_all():
-        print(
-            log(
-                "Task",
-                clr.yellow,
-                "Evaluation",
-                f"{evaluation.challenge.name} from {evaluation.user.name}",
-            )
+        bot.log(
+            "Task",
+            clr.yellow,
+            "Evaluation",
+            f"{evaluation.challenge.name} from {evaluation.user.name}",
         )
 
         feedback = None
@@ -166,8 +163,6 @@ async def evaluations(bot: Bot):
         except Exception as e:
             print(f"Failed to send a message to {evaluation.user.name}\nError: {e}")
 
-        print(
-            log("Task", clr.green, "Evaluation", f"{evaluation.challenge.name} Done!")
-        )
+        bot.log("Task", clr.green, "Evaluation", f"{evaluation.challenge.name} Done!")
 
         evaluation.remove()
