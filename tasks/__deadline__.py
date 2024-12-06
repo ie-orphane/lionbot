@@ -2,7 +2,8 @@ import discord
 from discord.ext import tasks, commands
 from models import ChannelData, FileData, UserData
 from datetime import datetime, UTC, timedelta
-from utils import clr, COLOR, MESSAGE
+from utils import clr
+from constants import COLOR, MESSAGE
 
 
 @tasks.loop(seconds=15)

@@ -1,5 +1,5 @@
 from discord.ext import commands
-from utils import COLOR
+from constants import COLOR
 
 
 class Cog(commands.Cog):

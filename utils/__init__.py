@@ -1,11 +1,4 @@
-import utils.__colorful__ as clr
-from utils.__helpers__ import (
-    get_week,
-    leaderboard_image,
-    open_file,
-    log,
-    get_files,
-    Week,
-)
-from utils.__classes__ import COLOR, MESSAGE, RelativeDateTime
-from utils.__additionals__ import *
+from .__colorful__ import Color as clr
+from .__helpers__ import *
+from .__classes__ import *
+from .__additionals__ import *

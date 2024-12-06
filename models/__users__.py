@@ -73,7 +73,7 @@ class UserData(Collection):
     BASE = "users"
     id: int
     name: str
-    coins: int
+    coins: float
     token: str
     github: str
     portfolio: str

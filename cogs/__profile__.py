@@ -1,9 +1,11 @@
 import discord
+import requests
 from models import UserData
 from typing import Union
-import requests
 from bot.config import Emoji
 from cogs import Cog
+from constants import BOT_COINS_AMOUNT
+from utils import number
 
 
 class Profile(Cog):
@@ -18,6 +20,39 @@ class Profile(Cog):
         await interaction.response.defer()
 
         member = member or interaction.user
+
+        if interaction.application_id == member.id:
+            embed = (
+                discord.Embed(
+                    color=self.color.yellow,
+                )
+                .set_author(name=member.name, icon_url=member.avatar)
+                .add_field(
+                    name="Class",
+                    value=f"> **Coding** - Discord Integration",
+                    inline=False,
+                )
+                .add_field(
+                    name="Coins",
+                    value=f"> **{'**.'.join(str(number(BOT_COINS_AMOUNT)).split('.')) if '.' in str(BOT_COINS_AMOUNT) else f'{number(BOT_COINS_AMOUNT)}**'} {Emoji.coin}",
+                )
+                .add_field(
+                    name="Favorite Language",
+                    value=f"> {Emoji.languages["Python"]} Python",
+                    inline=False,
+                )
+                .add_field(
+                    name="Socials",
+                    value=(
+                        f"- [{Emoji.get("github")}github](https://github.com/ie-orphane/lionbot)\n"
+                        f"- [{Emoji.get("portfolio")}portfolio](https://lionsgeek.ma/)"
+                    ),
+                )
+            )
+
+            await interaction.followup.send(embed=embed)
+            return
+
         user = UserData.read(member.id)
 
         if user is None:
@@ -62,7 +97,7 @@ class Profile(Cog):
 
         embed.add_field(
             name="Coins",
-            value=f"> **{'**.'.join(str(user.coins).split('.')) if '.' in str(user.coins) else f'{user.coins}**'} {Emoji.coin}",
+            value=f"> **{'**.'.join(str(number(user.coins)).split('.')) if '.' in str(user.coins) else f'{number(user.coins)}**'} {Emoji.coin}",
         )
 
         if favorite_language:

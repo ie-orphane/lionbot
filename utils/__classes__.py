@@ -1,6 +1,18 @@
 import random
 from datetime import datetime, UTC
 
+__all__ = [
+    "number",
+    "Color",
+    "Message",
+    "RelativeDateTime",
+]
+
+
+class number(float):
+    def __str__(self):
+        return super().__format__("_").replace("_", " ")
+
 
 class Color:
     def __init__(self) -> None:
@@ -117,7 +129,3 @@ class RelativeDateTime:
             if n >= 1:
                 return f"{n} {period}{'s'if n > 1 else ''} ago"
         return "now"
-
-
-MESSAGE = Message()
-COLOR = Color()

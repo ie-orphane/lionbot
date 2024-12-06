@@ -3,8 +3,9 @@ import discord
 from discord.ext import tasks, commands
 from models import EvaluationData
 from datetime import datetime, UTC
-from utils import clr, COLOR, MESSAGE
+from utils import clr
 from bot.config import Emoji
+from constants import COLOR, MESSAGE
 
 
 @tasks.loop(minutes=1)

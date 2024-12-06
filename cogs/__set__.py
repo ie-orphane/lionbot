@@ -2,8 +2,9 @@ import discord
 import requests
 from discord.ext import commands
 from models import UserData
-from utils import Social, COLOR
+from utils import Social
 from bot.config import Emoji
+from constants import COLOR
 
 
 @discord.app_commands.guild_only()

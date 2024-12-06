@@ -3,7 +3,7 @@ from discord.ext import commands
 from models import ChannelData, FileData
 from typing import Literal
 from datetime import datetime, UTC, timedelta
-from utils import COLOR
+from constants import COLOR
 
 
 @discord.app_commands.guild_only()

@@ -3,7 +3,8 @@ from discord.ext import commands
 from models import UserData, EvaluationData, UserChallenge
 from bot.config import Emoji
 from datetime import datetime, UTC
-from utils import Language, MESSAGE, COLOR, RelativeDateTime
+from utils import Language, RelativeDateTime
+from constants import MESSAGE, COLOR
 
 
 @discord.app_commands.default_permissions(send_messages=False)

@@ -2,12 +2,9 @@ import discord
 import datetime as dt
 from discord.ext import commands
 from models import UserData
-from utils import COLOR, open_file, get_week
+from utils import open_file, get_week
 from bot.config import Emoji
-from constants import GOLDEN_RATIO
-
-
-AMOUNT = GOLDEN_RATIO**11
+from constants import OUTLIST_AMOUNT, COLOR
 
 
 @discord.app_commands.guild_only()
@@ -56,11 +53,11 @@ class Blacklist(commands.GroupCog, name="blacklist"):
         current_week = weeks.get(str(this_week.count))
 
         if current_week is None:
-            if user.coins < AMOUNT:
+            if user.coins < OUTLIST_AMOUNT:
                 await interaction.followup.send(
                     embed=discord.Embed(
                         color=self.color.red,
-                        description=f"{interaction.user.mention}, you don't have ehough coins!\nYou need **{AMOUNT - user.coins}** {Emoji.coin} more.",
+                        description=f"{interaction.user.mention}, you don't have ehough coins!\nYou need **{OUTLIST_AMOUNT - user.coins}** {Emoji.coin} more.",
                     )
                 )
                 return
@@ -72,7 +69,7 @@ class Blacklist(commands.GroupCog, name="blacklist"):
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=self.color.green,
-                    description=f"{interaction.user.mention}, congarts 🥳!\nYou are free now.\nYou paied {AMOUNT} {Emoji.coin}.",
+                    description=f"{interaction.user.mention}, congarts 🥳!\nYou are free now.\nYou paied {OUTLIST_AMOUNT} {Emoji.coin}.",
                 ),
             )
             return

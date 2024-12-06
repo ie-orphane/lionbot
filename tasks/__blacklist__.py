@@ -1,9 +1,9 @@
 import random
 import datetime as dt
 from discord.ext import tasks, commands
-from utils import get_week, open_file, clr, log, COLOR
+from utils import get_week, open_file, clr, log
 from bot.config import CHANNELS, Emoji
-from constants import GOLDEN_RATIO
+from constants import GOLDEN_RATIO, COLOR
 
 
 START_HOUR_UTC, START_MINUTE_UTC = 8, 30

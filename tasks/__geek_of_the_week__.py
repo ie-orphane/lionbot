@@ -1,7 +1,8 @@
 from discord.ext import tasks, commands
-from utils import clr, COLOR
+from utils import clr
 from models import WeekData
 from bot.config import GUILD
+from constants import COLOR
 
 
 @tasks.loop(minutes=5)
