@@ -5,6 +5,7 @@ __all__ = [
     "GOLDEN_RATIO",
     "BOT_COINS_AMOUNT",
     "OUTLIST_AMOUNT",
+    "EXCLUDE_DIRS",
     "MESSAGE",
     "COLOR",
 ]
@@ -16,3 +17,5 @@ OUTLIST_AMOUNT = GOLDEN_RATIO**11
 
 MESSAGE = Message()
 COLOR = Color()
+
+EXCLUDE_DIRS = ["__pycache__", ".git", "venv"]

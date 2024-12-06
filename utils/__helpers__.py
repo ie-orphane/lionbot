@@ -14,7 +14,30 @@ __all__ = [
     "log",
     "get_files",
     "Week",
+    "convert_seconds",
 ]
+
+
+def convert_seconds(total_seconds: int) -> str:
+    # Define time units in seconds
+    time_units = [
+        ("y", 365 * 24 * 3600),  # 1 year = 365 days
+        ("mo", 30 * 24 * 3600),  # 1 month = 30 days (approx)
+        ("d", 24 * 3600),  # 1 day = 24 hours
+        ("h", 3600),  # 1 hour = 3600 seconds
+        ("min", 60),  # 1 minute = 60 seconds
+        ("s", 1),  # 1 second = 1 second
+    ]
+
+    result = []
+
+    # Loop through time units and calculate
+    for label, unit in time_units:
+        if total_seconds >= unit:
+            value, total_seconds = divmod(total_seconds, unit)
+            result.append(f"{value}{label}")
+
+    return " ".join(result)
 
 
 def log(type: Literal["Info", "Error", "Task"], func, name: str, message: str):
