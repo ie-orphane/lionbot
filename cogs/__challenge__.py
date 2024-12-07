@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from models import UserData, EvaluationData, UserChallenge
-from bot.config import Emoji
+from config import get_emoji
 from datetime import datetime, UTC
 from utils import Language, RelativeDateTime
 from constants import MESSAGE, COLOR
@@ -49,7 +49,7 @@ class Challenge(commands.GroupCog, name="challenge"):
                         f"### {current_challenge.name}\n"
                         f"```ansi\n{current_challenge.text}```\n"
                         f"**Level** : {current_challenge.level}\n"
-                        f"**Reward** : {current_challenge.coins} {Emoji.coin}\n"
+                        f"**Reward** : {current_challenge.coins} {get_emoji("coin")}\n"
                         f"**Excpected File** : {current_challenge.file}"
                     ),
                 )
@@ -73,7 +73,7 @@ class Challenge(commands.GroupCog, name="challenge"):
                 description=(
                     f"```ansi\n{challenge.text}```\n"
                     f"**Level** : {challenge.level}\n"
-                    f"**Reward** : {challenge.coins} {Emoji.coin}\n"
+                    f"**Reward** : {challenge.coins} {get_emoji("coin")}\n"
                     f"**Excpected File** : {challenge.file}"
                 ),
             ).set_footer(text="as always follow the law and doubt your code!"),
@@ -244,7 +244,7 @@ class Challenge(commands.GroupCog, name="challenge"):
                         description=(
                             f"```ansi\n{user_log.trace}```\n"
                             f"**Result** : {user_log.result}\n"
-                            f"**Cost** : {user_log.cost} {Emoji.coin}"
+                            f"**Cost** : {user_log.cost} {get_emoji("coin")}"
                         ),
                     )
                 )

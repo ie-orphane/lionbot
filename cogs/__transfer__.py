@@ -1,6 +1,6 @@
 import discord
 from models import UserData
-from bot.config import Emoji
+from config import get_emoji
 from cogs import Cog
 
 
@@ -63,8 +63,8 @@ class Transfer(Cog):
                 embed=discord.Embed(
                     color=self.color.red,
                     description=(
-                        f"{member.mention}, you don't have {amount} {Emoji.coin}!"
-                        f"\nYour current balance is {user_data.coins} {Emoji.coin}."
+                        f"{member.mention}, you don't have {amount} {get_emoji("coin")}!"
+                        f"\nYour current balance is {user_data.coins} {get_emoji("coin")}."
                     ),
                 ),
                 ephemeral=True,
@@ -80,7 +80,7 @@ class Transfer(Cog):
         await interaction.followup.send(
             embed=discord.Embed(
                 color=self.color.yellow,
-                description=f"{amount} {Emoji.coin} transfered from {interaction.user.mention} to {member.mention}.",
+                description=f"{amount} {get_emoji("coin")} transfered from {interaction.user.mention} to {member.mention}.",
             )
         )
 

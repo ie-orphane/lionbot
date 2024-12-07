@@ -2,8 +2,9 @@ import random
 import datetime as dt
 from discord.ext import tasks, commands
 from utils import get_week, open_file, clr, log
-from bot.config import CHANNELS, Emoji
+from bot.config import CHANNELS
 from constants import GOLDEN_RATIO, COLOR
+from config import get_emoji
 
 
 START_HOUR_UTC, START_MINUTE_UTC = 8, 30
@@ -78,7 +79,7 @@ async def blacklist(bot: commands.Bot):
         await eventchannel.send(
             content=(
                 f"{black_list_role.mention}, Outlist Event Started!\n"
-                f"Use `/blacklist out` with only **{current_week["amout"]}** {Emoji.coin} to get your freedom.\n"
+                f"Use `/blacklist out` with only **{current_week["amout"]}** {get_emoji("coin")} to get your freedom.\n"
                 f"You have only **{(current_week["ends_in"] % 3600) // 60}** minutes and **{current_week["ends_in"] % 60}** seconds until the event ends."
             )
         )

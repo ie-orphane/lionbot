@@ -3,7 +3,7 @@ import datetime as dt
 from discord.ext import commands
 from models import UserData
 from utils import open_file, get_week
-from bot.config import Emoji
+from config import get_emoji
 from constants import OUTLIST_AMOUNT, COLOR
 
 
@@ -57,7 +57,7 @@ class Blacklist(commands.GroupCog, name="blacklist"):
                 await interaction.followup.send(
                     embed=discord.Embed(
                         color=self.color.red,
-                        description=f"{interaction.user.mention}, you don't have ehough coins!\nYou need **{OUTLIST_AMOUNT - user.coins}** {Emoji.coin} more.",
+                        description=f"{interaction.user.mention}, you don't have ehough coins!\nYou need **{OUTLIST_AMOUNT - user.coins}** {get_emoji("coin")} more.",
                     )
                 )
                 return
@@ -69,7 +69,7 @@ class Blacklist(commands.GroupCog, name="blacklist"):
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=self.color.green,
-                    description=f"{interaction.user.mention}, congarts 🥳!\nYou are free now.\nYou paied {OUTLIST_AMOUNT} {Emoji.coin}.",
+                    description=f"{interaction.user.mention}, congarts 🥳!\nYou are free now.\nYou paied {OUTLIST_AMOUNT} {get_emoji("coin")}.",
                 ),
             )
             return
@@ -108,7 +108,7 @@ class Blacklist(commands.GroupCog, name="blacklist"):
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=self.color.red,
-                    description=f"{interaction.user.mention}, you need {current_week["amout"] - user.coins} {Emoji.coin} more.",
+                    description=f"{interaction.user.mention}, you need {current_week["amout"] - user.coins} {get_emoji("coin")} more.",
                 )
             )
             return
@@ -122,7 +122,7 @@ class Blacklist(commands.GroupCog, name="blacklist"):
         await interaction.followup.send(
             embed=discord.Embed(
                 color=self.color.green,
-                description=f"{interaction.user.mention}, congarts 🥳!\nYou paied {current_week["amout"]} {Emoji.coin}\nYou are free now.",
+                description=f"{interaction.user.mention}, congarts 🥳!\nYou paied {current_week["amout"]} {get_emoji("coin")}\nYou are free now.",
             ),
         )
 

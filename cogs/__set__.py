@@ -3,7 +3,7 @@ import requests
 from discord.ext import commands
 from models import UserData
 from utils import Social
-from bot.config import Emoji
+from config import get_emoji
 from constants import COLOR
 
 
@@ -42,7 +42,7 @@ class Set(commands.GroupCog, name="set"):
         await interaction.followup.send(
             embed=discord.Embed(
                 color=self.color.green,
-                description=f"[{Emoji.get(social)}{social}]({new_link}) social added succefuly",
+                description=f"[{get_emoji(social)}{social}]({new_link}) social added succefuly",
             ).set_footer(text="check your profile using /profile"),
         )
 

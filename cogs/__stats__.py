@@ -5,7 +5,7 @@ from typing import Literal
 from datetime import datetime, UTC, timedelta, date
 from models import UserData
 from cogs import Cog
-from bot.config import Emoji
+from config import get_emoji, get_extension
 from constants import EXCLUDE_DIRS, GOLDEN_RATIO
 from utils import convert_seconds
 
@@ -47,8 +47,7 @@ class Stats(Cog):
                 dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS]
 
                 for file in files:
-                    extension = file.split(".")[-1]
-                    extension = Emoji.extensions.get(extension, extension)
+                    extension = get_extension(file.split(".")[-1])
                     extension_count.setdefault(extension, 0)
                     extension_count[extension] += 1
                     total_count += 1
@@ -57,7 +56,7 @@ class Stats(Cog):
 
             languages = "\n".join(
                 map(
-                    lambda x: f"{Emoji.languages.get(x[0], " ")} {x[0]:<{max_lang_len}} - {convert_seconds(int(x[1] * factor * GOLDEN_RATIO))}",
+                    lambda x: f"{get_emoji(x[0])} {x[0]:<{max_lang_len}} - {convert_seconds(int(x[1] * factor * GOLDEN_RATIO))}",
                     sorted(extension_count.items(), key=lambda x: x[1], reverse=True),
                 )
             )
@@ -161,7 +160,7 @@ class Stats(Cog):
         languages = "\n".join(
             [
                 (
-                    f"{Emoji.languages.get(lang, " ")}"
+                    f"{get_emoji(lang)}"
                     f"{lang:^{sorted(map(lambda x: len(x), languages.keys()))[-1] + 2}}-"
                     f"{amount:^{sorted(map(lambda x: len(x), languages.values()))[-1] + 2}}"
                 )

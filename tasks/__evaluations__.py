@@ -4,7 +4,7 @@ from discord.ext import tasks, commands
 from models import EvaluationData
 from datetime import datetime, UTC
 from utils import clr
-from bot.config import Emoji
+from config import get_emoji
 from constants import COLOR, MESSAGE
 
 
@@ -147,7 +147,7 @@ async def evaluations(bot: commands.Bot):
                             f"{MESSAGE.succeeding}\n\nChallenge : **{evaluation.challenge.name}"
                             f"**\nLanguage : {evaluation.challenge.language}\nLevel : "
                             f"{evaluation.challenge.level}\nResult : **{result}**\n"
-                            f"Reward : **{evaluation.challenge.coins}** {Emoji.coin}"
+                            f"Reward : **{evaluation.challenge.coins}** {get_emoji("coin")}"
                         ),
                     )
                     if result == "OK"
