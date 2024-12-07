@@ -6,7 +6,8 @@ from discord.ext import commands
 from utils import clr
 from typing import Literal
 from datetime import datetime, UTC
-from bot.config import GUILD, CHANNELS, USERS
+from bot.config import GUILD, USERS
+from config import get_channel
 
 
 class Bot(commands.Bot):
@@ -73,7 +74,17 @@ class Bot(commands.Bot):
             await contexts.run(self, message)
 
     async def on_member_join(self, member: discord.Member):
-        if member.guild.id == GUILD:
-            await self.get_channel(CHANNELS.welcome).send(
-                content=f"Hey {member.mention}, welcome to **{member.guild}**!"
-            )
+        if member.guild.id != GUILD:
+            return
+
+        if welcome_channel_id := get_channel("welcome") is None:
+            self.log("Error", clr.red, "Bot", "welcome channel id not found")
+            return
+
+        if welcome_channel := self.get_channel(welcome_channel_id) is None:
+            self.log("Error", clr.red, "Bot", "welcome channel not found")
+            return
+
+        await welcome_channel.send(
+            content=f"Hey {member.mention}, welcome to **{member.guild}**!"
+        )

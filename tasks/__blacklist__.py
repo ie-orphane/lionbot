@@ -1,10 +1,10 @@
 import random
 import datetime as dt
 from discord.ext import tasks, commands
-from utils import get_week, open_file, clr, log
-from bot.config import CHANNELS
+from utils import get_week, open_file, log
 from constants import GOLDEN_RATIO, COLOR
-from config import get_emoji
+from config import get_emoji, get_channel
+from discord.channel import TextChannel
 
 
 START_HOUR_UTC, START_MINUTE_UTC = 8, 30
@@ -14,13 +14,37 @@ MIN_END_TIME = 60 * 1
 MAX_END_TIME = 60 * 5
 
 
+async def send_message(current_week: dict, outlist_event_channel) -> None:
+
+    black_list_role = None
+
+    # get Geek of the week and black list roles
+    for role in outlist_event_channel.guild.roles:
+        if role.name == "Black List":
+            black_list_role = role
+
+    # if not found create new one
+    if not black_list_role:
+        black_list_role = await outlist_event_channel.guild.create_role(
+            name="Black List", color=COLOR.black
+        )
+
+    await outlist_event_channel.send(
+        content=(
+            f"{black_list_role.mention}, Outlist Event Started!\n"
+            f"Use `/blacklist out` with only **{current_week["amout"]}** {get_emoji("coin")} to get your freedom.\n"
+            f"You have only **{(current_week["ends_in"] % 3600) // 60}** minutes and **{current_week["ends_in"] % 60}** seconds until the event ends."
+        )
+    )
+
+
 @tasks.loop(seconds=15)
 async def blacklist(bot: commands.Bot):
     this_week = get_week()
     weeks = open_file("data/blacklist.json")
 
     if str(this_week.count) not in weeks:
-        bot.log("Task", clr.yellow, "Blacklist", "Initiliasing...")
+        log("Task", "yellow", "Blacklist", "Initiliasing...")
 
         start = this_week.start_date.toordinal()
         random_ordinal = random.randint(start, start + 4)
@@ -50,7 +74,7 @@ async def blacklist(bot: commands.Bot):
 
         open_file("data/blacklist.json", weeks)
 
-        bot.log("Task", clr.green, "Blacklist", "Initiliased!")
+        log("Task", "green", "Blacklist", "Initiliased!")
 
     current_week = weeks[str(this_week.count)]
 
@@ -59,33 +83,33 @@ async def blacklist(bot: commands.Bot):
 
     now = dt.datetime.now(dt.UTC).replace(second=0, microsecond=0)
     if dt.datetime.fromisoformat(current_week["datetime"]) == now:
-        bot.log("Task", clr.yellow, "Blacklist", "starting...")
+        log("Task", "yellow", "Blacklist", "starting...")
 
-        eventchannel = bot.get_channel(CHANNELS.blacklist_event)
+        if (outlist_event_channel_id := get_channel("outlist_event")) is not None:
 
-        black_list_role = None
+            if (
+                outlist_event_channel := bot.get_channel(outlist_event_channel_id)
+            ) is not None:
 
-        # get Geek of the week and black list roles
-        for role in eventchannel.guild.roles:
-            if role.name == "Black List":
-                black_list_role = role
+                if isinstance(outlist_event_channel, TextChannel):
+                    send_message(current_week, outlist_event_channel)
 
-        # if not found create new one
-        if not black_list_role:
-            black_list_role = await eventchannel.guild.create_role(
-                name="Black List", color=COLOR.black
-            )
+                else:
+                    log(
+                        "Error",
+                        "red",
+                        "OutlistEvent",
+                        "outlist channel is not a TextChannel",
+                    )
 
-        await eventchannel.send(
-            content=(
-                f"{black_list_role.mention}, Outlist Event Started!\n"
-                f"Use `/blacklist out` with only **{current_week["amout"]}** {get_emoji("coin")} to get your freedom.\n"
-                f"You have only **{(current_week["ends_in"] % 3600) // 60}** minutes and **{current_week["ends_in"] % 60}** seconds until the event ends."
-            )
-        )
+            else:
+                log("Error", "red", "Task", "outlist event channel not found")
+
+        else:
+            log("Error", "red", "Task", "outlist event channel id not found")
 
         current_week["started"] = True
 
         open_file("data/blacklist.json", weeks)
 
-        bot.log("Task", clr.green, "Blacklist", "started!")
+        log("Task", "green", "Blacklist", "started!")

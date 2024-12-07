@@ -1,7 +1,8 @@
 import os
 from dotenv import load_dotenv
 from bot import Bot
-from utils import clr
+from utils import log
+from config import check_channels
 
 
 def main():
@@ -9,7 +10,11 @@ def main():
     TOKEN = os.getenv("TOKEN")
 
     if TOKEN is None:
-        bot.log("Error", clr.red, "Bot", ".env missed TOKEN")
+        log("Error", "red", "Bot", ".env missed TOKEN")
+        return
+
+    if (missing_channel := check_channels()) is not None:
+        log("Error", "red", "Bot", f"missing the {missing_channel} channel")
         return
 
     bot = Bot()
