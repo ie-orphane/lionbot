@@ -7,7 +7,7 @@ from utils import clr
 
 from .__leaderboard__ import leaderboard
 from .__weekly_data__ import weekly_data
-from .__geek_of_the_week__ import geek_of_the_week
+from .__the_geek__ import the_geek
 from .__deadline__ import deadline
 from .__evaluations__ import evaluations
 from .__outlist__ import outlist
@@ -16,12 +16,11 @@ from .__outlist__ import outlist
 ALL_TASKS: dict[str, Callable[[commands.Bot], Coroutine]] = {
     "leaderboard": leaderboard,
     "weekly_data": weekly_data,
-    "geek_of_the_week": geek_of_the_week,
+    "the_geek": the_geek,
     "deadline": deadline,
     "evaluations": evaluations,
     "outlist": outlist,
 }
-
 
 
 def start(bot: commands.Bot) -> None:
