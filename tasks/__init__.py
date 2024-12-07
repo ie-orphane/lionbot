@@ -10,7 +10,7 @@ from .__weekly_data__ import weekly_data
 from .__geek_of_the_week__ import geek_of_the_week
 from .__deadline__ import deadline
 from .__evaluations__ import evaluations
-from .__blacklist__ import blacklist
+from .__outlist__ import outlist
 
 
 ALL_TASKS: dict[str, Callable[[commands.Bot], Coroutine]] = {
@@ -19,7 +19,7 @@ ALL_TASKS: dict[str, Callable[[commands.Bot], Coroutine]] = {
     "geek_of_the_week": geek_of_the_week,
     "deadline": deadline,
     "evaluations": evaluations,
-    "blacklist": blacklist,
+    "outlist": outlist,
 }
 
 

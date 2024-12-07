@@ -39,12 +39,12 @@ async def send_message(current_week: dict, outlist_event_channel) -> None:
 
 
 @tasks.loop(seconds=15)
-async def blacklist(bot: commands.Bot):
+async def outlist(bot: commands.Bot):
     this_week = get_week()
-    weeks = open_file("data/blacklist.json")
+    weeks = open_file("data/outlist.json")
 
     if str(this_week.count) not in weeks:
-        log("Task", "yellow", "Blacklist", "Initiliasing...")
+        log("Task", "yellow", "Outlist", "Initiliasing...")
 
         start = this_week.start_date.toordinal()
         random_ordinal = random.randint(start, start + 4)
@@ -65,16 +65,16 @@ async def blacklist(bot: commands.Bot):
         time = dt.time(random_hour, random_minute)
 
         weeks[str(this_week.count)] = {
-            "datetime": str(dt.datetime.combine(date, time, dt.UTC)),
+            "started_at": str(dt.datetime.combine(date, time, dt.UTC)),
             "amout": GOLDEN_RATIO ** ((random_ordinal - start) / 2),
             "ends_in": random.randint(MIN_END_TIME, MAX_END_TIME),
             "started": False,
             "claimed_by": None,
         }
 
-        open_file("data/blacklist.json", weeks)
+        open_file("data/outlist.json", weeks)
 
-        log("Task", "green", "Blacklist", "Initiliased!")
+        log("Task", "green", "Outlist", "Initiliased!")
 
     current_week = weeks[str(this_week.count)]
 
@@ -82,8 +82,8 @@ async def blacklist(bot: commands.Bot):
         return
 
     now = dt.datetime.now(dt.UTC).replace(second=0, microsecond=0)
-    if dt.datetime.fromisoformat(current_week["datetime"]) == now:
-        log("Task", "yellow", "Blacklist", "starting...")
+    if dt.datetime.fromisoformat(current_week["started_at"]) == now:
+        log("Task", "yellow", "Outlist", "starting...")
 
         if (outlist_event_channel_id := get_channel("outlist_event")) is not None:
 
@@ -92,7 +92,7 @@ async def blacklist(bot: commands.Bot):
             ) is not None:
 
                 if isinstance(outlist_event_channel, TextChannel):
-                    send_message(current_week, outlist_event_channel)
+                    await send_message(current_week, outlist_event_channel)
 
                 else:
                     log(
@@ -110,6 +110,6 @@ async def blacklist(bot: commands.Bot):
 
         current_week["started"] = True
 
-        open_file("data/blacklist.json", weeks)
+        open_file("data/outlist.json", weeks)
 
-        log("Task", "green", "Blacklist", "started!")
+        log("Task", "green", "Outlist", "started!")
