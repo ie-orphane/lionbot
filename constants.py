@@ -8,6 +8,7 @@ __all__ = [
     "EXCLUDE_DIRS",
     "MESSAGE",
     "COLOR",
+    "CONFIG_FILE"
 ]
 
 GOLDEN_RATIO = (1 + math.sqrt(5)) / 2
@@ -19,3 +20,5 @@ MESSAGE = Message()
 COLOR = Color()
 
 EXCLUDE_DIRS = ["__pycache__", ".git", "venv"]
+
+CONFIG_FILE: str = "bot/config.json"

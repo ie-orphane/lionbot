@@ -40,10 +40,18 @@ def convert_seconds(total_seconds: int) -> str:
     return " ".join(result)
 
 
-def log(type: Literal["Info", "Error", "Task"], func, name: str, message: str):
-    log_time = clr.black(datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S"))
-
-    return f"{log_time} {func(type)}    {clr.magenta(name)} {message}"
+def log(
+    type: Literal["Info", "Error", "Task"],
+    color: Literal["red", "green", "yellow", "blue", "cyan"],
+    name: str,
+    message: str,
+):
+    print(
+        clr.black(datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S")),
+        f"{getattr(clr, color)(type)}{' ' * (8 - len(type))}",
+        clr.magenta(name),
+        message,
+    )
 
 
 def get_files(path: str, praser=int):

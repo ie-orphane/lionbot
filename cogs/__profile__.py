@@ -2,10 +2,10 @@ import discord
 import requests
 from models import UserData
 from typing import Union
-from bot.config import Emoji
 from cogs import Cog
 from constants import BOT_COINS_AMOUNT
 from utils import number
+from config import get_emoji
 
 
 class Profile(Cog):
@@ -34,18 +34,18 @@ class Profile(Cog):
                 )
                 .add_field(
                     name="Coins",
-                    value=f"> **{'**.'.join(str(number(BOT_COINS_AMOUNT)).split('.')) if '.' in str(BOT_COINS_AMOUNT) else f'{number(BOT_COINS_AMOUNT)}**'} {Emoji.coin}",
+                    value=f"> **{'**.'.join(str(number(BOT_COINS_AMOUNT)).split('.')) if '.' in str(BOT_COINS_AMOUNT) else f'{number(BOT_COINS_AMOUNT)}**'} {get_emoji("coin")}",
                 )
                 .add_field(
                     name="Favorite Language",
-                    value=f"> {Emoji.languages["Python"]} Python",
+                    value=f"> {get_emoji("Python")} Python",
                     inline=False,
                 )
                 .add_field(
                     name="Socials",
                     value=(
-                        f"- [{Emoji.get("github")}github](https://github.com/ie-orphane/lionbot)\n"
-                        f"- [{Emoji.get("portfolio")}portfolio](https://lionsgeek.ma/)"
+                        f"- [{get_emoji("github")}github](https://github.com/ie-orphane/lionbot)\n"
+                        f"- [{get_emoji("portfolio")}portfolio](https://lionsgeek.ma/)"
                     ),
                 )
             )
@@ -97,13 +97,13 @@ class Profile(Cog):
 
         embed.add_field(
             name="Coins",
-            value=f"> **{'**.'.join(str(number(user.coins)).split('.')) if '.' in str(user.coins) else f'{number(user.coins)}**'} {Emoji.coin}",
+            value=f"> **{'**.'.join(str(number(user.coins)).split('.')) if '.' in str(user.coins) else f'{number(user.coins)}**'} {get_emoji("coin")}",
         )
 
         if favorite_language:
             embed.add_field(
                 name="Favorite Language",
-                value=f"> {Emoji.languages[favorite_language['name']]} {favorite_language['name']}",
+                value=f"> {get_emoji(favorite_language['name'])} {favorite_language['name']}",
                 inline=False,
             )
 
@@ -112,7 +112,7 @@ class Profile(Cog):
             name="Socials",
             value="\n".join(
                 [
-                    f"- [{Emoji.get(social)}{social}]({link})"
+                    f"- [{get_emoji(social)}{social}]({link})"
                     for social, link in user.socials
                     if link
                 ]
