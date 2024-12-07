@@ -6,8 +6,7 @@ from discord.ext import commands
 from utils import clr
 from typing import Literal
 from datetime import datetime, UTC
-from bot.config import GUILD, USERS
-from config import get_channel
+from config import get_channel, get_config, get_user
 
 
 class Bot(commands.Bot):
@@ -70,11 +69,19 @@ class Bot(commands.Bot):
             await message.channel.send(answer)
             return
 
-        if message.author.id == USERS.fariesus:
+        if (owner_id := get_user("owner")) is None:
+            self.log("Error", clr.red, "Bot", "owner id not found")
+            return
+
+        if message.author.id == owner_id:
             await contexts.run(self, message)
 
     async def on_member_join(self, member: discord.Member):
-        if member.guild.id != GUILD:
+        if (guild_id := get_config("GUILD")) is None:
+            self.log("Error", clr.red, "Bot", "guild id not found")
+            return
+
+        if member.guild.id != guild_id:
             return
 
         if welcome_channel_id := get_channel("welcome") is None:

@@ -5,6 +5,7 @@ from utils import log
 
 __all__ = ["get_channel", "check_channels"]
 
+
 ConfigChannel = Literal["welcome", "challenges", "outlist_event"]
 
 

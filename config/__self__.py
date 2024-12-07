@@ -7,7 +7,7 @@ from constants import CONFIG_FILE
 __all__ = ["get_config"]
 
 
-ConfigAttribute = Literal["GUILD", "CHANNELS", "EMOJIS", "EXTENSTIONS"]
+ConfigAttribute = Literal["GUILD", "USERS", "CHANNELS", "EMOJIS", "EXTENSTIONS"]
 
 
 file_data: dict | None = None

@@ -8,5 +8,6 @@ __all__ = ["get_emoji"]
 def get_emoji(emoji: Literal["coin", "star", "wakatime", "github", "portfolio"]) -> str:
     emojis: dict[str, str] = get_config("EMOJIS")
     if emojis is None:
-        return None
+        log("Error", "red", "Config", "EMOJIS field not found")
+        return " "
     return emojis.get(emoji, " ")
