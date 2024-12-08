@@ -83,6 +83,7 @@ class UserData(Collection):
     _challenge: dict | None
     _log: dict | None
     _socials: dict
+    achievments: dict
 
     @property
     def socials(self):
