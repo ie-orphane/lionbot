@@ -3,7 +3,7 @@ import os
 import contexts as ctx
 import tasks
 from discord.ext import commands
-from utils import log
+from utils import Log
 from config import get_channel, get_config, get_user
 
 
@@ -23,11 +23,11 @@ class Bot(commands.Bot):
 
         sync = await self.tree.sync()
 
-        log("Info", "blue", "Cogs", f"{len(sync)} Slash Command(s) Synced")
+        Log.info("Cogs", f"{len(sync)} Slash Command(s) Synced")
 
     async def on_ready(self):
-        log("Info", "blue", "Bot", f"Logged in as {self.user}")
-        log("Info", "blue", "Contexts", f"{len(ctx.all_contexts)} Command(s)")
+        Log.info("Bot", f"Logged in as {self.user}")
+        Log.info("Contexts", f"{len(ctx.all_contexts)} Command(s)")
         tasks.start(self)
 
     async def on_message(self, message: discord.Message):
@@ -60,7 +60,7 @@ class Bot(commands.Bot):
             return
 
         if (owner_id := get_user("owner")) is None:
-            log("Error", "red", "Bot", "owner id not found")
+            Log.error("Bot", "owner id not found")
             return
 
         if message.author.id == owner_id:
@@ -68,18 +68,18 @@ class Bot(commands.Bot):
 
     async def on_member_join(self, member: discord.Member):
         if (guild_id := get_config("GUILD")) is None:
-            log("Error", "red", "Bot", "guild id not found")
+            Log.error("Bot", "guild id not found")
             return
 
         if member.guild.id != guild_id:
             return
 
         if welcome_channel_id := get_channel("welcome") is None:
-            log("Error", "red", "Bot", "welcome channel id not found")
+            Log.error("Bot", "welcome channel id not found")
             return
 
         if welcome_channel := self.get_channel(welcome_channel_id) is None:
-            log("Error", "red", "Bot", "welcome channel not found")
+            Log.error("Bot", "welcome channel not found")
             return
 
         await welcome_channel.send(

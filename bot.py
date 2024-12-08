@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from bot import Bot
-from utils import log
+from utils import Log
 from config import check_config
 
 
@@ -10,11 +10,11 @@ def main():
     TOKEN = os.getenv("TOKEN")
 
     if TOKEN is None:
-        log("Error", "red", "Bot", ".env missed TOKEN")
+        Log.error("Bot", ".env missed TOKEN")
         return
 
     if (missing_message := check_config()) is not None:
-        log("Error", "red", "Bot", missing_message)
+        Log.error("Bot", missing_message)
         return
 
     bot = Bot()

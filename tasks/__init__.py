@@ -3,7 +3,7 @@ import json
 from discord.ext import commands
 from dotenv import load_dotenv
 from .__all__ import all_tasks
-from utils import log
+from utils import log, Log
 
 
 def start(bot: commands.Bot) -> None:
@@ -11,11 +11,11 @@ def start(bot: commands.Bot) -> None:
     TASKS: str | None = os.getenv("TASKS")
 
     if TASKS is None:
-        log("Error", "red", "Task", ".env missed TASKS")
+        Log.error("Task", ".env missed TASKS")
         return
 
     if TASKS != "ALL" and (not (TASKS.startswith("[") and TASKS.endswith("]"))):
-        log("Error", "red", "Task", "invalid format of TASKS")
+        Log.error("Task", "invalid format of TASKS")
         return
 
     tasks: list = []
@@ -31,9 +31,10 @@ def start(bot: commands.Bot) -> None:
                 if task_name in json.loads(TASKS)
             ]
         except json.decoder.JSONDecodeError:
-            log("Error", "red", "Task", "failed to load tasks!")
+            Log.error("Task", "failed to load tasks!")
+            return
 
-    log("Info", "yellow", "Task", f"{len(tasks)} Task(s) Loaded.")
+    Log.info("Task", f"{len(tasks)} Task(s) Loaded.")
 
     for _, task in tasks:
         task.start(bot)

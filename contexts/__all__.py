@@ -1,7 +1,7 @@
 import os
 import importlib
 import inspect
-from utils import log
+from utils import Log
 from constants import EXLUDE_MODULE_FILES
 
 
@@ -19,12 +19,7 @@ modules_name = [
 all_contexts = {}
 for module_name in modules_name:
     if (not module_name.startswith("__")) or (not module_name.endswith("__")):
-        log(
-            "Warning",
-            "yellow",
-            "Context",
-            f"{module_name} not consired as a valid module",
-        )
+        Log.warning("Context", f"{module_name} not consired as a valid module")
         continue
 
     # Dynamically import the module
@@ -38,28 +33,18 @@ for module_name in modules_name:
     try:
         module_func = getattr(module, module_name)
     except AttributeError:
-        log(
-            "Warning",
-            "yellow",
-            "Context",
-            f"cannot found {module_name} context function",
-        )
+        Log.warning("Context", f"cannot found {module_name} context function")
         continue
 
     if not inspect.iscoroutinefunction(module_func):
-        log("Warning", "yellow", "Context", f"{module_name} is not an async function")
+        Log.warning("Context", f"{module_name} is not an async function")
         continue
 
     postinal_argumets = inspect.signature(module_func).parameters
     postinal_argumets_count = len(postinal_argumets)
 
     if postinal_argumets_count == 0:
-        log(
-            "Warning",
-            "yellow",
-            "Context",
-            f"{module_name} is missing a postinal argument",
-        )
+        Log.warning("Context", f"{module_name} is missing a postinal argument")
         continue
 
     all_contexts[module_name] = (module_func, postinal_argumets_count)

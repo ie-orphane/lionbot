@@ -1,5 +1,5 @@
 import os
-from utils import open_file, log
+from utils import open_file, Log
 from typing import Literal, Any
 from constants import CONFIG_FILE
 
@@ -20,15 +20,15 @@ def get_config(attribute_name: ConfigAttribute) -> Any | None:
 
     if not file_data:
         file_data = open_file(CONFIG_FILE)
-        log("Info", "cyan", "Config", f"{CONFIG_FILE}: intial read.")
+        Log.info("Config", f"{CONFIG_FILE}: intial read.")
 
     if not modified_datetime:
         modified_datetime = os.path.getmtime(CONFIG_FILE)
-        log("Info", "cyan", "Config", f"{CONFIG_FILE}: modified datetime updated!")
+        Log.info("Config", f"{CONFIG_FILE}: modified datetime updated!")
 
     if os.path.getmtime(CONFIG_FILE) != modified_datetime:
         file_data = open_file(CONFIG_FILE)
         modified_datetime = os.path.getmtime(CONFIG_FILE)
-        log("Info", "cyan", "Config", f"{CONFIG_FILE}: reread!")
+        Log.info("Config", f"{CONFIG_FILE}: reread!")
 
     return file_data.get(attribute_name)

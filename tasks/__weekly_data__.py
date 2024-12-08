@@ -1,6 +1,6 @@
 from discord.ext import tasks, commands
 from datetime import datetime, UTC
-from utils import get_files, log, get_week, Week
+from utils import get_files, Log, get_week, Week
 from models import UserData, WeekData
 from wakatime import get_week_summary
 from constants import GOLDEN_RATIO
@@ -18,7 +18,7 @@ async def weekly_data(bot: commands.Bot):
     week_count = current_week.count
 
     if datetime.now(UTC).weekday() == 0 and week_count not in weeks_file:
-        log("Task", "yellow", "Data", "Collecting...")
+        Log.job("Data", "Collecting...")
 
         geeks = {}
         for i, user in enumerate(UserData.read_all()):
@@ -51,4 +51,4 @@ async def weekly_data(bot: commands.Bot):
             geeks=dict(sorted(geeks.items(), key=lambda x: x[1], reverse=True)),
         ).update()
 
-        log("Task", "green", "Data", "Collected!")
+        Log.job("Data", "Collected!")

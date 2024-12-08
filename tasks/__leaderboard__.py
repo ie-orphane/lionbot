@@ -1,7 +1,7 @@
 import discord
 import wakatime
 from discord.ext import commands, tasks
-from utils import log, get_week, leaderboard_image, open_file
+from utils import Log, get_week, leaderboard_image, open_file
 from datetime import datetime, UTC
 from models import UserData
 
@@ -9,7 +9,7 @@ from models import UserData
 @tasks.loop(minutes=15)
 async def leaderboard(bot: commands.Bot):
     try:
-        log("Task", "yellow", "Leaderboard", "Updating...")
+        Log.job("Leaderboard", "Updating...")
 
         current_time = f"{datetime.now(UTC):%A  %d  %b    %I:%M  %p}"
         current_time = current_time.replace("AM", "am").replace("PM", "pm")
@@ -104,7 +104,7 @@ async def leaderboard(bot: commands.Bot):
 
             print(f"{str(leaderboard_channel):<21} {leaderboard_channel.guild}")
 
-        log("Task", "green", "Leaderboard", "updated!")
+        Log.job("Leaderboard", "updated!")
 
     except Exception as e:
-        log("Task", "red", "Leaderboard", e)
+        Log.error("Leaderboard", e)

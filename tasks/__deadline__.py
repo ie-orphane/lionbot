@@ -3,7 +3,7 @@ from discord.ext import tasks, commands
 from models import ChannelData, FileData, UserData
 from datetime import datetime, UTC, timedelta
 from constants import COLOR, MESSAGE
-from utils import log
+from utils import Log
 
 
 @tasks.loop(seconds=15)
@@ -11,27 +11,27 @@ async def deadline(bot: commands.Bot):
     for channel in ChannelData.read_all():
         now = datetime.now(UTC).replace(second=0, microsecond=0)
         if channel.time == now:
-            log("Task", "yellow", "Dead", "starting...")
+            Log.job("Dead", "starting...")
             deadchannel = bot.get_channel(channel.id)
             deadrole = deadchannel.guild.get_role(channel.role)
             await deadchannel.set_permissions(deadrole, send_messages=False)
             channel.remove()
-            log("Task", "green", "Dead", "closed!")
+            Log.job("Dead", f"{deadchannel} closed!")
 
     for file in FileData.read_all():
         now = datetime.now(UTC).replace(second=0, microsecond=0)
         if file.time == now:
-            log("Task", "yellow", "File", "sending")
+            Log.job("File", "sending")
             filechannel = bot.get_channel(file.channel)
             await filechannel.send(file=discord.File(f"./assets/files/{file.id}"))
             file.remove()
-            log("Task", "green", "File", f"{file.id} sended to {filechannel}!")
+            Log.job("File", f"{file.id} sended to {filechannel}!")
 
     for user in UserData.read_all():
-        cuurent_challange = user.challenge
-        if cuurent_challange:
+        curent_challange = user.challenge
+        if curent_challange:
             now = datetime.now(UTC).replace(second=0, microsecond=0)
-            deadtime = datetime.fromisoformat(cuurent_challange.requested).replace(
+            deadtime = datetime.fromisoformat(curent_challange.requested).replace(
                 second=0, microsecond=0
             ) + timedelta(days=1)
 
@@ -49,15 +49,15 @@ async def deadline(bot: commands.Bot):
                         embed=discord.Embed(
                             color=COLOR.red,
                             description=(
-                                f"{MESSAGE.failing}\n\nChallenge : **{cuurent_challange.name}"
-                                f"**\nLanguage : {cuurent_challange.language}\nLevel : "
-                                f"{cuurent_challange.level}\nResult : **DEAD**"
+                                f"{MESSAGE.failing}\n\nChallenge : **{curent_challange.name}"
+                                f"**\nLanguage : {curent_challange.language}\nLevel : "
+                                f"{curent_challange.level}\nResult : **DEAD**"
                             ),
                         )
                     )
                 except Exception as e:
-                    print(f"Failed to send a message to {user.name}\nError: {e}")
+                    Log.error(
+                        "Evaluation", f"Failed to send a message to {user.name} ({e})"
+                    )
 
-                log(
-                    "Task", "green", "Evaluation", f"{cuurent_challange.name} is Dead!"
-                )
+                Log.job("Evaluation", f"{curent_challange.name} is Dead!")

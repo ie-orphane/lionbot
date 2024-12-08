@@ -1,7 +1,7 @@
 import os
 import importlib
 import inspect
-from utils import log
+from utils import Log
 from constants import EXLUDE_MODULE_FILES
 
 
@@ -19,9 +19,7 @@ modules_name = [
 all_tasks = {}
 for module_name in modules_name:
     if (not module_name.startswith("__")) or (not module_name.endswith("__")):
-        log(
-            "Warning", "yellow", "Task", f"{module_name} not consired as a valid module"
-        )
+        Log.warning("Task", f"{module_name} not consired as a valid module")
         continue
 
     # Dynamically import the module
@@ -35,16 +33,14 @@ for module_name in modules_name:
     try:
         module_func = getattr(module, module_name)
     except AttributeError:
-        log("Warning", "yellow", "Task", f"cannot found {module_name} task function")
+        Log.warning("Task", f"cannot found {module_name} task function")
         continue
 
     postinal_argumets = inspect.signature(module_func.coro).parameters
     postinal_argumets_count = len(postinal_argumets)
 
     if postinal_argumets_count == 0:
-        log(
-            "Warning", "yellow", "Task", f"{module_name} is missing a postinal argument"
-        )
+        Log.warning("Task", f"{module_name} is missing a postinal argument")
         continue
 
     # all_tasks[module_name] = (module_func, postinal_argumets_count)

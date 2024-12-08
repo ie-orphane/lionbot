@@ -1,4 +1,4 @@
-from utils import log
+from utils import Log
 from models import WeekData
 from config import get_config
 from constants import COLOR
@@ -10,11 +10,11 @@ async def the_geek(bot: commands.Bot):
     last_week = list(sorted(WeekData.read_all(), key=lambda x: x.id))[-1]
 
     if (guild_id := get_config("GUILD")) is None:
-        log("Task", "red", "TheGeek", "guild id not found")
+        Log.error("TheGeek", "guild id not found")
         return
 
     if (guild := bot.get_guild(guild_id)) is None:
-        log("Task", "red", "TheGeek", "guild not found")
+        Log.error("TheGeek", "guild not found")
         return
 
     geek_role = None
@@ -59,7 +59,7 @@ async def the_geek(bot: commands.Bot):
         if member.id == geek_id:
             return
 
-    log("Task", "yellow", "TheGeek", "Updating")
+    Log.job("TheGeek", "Updating")
 
     for geek_memeber in geek_role.members:
         try:
@@ -74,7 +74,7 @@ async def the_geek(bot: commands.Bot):
                 await member.add_roles(geek_role)
                 await member.edit(nick=member.display_name + " 🏆")
             except Exception as e:
-                log("Task", "red", "TheGeek", f"Failed : {e}")
+                Log.error("TheGeek", f"Failed : {e}")
                 return
 
-    log("Task", "green", "TheGeek", "Updated!")
+    Log.job("TheGeek", "Updated!")

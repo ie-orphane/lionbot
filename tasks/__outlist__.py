@@ -1,7 +1,7 @@
 import random
 import datetime as dt
 from discord.ext import tasks, commands
-from utils import get_week, open_file, log
+from utils import get_week, open_file, Log
 from constants import GOLDEN_RATIO, COLOR
 from config import get_emoji, get_channel
 from discord.channel import TextChannel
@@ -44,7 +44,7 @@ async def outlist(bot: commands.Bot):
     weeks = open_file("data/outlist.json")
 
     if str(this_week.count) not in weeks:
-        log("Task", "yellow", "Outlist", "Initiliasing...")
+        Log.job("Outlist", "Initiliasing...")
 
         start = this_week.start_date.toordinal()
         random_ordinal = random.randint(start, start + 4)
@@ -74,7 +74,7 @@ async def outlist(bot: commands.Bot):
 
         open_file("data/outlist.json", weeks)
 
-        log("Task", "green", "Outlist", "Initiliased!")
+        Log.job("Outlist", "Initiliased!")
 
     current_week = weeks[str(this_week.count)]
 
@@ -83,7 +83,7 @@ async def outlist(bot: commands.Bot):
 
     now = dt.datetime.now(dt.UTC).replace(second=0, microsecond=0)
     if dt.datetime.fromisoformat(current_week["started_at"]) == now:
-        log("Task", "yellow", "Outlist", "starting...")
+        Log.job("Outlist", "starting...")
 
         if (outlist_event_channel_id := get_channel("outlist_event")) is not None:
 
@@ -95,21 +95,16 @@ async def outlist(bot: commands.Bot):
                     await send_message(current_week, outlist_event_channel)
 
                 else:
-                    log(
-                        "Error",
-                        "red",
-                        "OutlistEvent",
-                        "outlist channel is not a TextChannel",
-                    )
+                    Log.error("Outlist", "outlist channel is not a TextChannel")
 
             else:
-                log("Error", "red", "Task", "outlist event channel not found")
+                Log.error("Outlist", "outlist event channel not found")
 
         else:
-            log("Error", "red", "Task", "outlist event channel id not found")
+            Log.error("Outlist", "outlist event channel id not found")
 
         current_week["started"] = True
 
         open_file("data/outlist.json", weeks)
 
-        log("Task", "green", "Outlist", "started!")
+        Log.job("Outlist", "started!")
