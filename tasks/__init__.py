@@ -2,25 +2,8 @@ import os
 import json
 from discord.ext import commands
 from dotenv import load_dotenv
-from typing import Callable, Coroutine
-from utils import clr
-
-from .__leaderboard__ import leaderboard
-from .__weekly_data__ import weekly_data
-from .__the_geek__ import the_geek
-from .__deadline__ import deadline
-from .__evaluations__ import evaluations
-from .__outlist__ import outlist
-
-
-ALL_TASKS: dict[str, Callable[[commands.Bot], Coroutine]] = {
-    "leaderboard": leaderboard,
-    "weekly_data": weekly_data,
-    "the_geek": the_geek,
-    "deadline": deadline,
-    "evaluations": evaluations,
-    "outlist": outlist,
-}
+from .__all__ import all_tasks
+from utils import log
 
 
 def start(bot: commands.Bot) -> None:
@@ -28,31 +11,29 @@ def start(bot: commands.Bot) -> None:
     TASKS: str | None = os.getenv("TASKS")
 
     if TASKS is None:
-        bot.log("Error", clr.red, "Task", ".env missed TASKS")
+        log("Error", "red", "Task", ".env missed TASKS")
         return
 
     if TASKS != "ALL" and (not (TASKS.startswith("[") and TASKS.endswith("]"))):
-        bot.log("Error", clr.red, "Task", "invalid format of TASKS")
+        log("Error", "red", "Task", "invalid format of TASKS")
         return
 
     tasks: list = []
 
     if TASKS == "ALL":
-        tasks = list(ALL_TASKS.items())
+        tasks = list(all_tasks.items())
     elif TASKS.startswith("[") and TASKS.endswith("]"):
         try:
 
             tasks = [
                 (task_name, task)
-                for task_name, task in ALL_TASKS.items()
+                for task_name, task in all_tasks.items()
                 if task_name in json.loads(TASKS)
             ]
         except json.decoder.JSONDecodeError:
-            bot.log("Error", clr.red, "Task", "failed to load tasks!")
+            log("Error", "red", "Task", "failed to load tasks!")
 
-    bot.log(
-        "Info", clr.yellow, "Task", f"loading {", ".join(map(lambda x: x[0], tasks))}."
-    )
+    log("Info", "yellow", "Task", f"{len(tasks)} Task(s) Loaded.")
 
     for _, task in tasks:
         task.start(bot)

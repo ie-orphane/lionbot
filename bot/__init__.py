@@ -1,26 +1,15 @@
 import discord
 import os
-import contexts
+import contexts as ctx
 import tasks
 from discord.ext import commands
-from utils import clr
-from typing import Literal
-from datetime import datetime, UTC
+from utils import log
 from config import get_channel, get_config, get_user
 
 
 class Bot(commands.Bot):
-
     def __init__(self):
-        super().__init__(command_prefix="-", intents=discord.Intents.all())
-
-    def log(
-        self, type: Literal["Info", "Error", "Task"], func, name: str, message: str
-    ):
-        log_time = clr.black(datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S"))
-        print(
-            f"{log_time} {func(type)}{' ' * (8 - len(type))} {clr.magenta(name)} {message}"
-        )
+        super().__init__(command_prefix=".", intents=discord.Intents.all())
 
     async def setup_hook(self) -> None:
         initial_extensions = [
@@ -34,10 +23,11 @@ class Bot(commands.Bot):
 
         sync = await self.tree.sync()
 
-        self.log("Info", clr.blue, "Cogs", f"{len(sync)} Slash Command(s) Synced")
+        log("Info", "blue", "Cogs", f"{len(sync)} Slash Command(s) Synced")
 
     async def on_ready(self):
-        self.log("Info", clr.blue, "Bot", f"Logged in as {self.user}")
+        log("Info", "blue", "Bot", f"Logged in as {self.user}")
+        log("Info", "blue", "Contexts", f"{len(ctx.all_contexts)} Command(s)")
         tasks.start(self)
 
     async def on_message(self, message: discord.Message):
@@ -70,26 +60,26 @@ class Bot(commands.Bot):
             return
 
         if (owner_id := get_user("owner")) is None:
-            self.log("Error", clr.red, "Bot", "owner id not found")
+            log("Error", "red", "Bot", "owner id not found")
             return
 
         if message.author.id == owner_id:
-            await contexts.run(self, message)
+            await ctx.run(self, message)
 
     async def on_member_join(self, member: discord.Member):
         if (guild_id := get_config("GUILD")) is None:
-            self.log("Error", clr.red, "Bot", "guild id not found")
+            log("Error", "red", "Bot", "guild id not found")
             return
 
         if member.guild.id != guild_id:
             return
 
         if welcome_channel_id := get_channel("welcome") is None:
-            self.log("Error", clr.red, "Bot", "welcome channel id not found")
+            log("Error", "red", "Bot", "welcome channel id not found")
             return
 
         if welcome_channel := self.get_channel(welcome_channel_id) is None:
-            self.log("Error", clr.red, "Bot", "welcome channel not found")
+            log("Error", "red", "Bot", "welcome channel not found")
             return
 
         await welcome_channel.send(

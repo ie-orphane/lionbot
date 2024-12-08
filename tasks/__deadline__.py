@@ -2,8 +2,8 @@ import discord
 from discord.ext import tasks, commands
 from models import ChannelData, FileData, UserData
 from datetime import datetime, UTC, timedelta
-from utils import clr
 from constants import COLOR, MESSAGE
+from utils import log
 
 
 @tasks.loop(seconds=15)
@@ -11,21 +11,21 @@ async def deadline(bot: commands.Bot):
     for channel in ChannelData.read_all():
         now = datetime.now(UTC).replace(second=0, microsecond=0)
         if channel.time == now:
-            bot.log("Task", clr.yellow, "Dead", "starting...")
+            log("Task", "yellow", "Dead", "starting...")
             deadchannel = bot.get_channel(channel.id)
             deadrole = deadchannel.guild.get_role(channel.role)
             await deadchannel.set_permissions(deadrole, send_messages=False)
             channel.remove()
-            bot.log("Task", clr.green, "Dead", "closed!")
+            log("Task", "green", "Dead", "closed!")
 
     for file in FileData.read_all():
         now = datetime.now(UTC).replace(second=0, microsecond=0)
         if file.time == now:
-            bot.log("Task", clr.yellow, "File", "sending")
+            log("Task", "yellow", "File", "sending")
             filechannel = bot.get_channel(file.channel)
             await filechannel.send(file=discord.File(f"./assets/files/{file.id}"))
             file.remove()
-            bot.log("Task", clr.green, "File", f"{file.id} sended to {filechannel}!")
+            log("Task", "green", "File", f"{file.id} sended to {filechannel}!")
 
     for user in UserData.read_all():
         cuurent_challange = user.challenge
@@ -58,9 +58,6 @@ async def deadline(bot: commands.Bot):
                 except Exception as e:
                     print(f"Failed to send a message to {user.name}\nError: {e}")
 
-                bot.log(
-                    "Task",
-                    clr.green,
-                    "Evaluation",
-                    f"{cuurent_challange.name} is Dead!",
+                log(
+                    "Task", "green", "Evaluation", f"{cuurent_challange.name} is Dead!"
                 )
