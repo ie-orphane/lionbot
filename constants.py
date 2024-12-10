@@ -14,7 +14,17 @@ EXCLUDE_DIRS = ["__pycache__", ".git", "venv"]
 
 
 # ------ config ------
-CONFIG_FILE: str = "bot/config.json"
+class Config:
+    DIR: str = "bot"
+    SUFFIX: str = "config.json"
+
+    @property
+    def path(self):
+        return f"{self.DIR}/{self.FILE}"
+
+    @classmethod
+    def path(self, field: str):
+        return f"{self.DIR}/{field}.{self.FILE}"
 
 
 # Exlude files that should not be imported
