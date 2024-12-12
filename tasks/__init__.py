@@ -1,34 +1,28 @@
-import os
+import env
 import json
 from discord.ext import commands
-from dotenv import load_dotenv
+from utils import Log
 from .__all__ import all_tasks
-from utils import log, Log
 
 
 def start(bot: commands.Bot) -> None:
-    load_dotenv(".env")
-    TASKS: str | None = os.getenv("TASKS")
-
-    if TASKS is None:
-        Log.error("Task", ".env missed TASKS")
-        return
-
-    if TASKS != "ALL" and (not (TASKS.startswith("[") and TASKS.endswith("]"))):
+    if env.TASKS != "ALL" and (
+        not (env.TASKS.startswith("[") and env.TASKS.endswith("]"))
+    ):
         Log.error("Task", "invalid format of TASKS")
         return
 
     tasks: list = []
 
-    if TASKS == "ALL":
+    if env.TASKS == "ALL":
         tasks = list(all_tasks.items())
-    elif TASKS.startswith("[") and TASKS.endswith("]"):
+    elif env.TASKS.startswith("[") and env.TASKS.endswith("]"):
         try:
 
             tasks = [
                 (task_name, task)
                 for task_name, task in all_tasks.items()
-                if task_name in json.loads(TASKS)
+                if task_name in json.loads(env.TASKS)
             ]
         except json.decoder.JSONDecodeError:
             Log.error("Task", "failed to load tasks!")

@@ -1,7 +1,6 @@
-import os
+import env
 import discord
 import requests
-from dotenv import load_dotenv
 from discord import TextChannel
 from discord.ext import tasks, commands
 from utils import Log
@@ -18,13 +17,6 @@ GITHUB_REPO_NAME = "casatourat-backend"
 
 @tasks.loop(minutes=2)
 async def gitlog(bot: commands.Bot):
-    load_dotenv()
-    GITHUB_ACCESS_TOKEN = os.getenv("GITHUB_ACCESS_TOKEN")
-
-    if GITHUB_ACCESS_TOKEN is None:
-        Log.error("GitLog", ".env missed GITHUB_ACCESS_TOKEN")
-        return
-
     if (gitlog_channel_id := get_channel("gitlog")) is None:
         Log.error("GitLog", "channel id not found")
         return
@@ -37,7 +29,7 @@ async def gitlog(bot: commands.Bot):
         Log.error("GitLog", "channel is not a TextChannel")
         return
 
-    headers = {"Authentication": f"Bearer {GITHUB_ACCESS_TOKEN}"}
+    headers = {"Authentication": f"Bearer {env.GITHUB_ACCESS_TOKEN}"}
 
     response = requests.get(
         url=f"{GITHUB_API_URL}/repos/forkanimahdi/{GITHUB_REPO_NAME}", headers=headers
