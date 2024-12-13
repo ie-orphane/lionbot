@@ -23,7 +23,6 @@ async def gitlog(bot):
         Log.job("Gitlog", f"{repo_name}")
 
         headers = {"Authentication": f"Bearer {env.GITHUB_ACCESS_TOKEN}"}
-        print(headers)
 
         response = requests.get(
             url=f"{GITHUB_API_URL}/repos/forkanimahdi/{repo_name}", headers=headers
@@ -35,12 +34,12 @@ async def gitlog(bot):
 
         repo = response.json()
 
-        repo_updated_at = int(
+        repo_created_at = int(
             datetime.fromisoformat(
                 repo.get("created_at", "2023-10-23T00:00Z")
             ).timestamp()
         )
-        repo_created_at = int(
+        repo_updated_at = int(
             datetime.fromisoformat(
                 repo.get("updated_at", "2023-10-23T00:00Z")
             ).timestamp()
