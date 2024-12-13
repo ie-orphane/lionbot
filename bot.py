@@ -13,7 +13,7 @@ def main():
         return
 
     bot = Bot()
-    bot.run(env.TOKEN)
+    bot.run(env.DISCORD_BOT_TOKEN)
 
 
 if __name__ == "__main__":
