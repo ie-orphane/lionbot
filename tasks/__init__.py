@@ -1,18 +1,18 @@
 import env
 import json
-from discord.ext import commands
 from utils import Log
+from discord.ext.tasks import Loop
 from .__all__ import all_tasks
 
 
-def start(bot: commands.Bot) -> None:
+def start(bot) -> None:
     if env.BOT_TASKS != "ALL" and (
         not (env.BOT_TASKS.startswith("[") and env.BOT_TASKS.endswith("]"))
     ):
         Log.error("Task", "invalid format of TASKS")
         return
 
-    tasks: list = []
+    tasks: list[tuple[str, Loop]] = []
 
     if env.BOT_TASKS == "ALL":
         tasks = list(all_tasks.items())

@@ -27,5 +27,9 @@ class Config:
         return f"{self.DIR}/{field}.{self.FILE}"
 
 
+# ------ tasks ------
+GITHUB_API_URL = "https://api.github.com"
+
+
 # Exlude files that should not be imported
 EXLUDE_MODULE_FILES = ["__init__.py", "__all__.py", "__self__.py"]
