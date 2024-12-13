@@ -9,7 +9,7 @@ from constants import COLOR, GITHUB_API_URL
 from config import set_message, get_config
 
 
-@tasks.loop(minutes=7)
+@tasks.loop(minutes=11)
 async def gitlog(bot):
     if (gitlog_channel := bot.get_listed_channel("gitlog")) is None:
         Log.error("Gitlog", "error while getting gitlog channel")
@@ -19,13 +19,13 @@ async def gitlog(bot):
         Log.error("Gitlog", "error while getting gitlog repositories")
         return
 
-    for repo_name, message_id in repo_msgs_id.items():
-        Log.job("Gitlog", f"{repo_name}")
+    for repo_endpoint, message_id in repo_msgs_id.items():
+        Log.job("Gitlog", f"{repo_endpoint}")
 
         headers = {"Authentication": f"Bearer {env.GITHUB_ACCESS_TOKEN}"}
 
         response = requests.get(
-            url=f"{GITHUB_API_URL}/repos/forkanimahdi/{repo_name}", headers=headers
+            url=f"{GITHUB_API_URL}/repos/{repo_endpoint}", headers=headers
         )
 
         if response.status_code != 200:
@@ -117,8 +117,8 @@ async def gitlog(bot):
             except discord.NotFound:
                 pass
         else:
-            Log.warning("GitLog", f"{repo_name} message id not found")
+            Log.warning("GitLog", f"{repo_endpoint} message id not found")
 
         message = await gitlog_channel.send(content="", embeds=[embed])
 
-        set_message("GITLOG", repo_name, message.id)
+        set_message("GITLOG", repo_endpoint, message.id)
