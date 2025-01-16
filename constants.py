@@ -33,10 +33,8 @@ GITHUB_API_URL = "https://api.github.com"
 
 
 class Quiz:
-    START_TIME = 17, 51
-    END_TIME = 17, 52
-    # START_TIME = 8, 30
-    # END_TIME = 22, 00
+    START_TIME = 8, 30
+    END_TIME = 22, 00
     CATEGORIES = ["bash", "React", "Laravel"]
     TAGS = ["BASH", "HTML", "Git", "JavaScript", "Python"]
     COLORS = {

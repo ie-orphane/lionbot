@@ -18,9 +18,7 @@ async def quiz(bot: commands.Bot):
         Log.error("Gitlog", "error while getting gitlog channel")
         return
 
-    if ((current_quiz := QuizData.last()) is None) or (
-        (now.hour, now.minute) == Quiz.START_TIME
-    ):
+    if (now.hour, now.minute) == Quiz.START_TIME:
         Log.job("Quiz", "Starting trivia event...")
         current_quiz = await QuizApi.get()
         embed = discord.Embed(
@@ -44,6 +42,9 @@ async def quiz(bot: commands.Bot):
         current_quiz.message_id = message.id
         current_quiz.update()
         Log.job("Quiz", "Trivia started.")
+        return
+
+    if (current_quiz := QuizData.last()) is None:
         return
 
     if (message := await channel.fetch_message(current_quiz.message_id)) is None:
