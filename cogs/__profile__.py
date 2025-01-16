@@ -34,7 +34,7 @@ class Profile(Cog):
                 )
                 .add_field(
                     name="Coins",
-                    value=f"> **{'**.'.join(str(number(BOT_COINS_AMOUNT)).split('.')) if '.' in str(BOT_COINS_AMOUNT) else f'{number(BOT_COINS_AMOUNT)}**'} {get_emoji("coin")}",
+                    value=f"> {number(BOT_COINS_AMOUNT)} {get_emoji("coin")}",
                 )
                 .add_field(
                     name="Favorite Language",
@@ -96,8 +96,7 @@ class Profile(Cog):
             )
 
         embed.add_field(
-            name="Coins",
-            value=f"> **{'**.'.join(str(number(user.coins)).split('.')) if '.' in str(user.coins) else f'{number(user.coins)}**'} {get_emoji("coin")}",
+            name="Coins", value=f"> {number(user.coins)} {get_emoji("coin")}"
         )
 
         if favorite_language:

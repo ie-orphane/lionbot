@@ -2,6 +2,7 @@ import json
 import os
 import pprint
 
+
 class Model:
     def __init__(self, **kwargs) -> None:
         self.__dict__.update(kwargs)
@@ -68,10 +69,19 @@ class Collection(Model):
             return None
 
     @classmethod
+    def __get_ids(cls) -> list[str]:
+        return [
+            filename[: filename.index(".")]
+            for filename in os.listdir(f"./data/{cls.BASE}")
+        ]
+
+    @classmethod
     def read_all(cls):
-        files = os.listdir(f"./data/{cls.BASE}")
-        ids = [file[: file.index(".")] for file in files]
-        return [cls.read(id) for id in ids]
+        return [cls.read(id) for id in cls.__get_ids()]
+
+    @classmethod
+    def exits(cls, id: str | int) -> bool:
+        return str(id) in cls.__get_ids()
 
     def update(self):
         with open(f"./data/{self.BASE}/{self.id}.json", "w") as file:

@@ -1,5 +1,6 @@
 import math
 from utils import Message, Color
+from typing import Literal
 
 
 GOLDEN_RATIO = (1 + math.sqrt(5)) / 2
@@ -29,6 +30,29 @@ class Config:
 
 # ------ tasks ------
 GITHUB_API_URL = "https://api.github.com"
+
+
+class Quiz:
+    START_TIME = 17, 51
+    END_TIME = 17, 52
+    # START_TIME = 8, 30
+    # END_TIME = 22, 00
+    CATEGORIES = ["bash", "React", "Laravel"]
+    TAGS = ["BASH", "HTML", "Git", "JavaScript", "Python"]
+    COLORS = {
+        "bash": COLOR.green,
+        "react": COLOR.cyan,
+        "laravel": COLOR.red,
+        "html": COLOR.orange,
+        "git": COLOR.orange,
+        "javascript": COLOR.yellow,
+        "python": COLOR.blue,
+    }
+    REWARD_AMOUNT: dict[Literal["Easy", "Medium", "Hard"], int] = {
+        "Easy": GOLDEN_RATIO * 0.5,
+        "Medium": GOLDEN_RATIO * 0.75,
+        "Hard": GOLDEN_RATIO * 1.25,
+    }
 
 
 # Exlude files that should not be imported

@@ -15,6 +15,8 @@ IS_MISSING: bool = False
 DISCORD_BOT_TOKEN: str
 BOT_TASKS: str
 GITHUB_ACCESS_TOKEN: str
+QUIZ_API_ENDPOINT: str
+QUIZ_API_KEY: str
 
 
 load_dotenv()

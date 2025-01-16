@@ -11,7 +11,9 @@ __all__ = [
 
 class number(float):
     def __str__(self):
-        return super().__format__("_").replace("_", " ")
+        return "**{0}**.{1}".format(
+            *(super().__format__("_").replace("_", " ").split("."))
+        ).removesuffix(".0")
 
 
 class Color:
