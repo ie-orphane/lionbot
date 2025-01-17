@@ -1,7 +1,8 @@
-from .__schema__ import Collection
-import json
-from typing import Literal, Self
 import os
+import json
+import datetime as dt
+from typing import Literal, Self
+from .__schema__ import Collection
 
 
 class QuizFields:
@@ -14,16 +15,30 @@ class QuizFields:
     correct_answers: dict[Literal["a", "b", "c", "d", "e", "f"], bool]
     explanation: str | None
     tip: str | None
-    tags: list[Literal["bash", "Code", "React", "Laravel"]]
-    category: Literal["BASH", "PHP", "HTML", "Git", "JavaScript", "Python"]
+    tags: list[Literal["BASH", "HTML", "Git", "JavaScript", "Python"]]
+    category: Literal["bash", "Code", "React", "Laravel"]
     difficulty: Literal["Easy", "Medium", "Hard"]
     message_id: int = 0
     emojis: dict
     contributors: list[int]
+    date: dt.date | None = None
+    started: bool = False
+    ended: bool = False
 
 
 class QuizData(Collection, QuizFields):
     BASE = "quizes"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if self.date:
+            self.date = dt.date.fromisoformat(self.date)
+
+    def __to_dict__(self):
+        self_dict = super().__to_dict__()
+        if (date := self_dict.get("date")):
+            self_dict["date"] = str(date)
+        return self_dict
 
     @classmethod
     def create(cls, **kwargs) -> Self:

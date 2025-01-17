@@ -33,4 +33,9 @@ class QuizApi:
                 asyncio.sleep(1.75)
                 continue
 
+            if data[0]["category"] == "Linux" or "Ubuntu" in [
+                tag["name"] for tag in data[0]["tags"]
+            ]:
+                continue
+
             return QuizData.create(**data[0], color=color or COLOR.black)

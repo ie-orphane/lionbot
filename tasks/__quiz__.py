@@ -1,5 +1,5 @@
 import discord
-from datetime import datetime, UTC, timedelta
+from datetime import datetime, UTC
 from utils import Log, charts, number
 from api import QuizApi
 from models import QuizData, UserData
@@ -8,7 +8,7 @@ from constants import Quiz
 from discord.ext import tasks, commands
 
 
-@tasks.loop(minutes=1)
+@tasks.loop(seconds=45)
 async def quiz(bot: commands.Bot):
     channel: discord.TextChannel
     message: discord.Message
@@ -18,39 +18,15 @@ async def quiz(bot: commands.Bot):
         Log.error("Gitlog", "error while getting gitlog channel")
         return
 
-    if (now.hour, now.minute) == Quiz.START_TIME:
-        Log.job("Quiz", "Starting trivia event...")
-        current_quiz = await QuizApi.get()
-        embed = discord.Embed(
-            description=f"**{current_quiz.question}**\n", color=current_quiz.color
-        )
-        if current_quiz.description:
-            embed.description += current_quiz.description + "\n"
-        embed.description += (
-            f"\n**Answers:** \n{"\n".join([f":regional_indicator_{answerkey}:  {answer}"for answerkey, answer in current_quiz.answers.items()])}\n\n"
-            f"**Reward**: {number(Quiz.REWARD_AMOUNT[current_quiz.difficulty])} {get_emoji("coin")}\n"
-            f"**Ends**: <t:{int((now + timedelta(hours=abs(Quiz.START_TIME[0] - Quiz.END_TIME[0]), minutes=abs(Quiz.START_TIME[1] - Quiz.END_TIME[1]))).timestamp())}:R>\n"
-            f"**Difficulty**: {current_quiz.difficulty}\n"
-            f"**Multi-answers**: {current_quiz.multiple_correct_answers}\n"
-            f"**Category**: {current_quiz.category} {''.join([f"#{tag} {get_emoji(tag, '')} " for tag in current_quiz.tags])}"
-        )
-        message: discord.Message = await channel.send(embed=embed)
-        for answerkey in current_quiz.answers:
-            if (emoji := get_emoji(answerkey, None)) is not None:
-                await message.add_reaction(emoji)
-                current_quiz.emojis[emoji] = answerkey
-        current_quiz.message_id = message.id
-        current_quiz.update()
-        Log.job("Quiz", "Trivia started.")
-        return
+    current_quiz = QuizData.last()
 
-    if (current_quiz := QuizData.last()) is None:
-        return
+    if (current_quiz and not current_quiz.ended) and (
+        Quiz.END_TIME <= (now.hour, now.minute)
+        or (now.hour, now.minute) < Quiz.START_TIME
+    ):
+        if (message := await channel.fetch_message(current_quiz.message_id)) is None:
+            return
 
-    if (message := await channel.fetch_message(current_quiz.message_id)) is None:
-        return
-
-    if (now.hour, now.minute) == Quiz.END_TIME:
         Log.job("Quiz", "Ending trivia event...")
         _reactions: dict[int, discord.Reaction] = {}
         users_to_purne: list[discord.User] = []
@@ -82,6 +58,7 @@ async def quiz(bot: commands.Bot):
                 winner.add_coins(
                     Quiz.REWARD_AMOUNT.get(current_quiz.difficulty, 0), "quiz win"
                 )
+        current_quiz.ended = True
         current_quiz.update()
         embed = discord.Embed(
             color=current_quiz.color,
@@ -99,3 +76,34 @@ async def quiz(bot: commands.Bot):
             embed.description += f"\n\n:bar_chart: **Statistics**:"
         await message.reply(file=file if show_statistics else None, embed=embed)
         Log.job("Quiz", "Trivia ended.")
+        return
+
+    if ((current_quiz is None) or (not current_quiz.started)) and (
+        Quiz.START_TIME <= (now.hour, now.minute) < Quiz.END_TIME
+    ):
+        Log.job("Quiz", "Starting trivia event...")
+        current_quiz = await QuizApi.get()
+        embed = discord.Embed(
+            description=f"**{current_quiz.question}**\n", color=current_quiz.color
+        )
+        if current_quiz.description:
+            embed.description += current_quiz.description + "\n"
+        embed.description += (
+            f"\n**Answers:** \n{"\n".join([f":regional_indicator_{answerkey}:  {answer}"for answerkey, answer in current_quiz.answers.items()])}\n\n"
+            f"**Reward**: {number(Quiz.REWARD_AMOUNT[current_quiz.difficulty])} {get_emoji("coin")}\n"
+            f"**Ends**: <t:{int(now.replace(hour=Quiz.END_TIME[0], minute=Quiz.END_TIME[1]).timestamp())}:R>\n"
+            f"**Difficulty**: {current_quiz.difficulty}\n"
+            f"**Multi-answers**: {current_quiz.multiple_correct_answers}\n"
+            f"**Category**: {current_quiz.category} {''.join([f"#{tag} {get_emoji(tag, '')} " for tag in current_quiz.tags])}"
+        )
+        message: discord.Message = await channel.send(embed=embed)
+        for answerkey in current_quiz.answers:
+            if (emoji := get_emoji(answerkey, None)) is not None:
+                await message.add_reaction(emoji)
+                current_quiz.emojis[emoji] = answerkey
+        current_quiz.message_id = message.id
+        current_quiz.date = now.date()
+        current_quiz.started = True
+        current_quiz.update()
+        Log.job("Quiz", "Trivia started.")
+        return
