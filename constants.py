@@ -47,9 +47,9 @@ class Quiz:
         "python": COLOR.blue,
     }
     REWARD_AMOUNT: dict[Literal["Easy", "Medium", "Hard"], int] = {
-        "Easy": GOLDEN_RATIO * 0.5,
-        "Medium": GOLDEN_RATIO * 0.75,
-        "Hard": GOLDEN_RATIO * 1.25,
+        "Easy": GOLDEN_RATIO * 1,
+        "Medium": GOLDEN_RATIO * 1.5,
+        "Hard": GOLDEN_RATIO * 2.5,
     }
 
 
