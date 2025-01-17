@@ -2,8 +2,8 @@ from discord.ext import tasks, commands
 from datetime import datetime, UTC
 from utils import get_files, Log, get_week, Week
 from models import UserData, WeekData
-from wakatime import get_week_summary
 from constants import GOLDEN_RATIO
+from api import WakatimeApi
 
 
 THRESHOLD = 19_800
@@ -12,43 +12,42 @@ FACTOR = THRESHOLD / GOLDEN_RATIO
 
 @tasks.loop(minutes=15)
 async def weekly_data(bot: commands.Bot):
-    weeks_file = get_files("./data/weeks")
+    try:
+        weeks_file = get_files("./data/weeks")
 
-    current_week: Week = get_week(week_argument="beforelast")
-    week_count = current_week.count
+        current_week: Week = get_week(week_argument="beforelast")
+        week_count = current_week.count
 
-    if datetime.now(UTC).weekday() == 0 and week_count not in weeks_file:
-        Log.job("Data", "Collecting...")
+        if datetime.now(UTC).weekday() == 0 and week_count not in weeks_file:
+            Log.job("Data", "Collecting...")
 
-        geeks = {}
-        for i, user in enumerate(UserData.read_all()):
-            if user.token:
-                print(f"[{i:>2}]", end=" ")
-                user_summary = get_week_summary(
-                    api_key=user.token,
-                    params={
-                        "start": current_week.readable_start,
-                        "end": current_week.readable_end,
-                    },
-                    name=user.name,
-                )
-
-                if user_summary:
+            geeks = {}
+            for user in UserData.read_all():
+                if user.token is None:
+                    continue
+                if user_summary := await WakatimeApi.get_weekly_summary(
+                    user.token,
+                    user.name,
+                    start=current_week.readable_start,
+                    end=current_week.readable_end,
+                ):
                     geeks[user.id] = user_summary[0]
 
-        # update users data
-        for id, amount in geeks.items():
-            user_data = UserData.read(id)
-            if amount >= THRESHOLD:
-                user_data.add_coins(amount / FACTOR, "coding gain")
-                user_data.update()
+            # update users data
+            for id, amount in geeks.items():
+                user_data = UserData.read(id)
+                if amount >= THRESHOLD:
+                    user_data.add_coins(amount / FACTOR, "coding gain")
+                    user_data.update()
 
-        # update weeks data
-        WeekData(
-            id=current_week.count,
-            start=current_week.readable_start,
-            end=current_week.readable_end,
-            geeks=dict(sorted(geeks.items(), key=lambda x: x[1], reverse=True)),
-        ).update()
+            # update weeks data
+            WeekData(
+                id=current_week.count,
+                start=current_week.readable_start,
+                end=current_week.readable_end,
+                geeks=dict(sorted(geeks.items(), key=lambda x: x[1], reverse=True)),
+            ).update()
 
-        Log.job("Data", "Collected!")
+            Log.job("Data", "Collected!")
+    except Exception as e:
+        Log.error("Weekly Data", f"{type(e).__name__} {e}")

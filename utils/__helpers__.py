@@ -1,10 +1,11 @@
 import pickle
 import json
 import os
-from datetime import datetime, timedelta, date, UTC
+import matplotlib
 import matplotlib.pyplot as plt
 from .__colorful__ import Color as clr
 from typing import Literal
+from datetime import datetime, timedelta, date, UTC
 
 
 __all__ = [
@@ -160,7 +161,12 @@ def leaderboard_image(template: str, image: str, data: list, **heading_data: dic
     cols = 8  # number of columns that we want
 
     # setting structure
-    fig, ax = plt.subplots(facecolor=background_color)
+    try:
+        fig, ax = plt.subplots(facecolor=background_color)
+    except AttributeError:
+        matplotlib.use("Agg")
+        fig, ax = plt.subplots(facecolor=background_color)
+
     fig.set_size_inches(w / 100, h / 100)
 
     ax.set_ylim(ybottom, rows)  #  y limits

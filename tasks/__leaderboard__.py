@@ -1,5 +1,6 @@
 import discord
-import wakatime
+import time
+from api import WakatimeApi
 from discord.ext import commands, tasks
 from utils import Log, get_week, leaderboard_image, open_file
 from datetime import datetime, UTC
@@ -14,31 +15,26 @@ async def leaderboard(bot: commands.Bot):
         current_time = f"{datetime.now(UTC):%A  %d  %b    %I:%M  %p}"
         current_time = current_time.replace("AM", "am").replace("PM", "pm")
         current_week = get_week()
-        params = {
-            "start": current_week.readable_start,
-            "end": current_week.readable_end,
-        }
 
-        Time = datetime.now(UTC)
+        start_time = time.time()
 
         users_summary = []
         trainings: dict[str, list] = {}
 
         for user in UserData.read_all():
             if user and user.token:
-                try:
-                    user_summary = wakatime.get_week_summary(
-                        api_key=user.token, params=params, name=user.name
-                    )
-                    if user_summary:
-                        users_summary.append(user_summary)
-                        if user.training:
-                            trainings.setdefault(user.training, [])
-                            trainings[user.training].append(user.name)
-                except Exception as e:
-                    print(e)
+                if user_summary := await WakatimeApi.get_weekly_summary(
+                    user.token,
+                    user.name,
+                    start=current_week.readable_start,
+                    end=current_week.readable_end,
+                ):
+                    users_summary.append(user_summary)
+                    if user.training:
+                        trainings.setdefault(user.training, [])
+                        trainings[user.training].append(user.name)
 
-        print(f"{str(datetime.now(UTC) - Time):>{14+1+20}}\n")
+        Log.info("Leaderboard", f"{' '*(20+1)}  {str(time.time() - start_time)}")
 
         users_summary.sort(key=lambda x: x[0], reverse=True)
 
@@ -107,4 +103,4 @@ async def leaderboard(bot: commands.Bot):
         Log.job("Leaderboard", "updated!")
 
     except Exception as e:
-        Log.error("Leaderboard", e)
+        Log.error("Leaderboard", f"{type(e).__name__} {e}")

@@ -17,6 +17,7 @@ BOT_TASKS: str
 GITHUB_ACCESS_TOKEN: str
 QUIZ_API_ENDPOINT: str
 QUIZ_API_KEY: str
+WAKATIME_ENDPOINT: str
 
 
 load_dotenv()
