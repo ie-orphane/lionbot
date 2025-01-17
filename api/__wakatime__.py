@@ -28,7 +28,7 @@ class WakatimeApi:
 
             if (
                 summary := await api.get(
-                    url=f"{WAKATIME_ENDPOINT}/v1/users/current/summaries",
+                    url=f"{WAKATIME_ENDPOINT}/users/current/summaries",
                     headers={
                         "Authorization": f"Basic {token}",
                         "Content-Type": "application/json",
