@@ -3,8 +3,7 @@ import datetime as dt
 from discord.ext import tasks, commands
 from utils import get_week, open_file, Log
 from constants import GOLDEN_RATIO, COLOR
-from config import get_emoji, get_channel
-from discord.channel import TextChannel
+from config import get_emoji
 
 
 START_HOUR_UTC, START_MINUTE_UTC = 8, 30
@@ -85,23 +84,11 @@ async def outlist(bot: commands.Bot):
     if dt.datetime.fromisoformat(current_week["started_at"]) == now:
         Log.job("Outlist", "starting...")
 
-        if (outlist_event_channel_id := get_channel("outlist_event")) is not None:
+        if (events_channel := bot.get_listed_channel("events")) is None:
+            Log.error("Gitlog", "error while getting events channel")
+            return
 
-            if (
-                outlist_event_channel := bot.get_channel(outlist_event_channel_id)
-            ) is not None:
-
-                if isinstance(outlist_event_channel, TextChannel):
-                    await send_message(current_week, outlist_event_channel)
-
-                else:
-                    Log.error("Outlist", "outlist channel is not a TextChannel")
-
-            else:
-                Log.error("Outlist", "outlist event channel not found")
-
-        else:
-            Log.error("Outlist", "outlist event channel id not found")
+        await send_message(current_week, events_channel)
 
         current_week["started"] = True
 
