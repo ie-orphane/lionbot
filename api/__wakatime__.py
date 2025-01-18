@@ -1,6 +1,7 @@
 import time
 from utils import Log
-from env import WAKATIME_ENDPOINT
+from typing import Literal
+from env import WAKATIME_API_URL
 from . import __self__ as api
 
 
@@ -9,15 +10,39 @@ __all__ = ["WakatimeApi"]
 
 class WakatimeApi:
 
-    @classmethod
-    async def get_all_time(cls, token: str, /):
+    @staticmethod
+    async def __get(
+        *, token: str, endpoint: str = "users/current", action: str = "", **params
+    ):
         return await api.get(
-            url=f"{WAKATIME_ENDPOINT}/users/current/stats/all_time",
+            url=f"{WAKATIME_API_URL}/{'/'.join([path for path in f'{endpoint}/{action}'.split("/") if path])}",
             headers={
                 "Authorization": f"Basic {token}",
                 "Content-Type": "application/json",
             },
+            **params,
         )
+
+    @classmethod
+    async def get_current(cls, token: str, /):
+        return await cls.__get(token=token)
+
+    @classmethod
+    async def get_stats(
+        cls,
+        token: str,
+        duration: Literal["last_7_days", "last_30_days", "last_year", "all_time"],
+        /,
+    ):
+        return await cls.__get(token=token, action=f"stats/{duration}")
+
+    @classmethod
+    async def get_all_time(cls, token: str, /):
+        return await cls.get_stats(token, "all_time")
+
+    @classmethod
+    async def get_summary(cls, token: str, /, **params):
+        return await cls.__get(token=token, action="summaries", **params)
 
     @classmethod
     async def get_weekly_summary(
@@ -28,7 +53,7 @@ class WakatimeApi:
 
             if (
                 summary := await api.get(
-                    url=f"{WAKATIME_ENDPOINT}/users/current/summaries",
+                    url=f"{WAKATIME_API_URL}/users/current/summaries",
                     headers={
                         "Authorization": f"Basic {token}",
                         "Content-Type": "application/json",

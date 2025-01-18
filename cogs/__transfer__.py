@@ -43,7 +43,7 @@ class Transfer(Cog):
                 embed=discord.Embed(
                     color=self.color.red,
                     description=f"{interaction.user.mention}, you are not registered yet!",
-                ),
+                ).set_footer(text="use /register instead"),
                 ephemeral=True,
             )
             return
@@ -53,7 +53,7 @@ class Transfer(Cog):
                 embed=discord.Embed(
                     color=self.color.red,
                     description=f"{member.mention} is not registered yet!",
-                ),
+                ).set_footer(text="use /register instead"),
                 ephemeral=True,
             )
             return

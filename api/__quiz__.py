@@ -1,6 +1,6 @@
 from . import __self__ as api
 import random
-from env import QUIZ_API_ENDPOINT, QUIZ_API_KEY
+from env import QUIZ_API_URL, QUIZ_API_KEY
 from models import QuizData
 import asyncio
 from constants import COLOR, Quiz
@@ -19,7 +19,7 @@ class QuizApi:
     async def get(cls) -> Any | None:
         attempts = 0
         while True:
-            url = f"{QUIZ_API_ENDPOINT}/questions"
+            url = f"{QUIZ_API_URL}/questions"
             if random.choice([True, False]):
                 tag = random.choice(Quiz.TAGS)
                 color = Quiz.COLORS.get(tag.lower())

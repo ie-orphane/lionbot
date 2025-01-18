@@ -1,10 +1,10 @@
 import discord
-import requests
 from discord.ext import commands
 from models import UserData
 from utils import Social
 from config import get_emoji
 from constants import COLOR
+from api import WakatimeApi as wakapi
 
 
 @discord.app_commands.guild_only()
@@ -25,7 +25,8 @@ class Set(commands.GroupCog, name="set"):
                 embed=discord.Embed(
                     color=self.color.red,
                     description=f"{interaction.user.mention}, you are not registered yet!",
-                ).set_footer(text="use /register instead")
+                ).set_footer(text="use /register instead"),
+                ephemeral=True,
             )
             return
 
@@ -35,7 +36,8 @@ class Set(commands.GroupCog, name="set"):
                 embed=discord.Embed(
                     color=self.color.red,
                     description=f"Oops! The {social} link '**{link}**' maybe invalid !",
-                )
+                ),
+                ephemeral=True,
             )
             return
 
@@ -44,6 +46,7 @@ class Set(commands.GroupCog, name="set"):
                 color=self.color.green,
                 description=f"[{get_emoji(social)}{social}]({new_link}) social added succefuly",
             ).set_footer(text="check your profile using /profile"),
+            ephemeral=True,
         )
 
     @discord.app_commands.command(description="set a new wakatime token")
@@ -52,21 +55,23 @@ class Set(commands.GroupCog, name="set"):
         await interaction.response.defer()
         user = UserData.read(interaction.user.id)
 
-        response = requests.get(
-            url="https://wakatime.com/api/v1/users/current",
-            headers={
-                "Authorization": f"Basic {waka_token}",
-                "Content-Type": "application/json",
-            },
-        )
-
-        if not response.ok:
-            print(f"Error {interaction.user}: {response.status_code}, {response.text}")
+        if user is None:
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    color=self.color.red,
+                    description=f"{interaction.user.mention}, you are not registered yet!",
+                ).set_footer(text="use /register instead"),
+                ephemeral=True,
+            )
+            return
+        
+        if (await wakapi.get_current(waka_token)) is None:
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=self.color.red,
                     description=f"Invalid Wakatime API KEY `{waka_token}`.",
-                )
+                ),
+                ephemeral=True,
             )
             return
 

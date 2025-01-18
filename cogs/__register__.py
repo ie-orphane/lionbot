@@ -1,8 +1,8 @@
 import discord
-import requests
 from models import UserData
 from string import ascii_letters
 from cogs import Cog
+from api import WakatimeApi as wakapi
 
 
 class Register(Cog):
@@ -27,7 +27,8 @@ class Register(Cog):
                 embed=discord.Embed(
                     color=self.color.red,
                     description=f"{interaction.user.mention}, you are already registered!",
-                )
+                ),
+                ephemeral=True,
             )
             return
 
@@ -36,25 +37,18 @@ class Register(Cog):
                 embed=discord.Embed(
                     color=self.color.red,
                     description=f"Invalid name **{name}**.",
-                )
+                ),
+                ephemeral=True,
             )
             return
 
-        response = requests.get(
-            url="https://wakatime.com/api/v1/users/current",
-            headers={
-                "Authorization": f"Basic {waka_token}",
-                "Content-Type": "application/json",
-            },
-        )
-
-        if not response.ok:
-            print(f"Error {interaction.user}: {response.status_code}, {response.text}")
+        if (await wakapi.get_current(waka_token)) is None:
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=self.color.red,
                     description=f"Invalid Wakatime API KEY `{waka_token}`.",
-                )
+                ),
+                ephemeral=True,
             )
             return
 
@@ -74,7 +68,8 @@ class Register(Cog):
             embed=discord.Embed(
                 color=self.color.green,
                 description=f"{interaction.user.mention}, your registred successfully!",
-            )
+            ),
+            ephemeral=True,
         )
 
 

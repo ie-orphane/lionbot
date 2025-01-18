@@ -1,6 +1,5 @@
 import os
 import discord
-import requests
 from typing import Literal
 from datetime import datetime, UTC, timedelta, date
 from models import UserData
@@ -8,6 +7,7 @@ from cogs import Cog
 from config import get_emoji, get_extension
 from constants import EXCLUDE_DIRS, GOLDEN_RATIO
 from utils import convert_seconds
+from api import WakatimeApi as wakapi
 
 
 class Stats(Cog):
@@ -84,7 +84,7 @@ class Stats(Cog):
                 embed=discord.Embed(
                     color=self.color.red,
                     description=f"{member.mention}{', you are' if member == interaction.user  else ' is'} not registered yet!",
-                ),
+                ).set_footer(text="use /register instead"),
                 ephemeral=True,
             )
             return
@@ -99,52 +99,53 @@ class Stats(Cog):
             )
             return
 
-        headers = {
-            "Authorization": f"Basic {user.token}",
-            "Content-Type": "application/json",
-        }
-
-        response = requests.get(
-            url="https://wakatime.com/api/v1/users/current", headers=headers
-        )
-
-        if not response.ok:
-            print(f"Error {response.status_code} : {response.text}")
+        if ((user_data := await wakapi.get_current(user.token)) is None) or (
+            (user_data := user_data.get("data")) is None
+        ):
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    color=self.color.red,
+                    description=f"{member.mention}, failed to get your data!",
+                ),
+                ephemeral=True,
+            )
             return
 
-        user_data = response.json()["data"]
-
         if duration == "last_24_hours":
-            response = requests.get(
-                url="https://wakatime.com/api/v1/users/current/summaries",
-                params={
-                    "start": (datetime.now(UTC) - timedelta(days=1)).date(),
-                    "end": datetime.now(UTC).date(),
-                },
-                headers=headers,
-            )
-
-            if not response.ok:
-                print(f"Error {response.status_code} : {response.text}")
+            if (
+                user_stats := await wakapi.get_summary(
+                    user.token,
+                    start=str((datetime.now(UTC) - timedelta(days=1)).date()),
+                    end=str(datetime.now(UTC).date()),
+                )
+            ) is None:
+                await interaction.followup.send(
+                    embed=discord.Embed(
+                        color=self.color.red,
+                        description=f"{member.mention}, failed to get your stats!",
+                    ),
+                    ephemeral=True,
+                )
                 return
 
-            user_stats = response.json()
             daily_average = user_stats["daily_average"]["text"]
             total = user_stats["cumulative_total"]["text"]
             duration = "today"
             langs = user_stats["data"][0]["languages"]
 
         else:
-            response = requests.get(
-                url=f"https://wakatime.com/api/v1/users/current/stats/{duration}",
-                headers=headers,
-            )
-
-            if not response.ok:
-                print(f"Error {response.status_code} : {response.text}")
+            if (
+                (user_stats := await wakapi.get_stats(user.token, duration)) is None
+            ) or ((user_stats := user_stats.get("data")) is None):
+                await interaction.followup.send(
+                    embed=discord.Embed(
+                        color=self.color.red,
+                        description=f"{member.mention}, failed to get your stats!",
+                    ),
+                    ephemeral=True,
+                )
                 return
 
-            user_stats = response.json()["data"]
             daily_average = user_stats["human_readable_daily_average"]
             total = user_stats["human_readable_total"]
             duration = user_stats["human_readable_range"]
@@ -174,7 +175,7 @@ class Stats(Cog):
                 description=f"**Total**: {total}\n**Daily Average**: {daily_average}\n**Languages**:\n>>> {languages}",
             )
             .set_author(
-                name=user_data["display_name"],
+                name=user.name,
                 icon_url=user_data["photo"],
                 url=user_data["profile_url"],
             )
