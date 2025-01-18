@@ -78,7 +78,7 @@ async def quiz(bot: commands.Bot):
         Log.job("Quiz", "Trivia ended.")
         return
 
-    if ((current_quiz is None) or (not current_quiz.started)) and (
+    if ((current_quiz is None) or (now.date() > current_quiz.date)) and (
         Quiz.START_TIME <= (now.hour, now.minute) < Quiz.END_TIME
     ):
         Log.job("Quiz", "Starting trivia event...")
@@ -103,7 +103,6 @@ async def quiz(bot: commands.Bot):
                 current_quiz.emojis[emoji] = answerkey
         current_quiz.message_id = message.id
         current_quiz.date = now.date()
-        current_quiz.started = True
         current_quiz.update()
         Log.job("Quiz", "Trivia started.")
         return

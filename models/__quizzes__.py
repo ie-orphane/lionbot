@@ -22,7 +22,6 @@ class QuizFields:
     emojis: dict
     contributors: list[int]
     date: dt.date | None = None
-    started: bool = False
     ended: bool = False
 
 
