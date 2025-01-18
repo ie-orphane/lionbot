@@ -9,9 +9,11 @@ async def get(
     headers: dict = None,
     name_message: str = None,
     error_message: str = None,
+    show_url: bool = False,
     **params,
 ):
-    Log.info("API", f"{url}")
+    if show_url:
+        Log.info("API", f"{url}")
     async with aiohttp.ClientSession() as session:
         async with session.get(url, params=params, headers=headers or {}) as response:
             if not response.ok:
