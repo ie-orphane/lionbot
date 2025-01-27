@@ -2,9 +2,10 @@ import discord
 import time
 from api import WakatimeApi
 from discord.ext import commands, tasks
-from utils import Log, get_week, leaderboard_image, open_file
+from utils import Log, get_week, leaderboard_image
 from datetime import datetime, UTC
 from models import UserData
+from config import get_message, set_message, get_config
 
 
 @tasks.loop(minutes=15)
@@ -45,7 +46,6 @@ async def leaderboard(bot: commands.Bot):
         ]
 
         if len(all_users) > 0:
-            # top and bottom global leaderboard image
             leaderboard_image(
                 "top",
                 "global",
@@ -86,19 +86,41 @@ async def leaderboard(bot: commands.Bot):
                 "bottom", training, users[len(users) // 2 :], time=current_time
             )
 
-        leaderboards_data: list[dict] = open_file("./data/leaderboards.json")
+        message: discord.Message
+        message_id: int
 
-        for leaderboard_data in leaderboards_data:
+        for leaderboard_data in get_config("ALL", "leaderboard"):
             leaderboard_channel = bot.get_channel(leaderboard_data["channel"])
-            for img, id in leaderboard_data["messages"].items():
+            if leaderboard_channel is None:
+                continue
+            for position in leaderboard_data["messages"]:
                 file = discord.File(
-                    f"./assets/images/{leaderboard_data['alias']}_{img}_leaderboard.png",
-                    filename=f"{img}_leaderboard.png",
+                    f"./assets/images/{leaderboard_data['alias']}_{position}_leaderboard.png",
+                    filename=f"{position}_leaderboard.png",
                 )
-                message: discord.Message = await leaderboard_channel.fetch_message(id)
-                await message.edit(content="", attachments=[file])
+                if (
+                    message_id := get_message(
+                        "LEADERBOARD", f"{leaderboard_data['alias']}/{position}"
+                    )
+                ) is not None:
+                    try:
+                        message = await leaderboard_channel.fetch_message(message_id)
+                        await message.edit(content="", attachments=[file])
+                        continue
+                    except discord.NotFound:
+                        pass
 
-            print(f"{str(leaderboard_channel):<21} {leaderboard_channel.guild}")
+                message = await leaderboard_channel.send(content="", file=file)
+                set_message(
+                    "LEADERBOARD",
+                    f"{leaderboard_data['alias']}/{position}",
+                    message.id,
+                )
+
+            Log.info(
+                "Leaderboard",
+                f"{str(leaderboard_channel):<21} {leaderboard_channel.guild}",
+            )
 
         Log.job("Leaderboard", "updated!")
 
