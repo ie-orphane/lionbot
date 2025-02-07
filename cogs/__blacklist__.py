@@ -49,7 +49,7 @@ class Blacklist(commands.GroupCog, name="blacklist"):
             return
 
         this_week = get_week()
-        weeks = open_file("data/blacklist.json")
+        weeks = open_file("data/outlist.json")
         current_week = weeks.get(str(this_week.count))
 
         if current_week is None:
@@ -117,7 +117,7 @@ class Blacklist(commands.GroupCog, name="blacklist"):
 
         current_week["claimed_by"] = interaction.user.id
         user.sub_coins(current_week["amout"], "blacklist out")
-        open_file("data/blacklist.json", weeks)
+        open_file("data/outlist.json", weeks)
 
         await interaction.followup.send(
             embed=discord.Embed(
