@@ -3,7 +3,7 @@ from typing import Literal
 from .__self__ import get_config
 
 
-__all__ = ["get_emoji"]
+__all__ = ["get_emoji", "get_reaction"]
 
 
 def get_emoji(
@@ -15,3 +15,14 @@ def get_emoji(
         Log.error("Config", "EMOJIS field not found")
         return default
     return emojis.get(emoji.lower(), default)
+
+
+def get_reaction(
+    reaction: str,
+    default: str | None = " ",
+) -> str | None:
+    reactions: dict[str, str] = get_config("REACTIONS")
+    if reactions is None:
+        Log.error("Config", "REACTIONS field not found")
+        return default
+    return reactions.get(reaction.lower(), default)
