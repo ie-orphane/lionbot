@@ -2,8 +2,9 @@ import discord
 from api import wakapi
 from discord.ext import commands, tasks
 from utils import Log, get_week, leaderboard_image
-from datetime import datetime, UTC
+from datetime import datetime
 from config import get_message, set_message, get_config
+from zoneinfo import ZoneInfo
 
 
 @tasks.loop(minutes=15)
@@ -11,8 +12,11 @@ async def leaderboard(bot: commands.Bot):
     try:
         Log.job("Leaderboard", "Updating...")
 
-        current_time = f"{datetime.now(UTC):%A  %d  %b    %I:%M  %p}"
-        current_time = current_time.replace("AM", "am").replace("PM", "pm")
+        current_time = f"{datetime.now(ZoneInfo("Africa/Casablanca")):%A  %d  %b    %I:%M  %p}".replace(
+            "AM", "am"
+        ).replace(
+            "PM", "pm"
+        )
         current_week = get_week()
 
         users_summary = await wakapi.get_all_weekly_summary(
