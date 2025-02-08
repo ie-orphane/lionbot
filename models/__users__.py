@@ -84,6 +84,7 @@ class UserData(Collection):
     _log: dict | None
     _socials: dict
     achievments: dict
+    greylist: bool = False
 
     @property
     def socials(self):

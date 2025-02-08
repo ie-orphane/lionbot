@@ -5,6 +5,7 @@ from models import UserData
 from utils import open_file, get_week
 from config import get_emoji
 from constants import OUTLIST_AMOUNT, COLOR
+from utils import number
 
 
 @discord.app_commands.guild_only()
@@ -30,100 +31,78 @@ class Blacklist(commands.GroupCog, name="blacklist"):
 
         black_list_role = None
 
-        # get Geek of the week and black list roles
         for role in interaction.guild.roles:
             if role.name == "Black List":
                 black_list_role = role
 
-        # if not found create new one
+        amount = OUTLIST_AMOUNT
+
         if (
             black_list_role is None
             or interaction.user.get_role(black_list_role.id) is None
         ):
+            if user.greylist:
+                await interaction.user.add_roles(black_list_role)
+                user.greylist = False
+                user.update()
+                await interaction.followup.send(
+                    embed=discord.Embed(
+                        color=self.color.yellow,
+                        description=(
+                            f"{interaction.user.mention}, congrats for joining **BlackList**.\n"
+                            f"To appeal 😔, you must pay {amount} {get_emoji('coin')}."
+                        ),
+                    )
+                )
+                return
+
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=self.color.red,
-                    description=f"{interaction.user.mention}, we can't find you in blacklist.",
-                ).set_footer(text="wanna join us?")
+                    description=f"{interaction.user.mention}, next time maybe 🤔.\nWe can't find you in blacklist.",
+                ).set_footer(text="wanna join it?")
             )
+            user.greylist = True
+            user.update()
             return
 
         this_week = get_week()
         weeks = open_file("data/outlist.json")
         current_week = weeks.get(str(this_week.count))
 
-        if current_week is None:
-            if user.coins < OUTLIST_AMOUNT:
-                await interaction.followup.send(
-                    embed=discord.Embed(
-                        color=self.color.red,
-                        description=f"{interaction.user.mention}, you don't have ehough coins!\nYou need **{OUTLIST_AMOUNT - user.coins}** {get_emoji("coin")} more.",
-                    )
-                )
-                return
-
-            await interaction.user.remove_roles(black_list_role)
-
-            user.sub_coins(current_week["amout"], "blacklist out")
-
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    color=self.color.green,
-                    description=f"{interaction.user.mention}, congarts 🥳!\nYou are free now.\nYou paied {OUTLIST_AMOUNT} {get_emoji("coin")}.",
-                ),
-            )
-            return
-
-        if geeK_id := current_week["claimed_by"]:
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    color=self.color.red,
-                    description=f"{interaction.user.mention}, the event already finished\nClaimed by <@{geeK_id}>.",
-                ).set_footer(text="maybe the next week!")
-            )
-            return
-
-        now = dt.datetime.now(dt.UTC).replace(second=0, microsecond=0)
-        if now < dt.datetime.fromisoformat(current_week["datetime"]):
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    color=self.color.red,
-                    description=f"{interaction.user.mention}, the event didn't started yet ⏲️.",
-                ).set_footer(text="be patient!")
-            )
-            return
-
-        if now > dt.datetime.fromisoformat(current_week["datetime"]) + dt.timedelta(
-            seconds=current_week["ends_in"]
+        if (
+            not (current_week is None)
+            and (current_week["claimed_by"] is None)
+            and dt.datetime.fromisoformat(current_week["started_at"])
+            <= dt.datetime.now(dt.UTC).replace(second=0, microsecond=0)
+            <= dt.datetime.fromisoformat(current_week["started_at"])
+            + dt.timedelta(seconds=current_week["ends_in"])
         ):
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    color=self.color.red,
-                    description=f"{interaction.user.mention}, the event already finished ⏰.",
-                ).set_footer(text="maybe next week!")
-            )
-            return
+            amount = current_week["amout"]
 
-        if user.coins < current_week["amout"]:
+        if user.coins < amount:
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=self.color.red,
-                    description=f"{interaction.user.mention}, you need {current_week["amout"] - user.coins} {get_emoji("coin")} more.",
+                    description=f"{interaction.user.mention}, you need {number(amount - user.coins)} {get_emoji("coin")} more.",
                 )
             )
             return
 
         await interaction.user.remove_roles(black_list_role)
 
-        current_week["claimed_by"] = interaction.user.id
-        user.sub_coins(current_week["amout"], "blacklist out")
-        open_file("data/outlist.json", weeks)
+        if amount != OUTLIST_AMOUNT:
+            current_week["claimed_by"] = interaction.user.id
+            open_file("data/outlist.json", weeks)
+
+        user.greylist = False
+        user.sub_coins(amount, "blacklist out")
 
         await interaction.followup.send(
             embed=discord.Embed(
                 color=self.color.green,
-                description=f"{interaction.user.mention}, congarts 🥳!\nYou paied {current_week["amout"]} {get_emoji("coin")}\nYou are free now.",
-            ),
+                description=f"{interaction.user.mention}, congarts 🥳!\nYou paied {number(amount)} {get_emoji("coin")}",
+            ).set_footer(text="you're free now."),
         )
 
 
