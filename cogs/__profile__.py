@@ -5,7 +5,7 @@ from cogs import Cog
 from constants import BOT_COINS_AMOUNT
 from utils import number
 from config import get_emoji
-from api import WakatimeApi as wakapi
+from api import wakapi
 from env import WAKATIME_BASE_URL
 
 

@@ -1,10 +1,8 @@
 import discord
-import time
-from api import WakatimeApi
+from api import wakapi
 from discord.ext import commands, tasks
 from utils import Log, get_week, leaderboard_image
 from datetime import datetime, UTC
-from models import UserData
 from config import get_message, set_message, get_config
 
 
@@ -17,32 +15,27 @@ async def leaderboard(bot: commands.Bot):
         current_time = current_time.replace("AM", "am").replace("PM", "pm")
         current_week = get_week()
 
-        start_time = time.time()
+        users_summary = await wakapi.get_all_weekly_summary(
+            start=current_week.readable_start,
+            end=current_week.readable_end,
+        )
 
-        users_summary = []
-        trainings: dict[str, list] = {}
-
-        for user in UserData.read_all():
-            if user and user.token:
-                if user_summary := await WakatimeApi.get_weekly_summary(
-                    user.token,
-                    user.name,
-                    start=current_week.readable_start,
-                    end=current_week.readable_end,
-                ):
-                    users_summary.append(user_summary)
-                    if user.training:
-                        trainings.setdefault(user.training, [])
-                        trainings[user.training].append(user.name)
-
-        Log.info("Leaderboard", f"{' '*(20+1)}  {str(time.time() - start_time)}")
-
-        users_summary.sort(key=lambda x: x[0], reverse=True)
+        trainings_summary = {}
+        for user_summary in users_summary:
+            if user_summary.training is None:
+                continue
+            trainings_summary.setdefault(user_summary.training, [])
+            trainings_summary[user_summary.training].append(
+                {
+                    "": len(trainings_summary[user_summary.training]) + 1,
+                    **user_summary.data,
+                }
+            )
 
         all_users = [
-            {"": index, **user[1]}
-            for index, user in enumerate(users_summary, start=1)
-            if user[0] != 0
+            {"": index, **user_summary.data}
+            for index, user_summary in enumerate(users_summary, start=1)
+            if user_summary.total_seconds != 0
         ]
 
         if len(all_users) > 0:
@@ -66,24 +59,17 @@ async def leaderboard(bot: commands.Bot):
                 time=current_time,
             )
 
-        for training, coders in trainings.items():
-            users = [
-                {"": index, **user[1]}
-                for index, user in enumerate(
-                    filter(lambda x: x[1]["Coder"] in coders, users_summary), start=1
-                )
-            ]
-
+        for training, coders in trainings_summary.items():
             leaderboard_image(
                 "top",
                 training,
-                users[: len(users) // 2],
+                coders[: len(coders) // 2],
                 count=current_week.count,
                 start=current_week.human_readable_start,
                 end=current_week.human_readable_end,
             )
             leaderboard_image(
-                "bottom", training, users[len(users) // 2 :], time=current_time
+                "bottom", training, coders[len(coders) // 2 :], time=current_time
             )
 
         message: discord.Message

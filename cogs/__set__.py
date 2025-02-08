@@ -4,7 +4,7 @@ from models import UserData
 from utils import Social
 from config import get_emoji
 from constants import COLOR
-from api import WakatimeApi as wakapi
+from api import wakapi
 
 
 @discord.app_commands.guild_only()

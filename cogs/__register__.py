@@ -2,7 +2,7 @@ import discord
 from models import UserData
 from string import ascii_letters
 from cogs import Cog
-from api import WakatimeApi as wakapi
+from api import wakapi
 
 
 class Register(Cog):

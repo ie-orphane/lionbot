@@ -55,3 +55,5 @@ class Quiz:
 
 # Exlude files that should not be imported
 EXLUDE_MODULE_FILES = ["__init__.py", "__all__.py", "__self__.py"]
+
+BUFFER_SLEEP_SECONDS = 60

@@ -3,7 +3,7 @@ from datetime import datetime, UTC
 from utils import get_files, Log, get_week, Week
 from models import UserData, WeekData
 from constants import GOLDEN_RATIO
-from api import WakatimeApi
+from api import wakapi
 
 
 THRESHOLD = 19_800
@@ -21,17 +21,14 @@ async def weekly_data(bot: commands.Bot):
         if datetime.now(UTC).weekday() == 0 and week_count not in weeks_file:
             Log.job("Data", "Collecting...")
 
-            geeks = {}
-            for user in UserData.read_all():
-                if user.token is None:
-                    continue
-                if user_summary := await WakatimeApi.get_weekly_summary(
-                    user.token,
-                    user.name,
+            geeks = {
+                user_summary.id: user_summary.total_seconds
+                for user_summary in await wakapi.get_all_weekly_summary(
                     start=current_week.readable_start,
                     end=current_week.readable_end,
-                ):
-                    geeks[user.id] = user_summary[0]
+                )
+                if not (user_summary is None)
+            }
 
             # update users data
             for id, amount in geeks.items():

@@ -7,7 +7,7 @@ from cogs import Cog
 from config import get_emoji, get_extension
 from constants import EXCLUDE_DIRS, GOLDEN_RATIO
 from utils import convert_seconds
-from api import WakatimeApi as wakapi
+from api import wakapi
 
 
 class Stats(Cog):
