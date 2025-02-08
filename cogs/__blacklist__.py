@@ -15,7 +15,7 @@ class Blacklist(commands.GroupCog, name="blacklist"):
         self.bot = bot
         self.color = COLOR
 
-    @discord.app_commands.command(description="get out of the blacklist")
+    @discord.app_commands.command(description="a way for escaping from the blacklist.")
     async def out(self, interaction: discord.Interaction):
         await interaction.response.defer()
         user = UserData.read(interaction.user.id)
@@ -50,7 +50,7 @@ class Blacklist(commands.GroupCog, name="blacklist"):
                         color=self.color.yellow,
                         description=(
                             f"{interaction.user.mention}, congrats for joining **BlackList**.\n"
-                            f"To appeal 😔, you must pay {amount} {get_emoji('coin')}."
+                            f"To appeal 😔, you must pay {number(amount)} {get_emoji('coin')}."
                         ),
                     )
                 )

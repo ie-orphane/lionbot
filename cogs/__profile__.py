@@ -11,7 +11,7 @@ from env import WAKATIME_BASE_URL
 
 class Profile(Cog):
     @discord.app_commands.guild_only()
-    @discord.app_commands.command(description="view your profile")
+    @discord.app_commands.command(description="view basic geek information.")
     @discord.app_commands.describe(member="see member profile")
     async def profile(
         self,

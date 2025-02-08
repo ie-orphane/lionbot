@@ -21,9 +21,7 @@ class DiscordBot(commands.Bot):
         for extension in initial_extensions:
             await self.load_extension(extension)
 
-        sync = await self.tree.sync()
-
-        Log.info("Cogs", f"{len(sync)} Slash Command(s)")
+        Log.info("Cogs", f"{len(await self.tree.sync())} Slash Command(s)")
 
     async def on_ready(self):
         Log.info("Bot", f"Logged in as {self.user}")
