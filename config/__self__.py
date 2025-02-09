@@ -1,21 +1,32 @@
 import os
 from utils import open_file, Log
-from typing import Literal, Any
+from typing import Literal, Any, Dict
 from constants import Config
 
 
 __all__ = ["get_config", "set_config"]
 
 
-ConfigAttribute = Literal["GUILD", "USERS", "CHANNELS", "EMOJIS", "EXTENSTIONS"]
+ConfigAttribute = Literal[
+    "GUILD",
+    "REPOSITORY",
+    "ROLES",
+    "USERS",
+    "CHANNELS",
+    "EMOJIS",
+    "REACTIONS",
+    "EXTENSTIONS",
+]
+
+ConfigPrefix = Literal["global", "messages", "leaderboard"]
 
 
-file_data: dict[str, Any] = {}
-modified_datetime: dict[str, float] = {}
+file_data: Dict[str, Any] = {}
+modified_datetime: Dict[str, float] = {}
 
 
 def get_config(
-    attribute_name: ConfigAttribute, config_prefix: str = "global"
+    attribute_name: ConfigAttribute, config_prefix: ConfigPrefix = "global"
 ) -> Any | None:
     global file_data
     global modified_datetime
@@ -39,8 +50,10 @@ def get_config(
 
 
 def set_config(
-    attribute_name: ConfigAttribute, attribute_value: Any, config_prefix: str = "global"
-) -> Any | None:
+    attribute_name: ConfigAttribute,
+    attribute_value: Any,
+    config_prefix: ConfigPrefix = "global",
+) -> None:
     global file_data
     global modified_datetime
 

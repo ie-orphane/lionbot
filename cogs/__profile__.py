@@ -4,7 +4,7 @@ from typing import Union
 from cogs import Cog
 from constants import BOT_COINS_AMOUNT
 from utils import number
-from config import get_emoji
+from config import get_emoji, get_users, get_config
 from api import wakapi
 from env import WAKATIME_BASE_URL
 
@@ -53,6 +53,37 @@ class Profile(Cog):
             )
 
             await interaction.followup.send(embed=embed)
+            return
+
+        admins = get_users("owner", "coach", nullable=False)
+        roles: set[discord.Role] = set()
+        if not ((main_guild := self.bot.get_guild(get_config("GUILD"))) is None):
+            roles = {
+                role for role in main_guild.roles if role.name in get_config("ROLES")
+            }
+        if interaction.user != member and not (
+            {role for role in interaction.user.roles} & roles
+            or interaction.user.id in admins
+        ):
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    color=self.color.red,
+                    description=(
+                        f"{interaction.user.mention}, oops 🫣!\n"
+                        f"You can't see {member.mention}'s profile.\n\n"
+                        f"Only the following members can see other profiles:\n"
+                        + "\n".join(
+                            [
+                                f"- {admin.mention}"
+                                for admin in map(lambda x: self.bot.get_user(x), admins)
+                                if admin
+                            ]
+                            + [f"- {role.mention}" for role in roles]
+                        )
+                    ),
+                ),
+                ephemeral=True,
+            )
             return
 
         user = UserData.read(member.id)

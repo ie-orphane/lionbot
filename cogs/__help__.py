@@ -76,7 +76,7 @@ class Help(Cog):
                 name="Developed by", value=f"{get_emoji("owner")} {owner.mention}"
             )
 
-        if not ((repo_link := get_config("REPO")) is None):
+        if not ((repo_link := get_config("REPOSITORY")) is None):
             embed.add_field(
                 name="Repository link",
                 value=f"[{get_emoji("github")} /repo]({repo_link})",

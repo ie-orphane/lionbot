@@ -4,7 +4,7 @@ from typing import Literal
 from datetime import datetime, UTC, timedelta, date
 from models import UserData
 from cogs import Cog
-from config import get_emoji, get_extension
+from config import get_emoji, get_extension, get_users, get_config
 from constants import EXCLUDE_DIRS, GOLDEN_RATIO
 from utils import convert_seconds
 from api import wakapi
@@ -77,9 +77,40 @@ class Stats(Cog):
                 .set_footer(text=f"duration  -  {duration}")
             )
             return
-        user = UserData.read(member.id)
 
-        if user is None:
+
+        admins = get_users("owner", "coach", nullable=False)
+        roles: set[discord.Role] = set()
+        if not ((main_guild := self.bot.get_guild(get_config("GUILD"))) is None):
+            roles = {
+                role for role in main_guild.roles if role.name in get_config("ROLES")
+            }
+        if interaction.user != member and not (
+            {role for role in interaction.user.roles} & roles
+            or interaction.user.id in admins
+        ):
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    color=self.color.red,
+                    description=(
+                        f"{interaction.user.mention}, oops 🫣!\n"
+                        f"You can't see {member.mention}'s stats.\n\n"
+                        f"Only the following members can see other stats:\n"
+                        + "\n".join(
+                            [
+                                f"- {admin.mention}"
+                                for admin in map(lambda x: self.bot.get_user(x), admins)
+                                if admin
+                            ]
+                            + [f"- {role.mention}" for role in roles]
+                        )
+                    ),
+                ),
+                ephemeral=True,
+            )
+            return
+
+        if (user := UserData.read(member.id)) is None:
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=self.color.red,
