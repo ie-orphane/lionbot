@@ -3,7 +3,7 @@ from datetime import datetime, UTC
 from utils import Log, charts, number
 from api import QuizApi
 from models import QuizData, UserData
-from config import get_emoji
+from config import get_emoji, get_reaction
 from constants import Quiz
 from discord.ext import tasks, commands
 
@@ -98,7 +98,7 @@ async def quiz(bot: commands.Bot):
         )
         message: discord.Message = await channel.send(embed=embed)
         for answerkey in current_quiz.answers:
-            if (emoji := get_emoji(answerkey, None)) is not None:
+            if (emoji := get_reaction(answerkey, None)) is not None:
                 await message.add_reaction(emoji)
                 current_quiz.emojis[emoji] = answerkey
         current_quiz.message_id = message.id
