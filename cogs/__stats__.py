@@ -22,7 +22,7 @@ class Stats(Cog):
         member: discord.Member = None,
         duration: Literal[
             "last 24 hours", "last 7 days", "last 30 days", "last year", "all time"
-        ] = "last 24 hours",
+        ] = "all time",
     ):
         await interaction.response.defer()
         duration = duration.replace(" ", "_")
