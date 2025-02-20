@@ -163,7 +163,6 @@ class Project(GroupCog, name="project"):
 @discord.app_commands.guild_only()
 @discord.app_commands.default_permissions(administrator=True)
 class _Project(GroupCog, name="__project"):
-    @discord.app_commands.checks.has_permissions(administrator=True)
     @discord.app_commands.command(description="list all projects")
     async def all(self, interaction: discord.Interaction):
         await interaction.response.defer()
@@ -181,7 +180,6 @@ class _Project(GroupCog, name="__project"):
 
         await interaction.followup.send(f"```md\n{'\n'.join(content)}```")
 
-    @discord.app_commands.checks.has_permissions(administrator=True)
     @discord.app_commands.command(description="get the links of a project")
     @discord.app_commands.describe(id="the project's ID")
     async def links(self, interaction: discord.Interaction, id: str):
@@ -210,7 +208,6 @@ class _Project(GroupCog, name="__project"):
 
         await interaction.followup.send(f"```bash\n{content}```")
 
-    @discord.app_commands.checks.has_permissions(administrator=True)
     @discord.app_commands.command(description="Get a new project id")
     @discord.app_commands.describe(
         name="the project's name",

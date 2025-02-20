@@ -7,7 +7,7 @@ from utils import Language, RelativeDateTime
 from constants import MESSAGE, COLOR
 
 
-@discord.app_commands.default_permissions(send_messages=False)
+@discord.app_commands.dm_only()
 class Challenge(commands.GroupCog, name="challenge"):
     def __init__(self, bot: commands.Bot) -> None:
         super().__init__()
