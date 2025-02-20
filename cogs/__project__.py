@@ -1,16 +1,15 @@
 import discord
-from cogs import Cog, COLOR
+from cogs import GroupCog
 from models import ProjectData, UserData
 from typing import Literal
 from datetime import datetime, UTC, timedelta
-from discord.ext import commands
 
 
-class Send(Cog):
-    @discord.app_commands.guild_only()
+@discord.app_commands.guild_only()
+class Project(GroupCog, name="project"):
     @discord.app_commands.command(description="submit a project for review.")
     @discord.app_commands.describe(id="the project's ID")
-    async def send_project(self, interaction: discord.Interaction, id: str, link: str):
+    async def submit(self, interaction: discord.Interaction, id: str, link: str):
         await interaction.response.defer()
 
         user = UserData.read(interaction.user.id)
@@ -42,9 +41,27 @@ class Send(Cog):
             )
             return
 
-        deadtime = datetime.fromisoformat(project.deadtime)
+        if str(interaction.user.id) in project.links:
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    color=self.color.red,
+                    description=(
+                        f"✋ {interaction.user.mention}, "
+                        "\nyou already submitted the project link!"
+                        "\nYou can use `/edit_project` command to edit the link."
+                    ),
+                )
+            )
+            return
 
-        if datetime.now(UTC) > deadtime:
+        deadtime = datetime.fromisoformat(project.deadtime)
+        now = datetime.now(UTC)
+
+        project.add_link(
+            user_id=interaction.user.id, link=link, now=now, dead=now > deadtime
+        )
+
+        if now > deadtime:
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=self.color.red,
@@ -55,8 +72,6 @@ class Send(Cog):
                 )
             )
             return
-
-        project.add_link(interaction.user.id, link)
 
         await interaction.followup.send(
             embed=discord.Embed(
@@ -69,15 +84,86 @@ class Send(Cog):
             )
         )
 
+    @discord.app_commands.command(description="edit a project link.")
+    @discord.app_commands.describe(id="the project's ID")
+    async def edit(self, interaction: discord.Interaction, id: str, link: str):
+        await interaction.response.defer()
+
+        user = UserData.read(interaction.user.id)
+
+        if user is None:
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    color=self.color.red,
+                    description=(
+                        f"✋ {interaction.user.mention}, "
+                        "\nyou need to register before using the `/send_project` command."
+                        "\nTo register, use the `/register` command"
+                    ),
+                )
+            )
+            return
+
+        project = ProjectData.read(id)
+
+        if project is None:
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    color=self.color.red,
+                    description=(
+                        f"❌ The provided project Id **`{id}`** seems to be invalid."
+                        "\nPlease ensure you're using the correct one."
+                    ),
+                )
+            )
+            return
+
+        if str(interaction.user.id) not in project.links:
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    color=self.color.red,
+                    description=(
+                        f"✋ {interaction.user.mention}, "
+                        "\nyou need to submit the project before using the `/edit_project` command."
+                        "\nUse the `/send_project` command instaed"
+                    ),
+                )
+            )
+            return
+
+        deadtime = datetime.fromisoformat(project.deadtime)
+        now = datetime.now(UTC)
+
+        if now > deadtime:
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    color=self.color.red,
+                    description=(
+                        f"**Uh oh!** The deadline for the project {project.name} has passed. ⏰"
+                        f"\nRemember, the deadline was <t:{int(deadtime.timestamp())}:F>."
+                    ),
+                )
+            )
+            return
+
+        project.add_link(user_id=interaction.user.id, link=link, now=now, dead=False)
+
+        await interaction.followup.send(
+            embed=discord.Embed(
+                color=self.color.green,
+                description=(
+                    "✅ Project link successfully updated!"
+                    f"\n(Id: **`{id}`**)"
+                    f"\n[Link preview of the project]({link})"
+                ),
+            )
+        )
+
 
 @discord.app_commands.guild_only()
 @discord.app_commands.default_permissions(administrator=True)
-class Project(commands.GroupCog, name="project"):
-    def __init__(self, bot: commands.Bot) -> None:
-        super().__init__()
-        self.bot = bot
-        self.color = COLOR
-
+class _Project(GroupCog, name="__project"):
+    @discord.app_commands.checks.has_permissions(administrator=True)
     @discord.app_commands.command(description="list all projects")
     async def all(self, interaction: discord.Interaction):
         await interaction.response.defer()
@@ -95,6 +181,7 @@ class Project(commands.GroupCog, name="project"):
 
         await interaction.followup.send(f"```md\n{'\n'.join(content)}```")
 
+    @discord.app_commands.checks.has_permissions(administrator=True)
     @discord.app_commands.command(description="get the links of a project")
     @discord.app_commands.describe(id="the project's ID")
     async def links(self, interaction: discord.Interaction, id: str):
@@ -119,12 +206,11 @@ class Project(commands.GroupCog, name="project"):
         content = project.name.lower().strip().replace(" ", "_")
 
         for user_id, link in project.links.items():
-            content += (
-                f"\n{UserData.read(user_id).name.lower().replace(" ", "_")}={link}"
-            )
+            content += f"\n{UserData.read(user_id).name.lower().replace(" ", "_")}={link['link']}"
 
         await interaction.followup.send(f"```bash\n{content}```")
 
+    @discord.app_commands.checks.has_permissions(administrator=True)
     @discord.app_commands.command(description="Get a new project id")
     @discord.app_commands.describe(
         name="the project's name",
@@ -167,5 +253,5 @@ class Project(commands.GroupCog, name="project"):
 
 
 async def setup(bot):
-    await bot.add_cog(Send(bot))
+    await bot.add_cog(_Project(bot))
     await bot.add_cog(Project(bot))

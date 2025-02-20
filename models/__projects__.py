@@ -1,13 +1,14 @@
 import json
 from models.__schema__ import Collection
 from uuid import uuid4
+from datetime import datetime
 
 
 class ProjectData(Collection):
     BASE = "projects"
     id: int
     name: str
-    links: dict[str, str]
+    links: dict[str, dict]
     deadtime: str
 
     @classmethod
@@ -37,6 +38,12 @@ class ProjectData(Collection):
 
         return project_id
 
-    def add_link(self, user_id: int | str, link: str):
-        self.links[str(user_id)] = link
+    def add_link(
+        self, *, user_id: int | str, now: datetime | str, link: str, dead: bool
+    ):
+        self.links[str(user_id)] = {
+            "datetime": str(now),
+            "link": link,
+            "dead": dead,
+        }
         self.update()
