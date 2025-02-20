@@ -116,7 +116,7 @@ class UserData(Collection):
         self.update()
         return self.coins
 
-    def add_coins(self, amount: int, reason: str):
+    def add_coins(self, amount: int | float, reason: str):
         with open("data/logs.csv", "a") as f:
             print(
                 f"{datetime.now(UTC)},{self.id},{self.coins},add,{amount},{reason}",
