@@ -13,9 +13,9 @@ class Help(Cog):
         commands = await self.bot.tree.fetch_commands()
         embed = discord.Embed(
             color=self.color.yellow,
-            description=f"{self.bot.user.name} is a tool built to help you track your stats and improve your coding skills.\n\n\n ",
+            description=f"{self.bot.user.display_name} is a tool built to help you track your stats and improve your coding skills.\n\n\n ",
         ).set_author(
-            name=f"Salam {interaction.user.name}!", icon_url=interaction.user.avatar
+            name=f"Salam {interaction.user.display_name}!", icon_url=interaction.user.avatar
         )
 
         categories: dict[
@@ -25,12 +25,12 @@ class Help(Cog):
             ],
         ] = {
             "general": (":globe_with_meridians: General", []),
-            "challenge": (":military_medal: Challenge", []),
             "set": (":lock: Data", []),
+            "project": ("💼 Project", []),
         }
 
         for command in commands:
-            if command.name == "help":
+            if command.name in ["help", "challenge"]:
                 continue
 
             is_group = False
@@ -53,6 +53,10 @@ class Help(Cog):
                     categories[
                         command.name if command.name in categories else "general"
                     ][1].append(option)
+
+            if command.name == "register":
+                categories["set"][1].append(command)
+                continue
 
             if not is_group:
                 categories["general"][1].append(command)
