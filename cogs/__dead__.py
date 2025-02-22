@@ -3,23 +3,18 @@ from discord.ext import commands
 from models import ChannelData, FileData
 from typing import Literal
 from datetime import datetime, UTC, timedelta
-from constants import COLOR
+from cogs import GroupCog
 
 
 @discord.app_commands.guild_only()
 @discord.app_commands.default_permissions(administrator=True)
-class Dead(commands.GroupCog, name="dead"):
-    def __init__(self, bot: commands.Bot) -> None:
-        super().__init__()
-        self.bot = bot
-        self.color = COLOR
-
-    @discord.app_commands.command(description="set a dead channel")
+class Dead(GroupCog, name="dead"):
+    @discord.app_commands.command(description="Send a channel to death.")
     @discord.app_commands.describe(
-        channel="channel to close",
-        day="Enter dead day",
-        hours="Enter dead hour in UTC timezone",
-        minutes="Enter dead minutes in UTC timezone",
+        channel="The channel to close.",
+        day="The channel's dead day.",
+        hours="The channel's dead hour in UTC timezone.",
+        minutes="The channel's dead minutes.",
     )
     async def channel(
         self,
@@ -63,13 +58,13 @@ class Dead(commands.GroupCog, name="dead"):
             )
         )
 
-    @discord.app_commands.command(description="set a dead file")
+    @discord.app_commands.command(description="Send a file to death.")
     @discord.app_commands.describe(
         file="file to send",
         channel="channel to send file on",
-        day="Enter dead day",
-        hours="Enter hour to send in UTC timezone",
-        minutes="Enter minutes to send in UTC timezone",
+        day="The file's dead day",
+        hours="The file's hour to send in UTC timezone",
+        minutes="The file's dead minutes.",
     )
     async def file(
         self,

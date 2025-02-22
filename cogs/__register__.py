@@ -6,11 +6,11 @@ from api import wakapi
 
 
 class Register(Cog):
-    @discord.app_commands.command(description="register to track your coding time")
+    @discord.app_commands.command(description="Register to track your coding time.")
     @discord.app_commands.guild_only()
     @discord.app_commands.describe(
-        name="your full name",
-        waka_token="Wakatime api key",
+        name="Your full name.",
+        waka_token="The wakatime api key.",
     )
     async def register(
         self,

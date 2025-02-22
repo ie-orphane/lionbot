@@ -1,32 +1,21 @@
 import discord
 from discord.ext import commands
-from models import UserData, EvaluationData, UserChallenge
+from models import EvaluationData, UserChallenge
 from config import get_emoji
 from datetime import datetime, UTC
 from utils import Language, RelativeDateTime
-from constants import MESSAGE, COLOR
+from constants import MESSAGE
+from cogs import GroupCog
 
 
 @discord.app_commands.dm_only()
-class Challenge(commands.GroupCog, name="challenge"):
-    def __init__(self, bot: commands.Bot) -> None:
-        super().__init__()
-        self.bot = bot
-        self.color = COLOR
-
-    @discord.app_commands.command(description="request new challenge")
-    @discord.app_commands.describe(language="challenge language")
+class Challenge(GroupCog, name="challenge"):
+    @discord.app_commands.command(description="Request a new challenge.")
+    @discord.app_commands.describe(language="The Challenge's language.")
     async def request(self, interaction: discord.Interaction, language: Language):
         await interaction.response.defer()
-        user = UserData.read(interaction.user.id)
 
-        if user is None:
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    color=self.color.red,
-                    description=f"{interaction.user.mention}, you are not registered yet!",
-                ).set_footer(text="use /register instead")
-            )
+        if (user := await self.bot.user_is_unkown(interaction)) is None:
             return
 
         current_challenge = user.challenge
@@ -43,7 +32,6 @@ class Challenge(commands.GroupCog, name="challenge"):
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=self.color.red,
-                    # title=current_challenge.name,
                     description=(
                         f"### {interaction.user.mention}, you already requested a challenge!\n"
                         f"### {current_challenge.name}\n"
@@ -79,19 +67,12 @@ class Challenge(commands.GroupCog, name="challenge"):
             ).set_footer(text="as always follow the law and doubt your code!"),
         )
 
-    @discord.app_commands.command(description="submit a challenge code")
-    @discord.app_commands.describe(file="file to submit")
+    @discord.app_commands.command(description="Submit a challenge's code.")
+    @discord.app_commands.describe(file="The file to submit.")
     async def submit(self, interaction: discord.Interaction, file: discord.Attachment):
         await interaction.response.defer()
-        user = UserData.read(interaction.user.id)
 
-        if user is None:
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    color=self.color.red,
-                    description=f"{interaction.user.mention}, you are not registered yet!",
-                ).set_footer(text="use /register instead")
-            )
+        if (user := await self.bot.user_is_unkown(interaction)) is None:
             return
 
         current_challenge = user.challenge
@@ -154,19 +135,12 @@ class Challenge(commands.GroupCog, name="challenge"):
             ).set_footer(text="Diving into your code!")
         )
 
-    @discord.app_commands.command(description="see the history of your journey")
-    @discord.app_commands.describe(language="challenges language")
+    @discord.app_commands.command(description="See the history of your journey.")
+    @discord.app_commands.describe(language="The language of the challenges.")
     async def status(self, interaction: discord.Interaction, language: Language):
         await interaction.response.defer()
-        user = UserData.read(interaction.user.id)
 
-        if user is None:
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    color=self.color.red,
-                    description=f"{interaction.user.mention}, you are not registered yet!",
-                ).set_footer(text="use /register instead")
-            )
+        if (user := await self.bot.user_is_unkown(interaction)) is None:
             return
 
         all_challenges: dict[tuple[int, str], list[UserChallenge]] = {}
@@ -204,18 +178,11 @@ class Challenge(commands.GroupCog, name="challenge"):
             )
         )
 
-    @discord.app_commands.command(description="see a failed challenge log")
+    @discord.app_commands.command(description="See a failed challenge log.")
     async def log(self, interaction: discord.Interaction):
         await interaction.response.defer()
-        user = UserData.read(interaction.user.id)
 
-        if user is None:
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    color=self.color.red,
-                    description=f"{interaction.user.mention}, you are not registered yet!",
-                ).set_footer(text="use /register instead")
-            )
+        if (user := await self.bot.user_is_unkown(interaction)) is None:
             return
 
         user_log = user.log
@@ -257,7 +224,7 @@ class Challenge(commands.GroupCog, name="challenge"):
             )
         )
 
-    @discord.app_commands.command(description="challenges guidlines")
+    @discord.app_commands.command(description="Show the challenge's guidlines.")
     async def help(self, interaction: discord.Interaction):
         await interaction.response.defer()
 

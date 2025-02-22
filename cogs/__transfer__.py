@@ -1,13 +1,12 @@
 import discord
-from models import UserData
 from config import get_emoji
 from cogs import Cog
 
 
 class Transfer(Cog):
     @discord.app_commands.guild_only()
-    @discord.app_commands.command(description="send coins to your fellow geek.")
-    @discord.app_commands.describe(amount="choose an amount", member="choose a geek")
+    @discord.app_commands.command(description="Send coins to your fellow geek.")
+    @discord.app_commands.describe(amount="Choose an amount.", member="Choose a geek.")
     async def transfer(
         self, interaction: discord.Interaction, amount: int, member: discord.Member
     ):
@@ -16,7 +15,7 @@ class Transfer(Cog):
         if amount <= 0:
             await interaction.followup.send(
                 embed=discord.Embed(
-                    title=f"transfer denied",
+                    title="❌ Transaction denied!",
                     color=self.color.red,
                     description=f"{interaction.user.mention}, **{amount}** is an invalid amount!",
                 ).set_footer(text="the minimum amount is 1."),
@@ -27,7 +26,7 @@ class Transfer(Cog):
         if member == interaction.user:
             await interaction.followup.send(
                 embed=discord.Embed(
-                    title=f"transfer denied",
+                    title="❌ Transaction denied!",
                     color=self.color.red,
                     description=f"{interaction.user.mention}, you can't transfer coins to yourself!",
                 ),
@@ -35,47 +34,38 @@ class Transfer(Cog):
             )
             return
 
-        user_data = UserData.read(interaction.user.id)
-        recipient_data = UserData.read(member.id)
-
-        if user_data is None:
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    color=self.color.red,
-                    description=f"{interaction.user.mention}, you are not registered yet!",
-                ).set_footer(text="use /register instead"),
-                ephemeral=True,
+        if (
+            user := await self.bot.user_is_unkown(
+                interaction, title="❌ Transaction denied!"
             )
+        ) is None:
             return
 
-        if recipient_data is None:
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    color=self.color.red,
-                    description=f"{member.mention} is not registered yet!",
-                ).set_footer(text="use /register instead"),
-                ephemeral=True,
+        if (
+            recipient := await self.bot.user_is_unkown(
+                interaction, member, title="❌ Transaction denied!"
             )
+        ) is None:
             return
 
-        if amount > user_data.coins:
+        if amount > user.coins:
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=self.color.red,
                     description=(
                         f"{member.mention}, you don't have {amount} {get_emoji("coin")}!"
-                        f"\nYour current balance is {user_data.coins} {get_emoji("coin")}."
+                        f"\nYour current balance is {user.coins} {get_emoji("coin")}."
                     ),
                 ),
                 ephemeral=True,
             )
             return
 
-        user_data.sub_coins(amount, "transfer")
-        recipient_data.add_coins(amount, "transfer")
+        user.sub_coins(amount, "transfer")
+        recipient.add_coins(amount, "transfer")
 
-        user_data.update()
-        recipient_data.update()
+        user.update()
+        recipient.update()
 
         await interaction.followup.send(
             embed=discord.Embed(

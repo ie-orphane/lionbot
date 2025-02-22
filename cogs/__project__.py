@@ -7,34 +7,21 @@ from datetime import datetime, UTC, timedelta
 
 @discord.app_commands.guild_only()
 class Project(GroupCog, name="project"):
-    @discord.app_commands.command(description="submit a project for review.")
-    @discord.app_commands.describe(id="the project's ID")
+    @discord.app_commands.command(description="Submit a project for review.")
+    @discord.app_commands.describe(id="The project's ID.", link="The project's link.")
     async def submit(self, interaction: discord.Interaction, id: str, link: str):
         await interaction.response.defer()
 
-        user = UserData.read(interaction.user.id)
-
-        if user is None:
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    color=self.color.red,
-                    description=(
-                        f"✋ {interaction.user.mention}, "
-                        "\nyou need to register before using the `/send_project` command."
-                        "\nTo register, use the `/register` command"
-                    ),
-                )
-            )
+        if (await self.bot.user_is_unkown(interaction)) is None:
             return
 
-        project = ProjectData.read(id)
-
-        if project is None:
+        if (project := ProjectData.read(id)) is None:
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=self.color.red,
                     description=(
-                        f"❌ The provided project Id **`{id}`** seems to be invalid."
+                        f"❌ {interaction.user.id}, \n"
+                        f"the provided project Id **`{id}`** seems to be invalid."
                         "\nPlease ensure you're using the correct one."
                     ),
                 )
@@ -84,34 +71,21 @@ class Project(GroupCog, name="project"):
             )
         )
 
-    @discord.app_commands.command(description="edit a project link.")
-    @discord.app_commands.describe(id="the project's ID")
+    @discord.app_commands.command(description="Edit a project's link.")
+    @discord.app_commands.describe(id="The project's ID.", link="The project's link.")
     async def edit(self, interaction: discord.Interaction, id: str, link: str):
         await interaction.response.defer()
 
-        user = UserData.read(interaction.user.id)
-
-        if user is None:
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    color=self.color.red,
-                    description=(
-                        f"✋ {interaction.user.mention}, "
-                        "\nyou need to register before using the `/send_project` command."
-                        "\nTo register, use the `/register` command"
-                    ),
-                )
-            )
+        if (await self.bot.user_is_unkown(interaction)) is None:
             return
 
-        project = ProjectData.read(id)
-
-        if project is None:
+        if (project := ProjectData.read(id)) is None:
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=self.color.red,
                     description=(
-                        f"❌ The provided project Id **`{id}`** seems to be invalid."
+                        f"❌ {interaction.user.id}, \n"
+                        f"the provided project Id **`{id}`** seems to be invalid."
                         "\nPlease ensure you're using the correct one."
                     ),
                 )
@@ -163,7 +137,7 @@ class Project(GroupCog, name="project"):
 @discord.app_commands.guild_only()
 @discord.app_commands.default_permissions(administrator=True)
 class _Project(GroupCog, name="__project"):
-    @discord.app_commands.command(description="list all projects")
+    @discord.app_commands.command(description="List all the projects.")
     async def all(self, interaction: discord.Interaction):
         await interaction.response.defer()
 
@@ -171,7 +145,7 @@ class _Project(GroupCog, name="__project"):
         max_length = max(4, *map(lambda x: len(x.name), projects))
 
         content = [
-            f"|                  id                  | {'name':^{max_length}} | links | {'DeadTime':^16} |",
+            f"|                  id                  | {'name':^{max_length}} | links | {'deadtime':^16} |",
             f"| :----------------------------------: | :{'-'*(max_length-2)}: | :---: | :{'-'*14}: |",
         ] + [
             f"| {project.id} | {project.name:^{max_length}} | {len(project.links):^5} | {datetime.fromisoformat(project.deadtime):%Y/%m/%d %H:%M} |"
@@ -180,19 +154,18 @@ class _Project(GroupCog, name="__project"):
 
         await interaction.followup.send(f"```md\n{'\n'.join(content)}```")
 
-    @discord.app_commands.command(description="get the links of a project")
-    @discord.app_commands.describe(id="the project's ID")
+    @discord.app_commands.command(description="Get the links of a project.")
+    @discord.app_commands.describe(id="The project's ID.")
     async def links(self, interaction: discord.Interaction, id: str):
         await interaction.response.defer()
 
-        project = ProjectData.read(id)
-
-        if project is None:
+        if (project := ProjectData.read(id)) is None:
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=self.color.red,
                     description=(
-                        f"❌ The provided project Id **`{id}`** seems to be invalid."
+                        f"❌ {interaction.user.id}, \n"
+                        f"the provided project Id **`{id}`** seems to be invalid."
                         "\nPlease ensure you're using the correct one."
                     ),
                 )
@@ -208,12 +181,12 @@ class _Project(GroupCog, name="__project"):
 
         await interaction.followup.send(f"```bash\n{content}```")
 
-    @discord.app_commands.command(description="Get a new project id")
+    @discord.app_commands.command(description="Create a new project.")
     @discord.app_commands.describe(
-        name="the project's name",
-        day="Enter dead day",
-        hours="Enter dead hour in UTC timezone",
-        minutes="Enter dead minutes in UTC timezone",
+        name="The project's name",
+        day="The project's dead day.",
+        hours="The project's dead hour in UTC timezone.",
+        minutes="The project's dead minutes.",
     )
     async def new(
         self,

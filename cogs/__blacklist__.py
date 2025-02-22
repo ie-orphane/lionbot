@@ -1,32 +1,22 @@
 import discord
 import datetime as dt
 from discord.ext import commands
-from models import UserData
 from utils import open_file, get_week
 from config import get_emoji
-from constants import OUTLIST_AMOUNT, COLOR
+from constants import OUTLIST_AMOUNT
 from utils import number
+from cogs import GroupCog
 
 
 @discord.app_commands.guild_only()
-class Blacklist(commands.GroupCog, name="blacklist"):
-    def __init__(self, bot: commands.Bot) -> None:
-        super().__init__()
-        self.bot = bot
-        self.color = COLOR
-
-    @discord.app_commands.command(description="a way for escaping from the blacklist.")
+class Blacklist(GroupCog, name="blacklist"):
+    @discord.app_commands.command(
+        description="A way for escaping from the blacklist ⛓."
+    )
     async def out(self, interaction: discord.Interaction):
         await interaction.response.defer()
-        user = UserData.read(interaction.user.id)
 
-        if user is None:
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    color=self.color.red,
-                    description=f"{interaction.user.mention}, you are not registered yet!",
-                ).set_footer(text="use /register instead")
-            )
+        if (user := await self.bot.user_is_unkown(interaction)) is None:
             return
 
         black_list_role = None

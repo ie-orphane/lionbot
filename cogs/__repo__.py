@@ -6,6 +6,7 @@ from discord.ext import commands
 from constants import COLOR
 from urllib.parse import urlparse
 from config import set_message
+from cogs import GroupCog
 
 
 def check_git_link(link: str) -> tuple[bool, str, str]:
@@ -39,14 +40,9 @@ def check_git_link(link: str) -> tuple[bool, str, str]:
 
 @discord.app_commands.guild_only()
 @discord.app_commands.default_permissions(administrator=True)
-class Repo(commands.GroupCog, name="repo"):
-    def __init__(self, bot: commands.Bot) -> None:
-        super().__init__()
-        self.bot = bot
-        self.color = COLOR
-
-    @discord.app_commands.command(description="add a new repository to the log")
-    @discord.app_commands.describe(link="the repository link")
+class Repo(GroupCog, name="repo"):
+    @discord.app_commands.command(description="Add a new repository to the log.")
+    @discord.app_commands.describe(link="the repository's link.")
     async def add(self, interaction: discord.Interaction, link: str):
         await interaction.response.defer()
 

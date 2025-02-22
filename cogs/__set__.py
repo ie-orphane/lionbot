@@ -3,19 +3,14 @@ from discord.ext import commands
 from models import UserData
 from utils import Social
 from config import get_emoji
-from constants import COLOR
+from cogs import GroupCog
 from api import wakapi
 
 
 @discord.app_commands.guild_only()
-class Set(commands.GroupCog, name="set"):
-    def __init__(self, bot: commands.Bot) -> None:
-        super().__init__()
-        self.bot = bot
-        self.color = COLOR
-
-    @discord.app_commands.command(description="set a new social link.")
-    @discord.app_commands.describe(social="social name", link="social link")
+class Set(GroupCog, name="set"):
+    @discord.app_commands.command(description="Set a new social link.")
+    @discord.app_commands.describe(social="The social's name.", link="The social's link.")
     async def social(self, interaction: discord.Interaction, social: Social, link: str):
         await interaction.response.defer()
         user = UserData.read(interaction.user.id)
@@ -49,8 +44,8 @@ class Set(commands.GroupCog, name="set"):
             ephemeral=True,
         )
 
-    @discord.app_commands.command(description="reset your wakatime api token.")
-    @discord.app_commands.describe(waka_token="the new wakatime token")
+    @discord.app_commands.command(description="Reset your wakatime api token.")
+    @discord.app_commands.describe(waka_token="The new wakatime token.")
     async def token(self, interaction: discord.Interaction, waka_token: str):
         await interaction.response.defer()
         user = UserData.read(interaction.user.id)

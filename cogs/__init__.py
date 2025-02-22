@@ -5,12 +5,13 @@ from utils import Log
 from discord.ext import commands
 from constants import COLOR
 from datetime import datetime, UTC
+from bot import Bot
 
 
 class Cog(commands.Cog):
     color = COLOR
 
-    def __init__(self, bot: commands.Bot) -> None:
+    def __init__(self, bot: Bot) -> None:
         super().__init__()
         self.bot = bot
 
@@ -18,7 +19,7 @@ class Cog(commands.Cog):
 class GroupCog(commands.GroupCog):
     color = COLOR
 
-    def __init__(self, bot: commands.Bot) -> None:
+    def __init__(self, bot: Bot) -> None:
         super().__init__()
         self.bot = bot
 

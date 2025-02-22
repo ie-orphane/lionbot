@@ -2,9 +2,10 @@ import config
 from utils import Log
 from discord import TextChannel
 from .__discord__ import DiscordBot
+from .__embeds__ import BotEmbeds
 
 
-class Bot(DiscordBot):
+class Bot(DiscordBot, BotEmbeds):
     def get_listed_channel(
         self, channel_name: str, is_text_channel: bool = True
     ) -> TextChannel | None:

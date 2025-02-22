@@ -2,9 +2,8 @@ import os
 import discord
 from typing import Literal
 from datetime import datetime, UTC, timedelta, date
-from models import UserData
 from cogs import Cog
-from config import get_emoji, get_extension, get_users, get_config
+from config import get_emoji, get_extension
 from constants import EXCLUDE_DIRS, GOLDEN_RATIO
 from utils import convert_seconds
 from api import wakapi
@@ -12,9 +11,9 @@ from api import wakapi
 
 class Stats(Cog):
     @discord.app_commands.guild_only()
-    @discord.app_commands.command(description="show the coding stats.")
+    @discord.app_commands.command(description="Show the coding stats.")
     @discord.app_commands.describe(
-        duration="choose a duration.", member="choose a fellow member."
+        duration="Choose a duration.", member="Choose a fellow geek."
     )
     async def stats(
         self,
@@ -78,45 +77,9 @@ class Stats(Cog):
             )
             return
 
-        admins = get_users("owner", "coach", nullable=False)
-        roles: set[discord.Role] = set()
-        if not ((main_guild := self.bot.get_guild(get_config("GUILD"))) is None):
-            roles = {
-                role for role in main_guild.roles if role.name in get_config("ROLES")
-            }
-        if interaction.user != member and not (
-            {role for role in interaction.user.roles} & roles
-            or interaction.user.id in admins
-        ):
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    color=self.color.red,
-                    description=(
-                        f"{interaction.user.mention}, oops 🫣!\n"
-                        f"You can't see {member.mention}'s stats.\n\n"
-                        f"Only the following members can see other stats:\n"
-                        + "\n".join(
-                            [
-                                f"- {admin.mention}"
-                                for admin in map(lambda x: self.bot.get_user(x), admins)
-                                if admin
-                            ]
-                            + [f"- {role.mention}" for role in roles]
-                        )
-                    ),
-                ),
-                ephemeral=True,
-            )
-            return
-
-        if (user := UserData.read(member.id)) is None:
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    color=self.color.red,
-                    description=f"{member.mention}{', you are' if member == interaction.user  else ' is'} not registered yet!",
-                ).set_footer(text="use /register instead"),
-                ephemeral=True,
-            )
+        if (await self.bot.user_is_admin(interaction, member)) or (
+            user := await self.bot.user_is_unkown(interaction, member)
+        ) is None:
             return
 
         if user.token is None:

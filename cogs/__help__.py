@@ -6,7 +6,7 @@ from config import get_user, get_config, get_emoji
 
 class Help(Cog):
     @discord.app_commands.guild_only()
-    @discord.app_commands.command(description="list all bot commands.")
+    @discord.app_commands.command(description="List all bot commands.")
     async def help(self, interaction: discord.Interaction):
         await interaction.response.defer()
 

@@ -107,7 +107,7 @@ class UserData(Collection):
         return [UserChallenge(**challenge_data) for challenge_data in self._challenges]
 
     def sub_coins(self, amount: int, reason: str):
-        with open("data/logs.csv", "a") as f:
+        with open("data/transactions.csv", "a") as f:
             print(
                 f"{datetime.now(UTC)},{self.id},{self.coins},sub,{amount},{reason}",
                 file=f,
@@ -117,7 +117,7 @@ class UserData(Collection):
         return self.coins
 
     def add_coins(self, amount: int | float, reason: str):
-        with open("data/logs.csv", "a") as f:
+        with open("data/transactions.csv", "a") as f:
             print(
                 f"{datetime.now(UTC)},{self.id},{self.coins},add,{amount},{reason}",
                 file=f,
