@@ -1,6 +1,5 @@
 import discord
 from models import UserData
-from typing import Union
 from cogs import Cog
 from constants import BOT_COINS_AMOUNT
 from utils import number
@@ -12,11 +11,11 @@ from env import WAKATIME_BASE_URL
 class Profile(Cog):
     @discord.app_commands.guild_only()
     @discord.app_commands.command(description="view basic geek information.")
-    @discord.app_commands.describe(member="see member profile")
+    @discord.app_commands.describe(member="choose a fellow member.")
     async def profile(
         self,
         interaction: discord.Interaction,
-        member: Union[discord.Member, discord.User] = None,
+        member: discord.Member | discord.User = None,
     ):
         await interaction.response.defer()
 
@@ -86,9 +85,7 @@ class Profile(Cog):
             )
             return
 
-        user = UserData.read(member.id)
-
-        if user is None:
+        if (user := UserData.read(member.id)) is None:
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=self.color.red,

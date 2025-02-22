@@ -12,14 +12,14 @@ from api import wakapi
 
 class Stats(Cog):
     @discord.app_commands.guild_only()
-    @discord.app_commands.command(description="show your coding stats.")
+    @discord.app_commands.command(description="show the coding stats.")
     @discord.app_commands.describe(
-        duration="Choose a duration", member="Choose a member"
+        duration="choose a duration.", member="choose a fellow member."
     )
     async def stats(
         self,
         interaction: discord.Interaction,
-        member: discord.Member = None,
+        member: discord.Member | discord.User = None,
         duration: Literal[
             "last 24 hours", "last 7 days", "last 30 days", "last year", "all time"
         ] = "all time",
@@ -77,7 +77,6 @@ class Stats(Cog):
                 .set_footer(text=f"duration  -  {duration}")
             )
             return
-
 
         admins = get_users("owner", "coach", nullable=False)
         roles: set[discord.Role] = set()
