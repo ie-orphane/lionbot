@@ -3,7 +3,7 @@ from utils import Log
 from typing import Literal
 from env import WAKATIME_API_URL
 from . import __self__ as api
-from constants import BUFFER_SLEEP_SECONDS
+from consts import BUFFER_SLEEP_SECONDS
 from models import UserData
 import aiohttp
 import asyncio

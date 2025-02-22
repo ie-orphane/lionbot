@@ -2,7 +2,7 @@ import random
 import datetime as dt
 from discord.ext import tasks, commands
 from utils import get_week, open_file, Log
-from constants import GOLDEN_RATIO, COLOR
+from consts import GOLDEN_RATIO, COLOR
 from config import get_emoji
 
 

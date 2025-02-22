@@ -3,7 +3,7 @@ import random
 from env import QUIZ_API_URL, QUIZ_API_KEY
 from models import QuizData
 import asyncio
-from constants import COLOR, Quiz
+from consts import COLOR, Quiz
 from typing import Any
 
 

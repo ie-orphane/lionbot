@@ -4,7 +4,7 @@ from utils import Log, charts, number
 from api import QuizApi
 from models import QuizData, UserData
 from config import get_emoji, get_reaction
-from constants import Quiz
+from consts import Quiz
 from discord.ext import tasks, commands
 
 

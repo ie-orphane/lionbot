@@ -2,7 +2,7 @@ import discord
 from discord.ext import tasks, commands
 from models import ChannelData, FileData, UserData
 from datetime import datetime, UTC, timedelta
-from constants import COLOR, MESSAGE
+from consts import COLOR, MESSAGE
 from utils import Log
 
 

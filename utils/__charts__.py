@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import matplotlib
-from constants import COLOR
+from consts import COLOR
 
 __all__ = ["leaderboard", "answers"]
 

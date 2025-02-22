@@ -3,7 +3,7 @@ import discord
 import traceback
 from utils import Log
 from discord.ext import commands
-from constants import COLOR
+from consts import COLOR
 from datetime import datetime, UTC
 from bot import Bot
 

@@ -3,7 +3,7 @@ import env
 import discord
 import requests
 from discord.ext import commands
-from constants import COLOR
+from consts import COLOR
 from urllib.parse import urlparse
 from config import set_message
 from cogs import GroupCog

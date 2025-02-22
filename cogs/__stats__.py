@@ -4,7 +4,7 @@ from typing import Literal
 from datetime import datetime, UTC, timedelta, date
 from cogs import Cog
 from config import get_emoji, get_extension
-from constants import EXCLUDE_DIRS, GOLDEN_RATIO
+from consts import EXCLUDE_DIRS, GOLDEN_RATIO
 from utils import convert_seconds
 from api import wakapi
 

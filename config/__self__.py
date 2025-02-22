@@ -1,7 +1,7 @@
 import os
 from utils import open_file, Log
 from typing import Literal, Any, Dict
-from constants import Config
+from consts import Config
 
 
 __all__ = ["get_config", "set_config"]

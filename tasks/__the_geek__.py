@@ -1,7 +1,7 @@
 from utils import Log
 from models import WeekData
 from config import get_config
-from constants import COLOR
+from consts import COLOR
 from discord.ext import tasks, commands
 
 

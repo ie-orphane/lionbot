@@ -3,7 +3,7 @@ import datetime as dt
 from discord.ext import commands
 from utils import open_file, get_week
 from config import get_emoji
-from constants import OUTLIST_AMOUNT
+from consts import OUTLIST_AMOUNT
 from utils import number
 from cogs import GroupCog
 

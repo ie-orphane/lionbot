@@ -5,7 +5,7 @@ from discord.ext import tasks
 from utils import Log
 from models import UserData
 from datetime import datetime, UTC
-from constants import COLOR, GITHUB_API_URL
+from consts import COLOR, GITHUB_API_URL
 from config import set_message, get_config
 
 

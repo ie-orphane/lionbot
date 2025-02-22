@@ -4,7 +4,7 @@ from models import EvaluationData, UserChallenge
 from config import get_emoji
 from datetime import datetime, UTC
 from utils import Language, RelativeDateTime
-from constants import MESSAGE
+from consts import MESSAGE
 from cogs import GroupCog
 
 

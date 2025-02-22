@@ -1,6 +1,6 @@
 import discord
 from models import UserData
-from constants import COLOR
+from consts import COLOR
 from config import get_config, get_users
 
 

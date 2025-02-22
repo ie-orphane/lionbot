@@ -2,7 +2,7 @@ from discord.ext import tasks, commands
 from datetime import datetime, UTC
 from utils import get_files, Log, get_week, Week
 from models import UserData, WeekData
-from constants import GOLDEN_RATIO
+from consts import GOLDEN_RATIO
 from api import wakapi
 
 

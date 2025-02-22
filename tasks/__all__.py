@@ -2,7 +2,7 @@ import os
 import importlib
 import inspect
 from utils import Log
-from constants import EXLUDE_MODULE_FILES
+from consts import EXLUDE_MODULE_FILES
 
 
 # Path to the directory containing the modules (relative to the current file)

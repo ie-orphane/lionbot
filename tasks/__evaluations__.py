@@ -5,7 +5,7 @@ from models import EvaluationData
 from datetime import datetime, UTC
 from utils import Log
 from config import get_emoji
-from constants import COLOR, MESSAGE
+from consts import COLOR, MESSAGE
 
 
 @tasks.loop(minutes=1)
