@@ -41,6 +41,7 @@ class UserChallenge(Relation, ChallengeData, ChallengeFields):
 class UserSocials:
     github: str = None
     portfolio: str = None
+    linkedin: str = None
 
     def __init__(self, **kwargs) -> None:
         self.__dict__.update(kwargs)
@@ -58,15 +59,6 @@ class UserSocials:
         return all(
             getattr(tokens, qualifying_attr) for qualifying_attr in ("scheme", "netloc")
         )
-
-    def extract_username_from_url(url):
-        # Use regex to extract the username from the GitHub URL
-        match = re.search(r"github\.com/([^/]+)", url)
-        if match:
-            return match.group(1)
-        else:
-            print("Invalid GitHub URL")
-            return None
 
 
 class UserData(Collection):
@@ -192,6 +184,9 @@ class UserData(Collection):
                     return None
             case "portfolio":
                 if not is_valid_link:
+                    return None
+            case "linkedin":
+                if not re.match(r"https:\/\/www\.linkedin\.com\/in\/[a-zA-Z0-9-]+", link):
                     return None
         self._socials[social] = link
         self.update()

@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands
-from models import UserData
 from utils import Social
 from config import get_emoji
 from cogs import GroupCog
@@ -10,19 +9,13 @@ from api import wakapi
 @discord.app_commands.guild_only()
 class Set(GroupCog, name="set"):
     @discord.app_commands.command(description="Set a new social link.")
-    @discord.app_commands.describe(social="The social's name.", link="The social's link.")
+    @discord.app_commands.describe(
+        social="The social's name.", link="The social's link."
+    )
     async def social(self, interaction: discord.Interaction, social: Social, link: str):
         await interaction.response.defer()
-        user = UserData.read(interaction.user.id)
 
-        if user is None:
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    color=self.color.red,
-                    description=f"{interaction.user.mention}, you are not registered yet!",
-                ).set_footer(text="use /register instead"),
-                ephemeral=True,
-            )
+        if (user := await self.bot.user_is_unkown(interaction)) is None:
             return
 
         new_link = user.add_social(social, link)
@@ -30,7 +23,7 @@ class Set(GroupCog, name="set"):
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=self.color.red,
-                    description=f"Oops! The {social} link '**{link}**' maybe invalid !",
+                    description=f"{interaction.user.mention}, oops 🫣!\n{get_emoji(social, "")}{social.capitalize()}'s link **`{link}`** is invalid.",
                 ),
                 ephemeral=True,
             )
@@ -39,8 +32,8 @@ class Set(GroupCog, name="set"):
         await interaction.followup.send(
             embed=discord.Embed(
                 color=self.color.green,
-                description=f"[{get_emoji(social)}{social}]({new_link}) social added succefuly",
-            ).set_footer(text="check your profile using /profile"),
+                description=f"**[{get_emoji(social)} {social.capitalize()}]({new_link})** has been added to your profile!\nYou can check it using `/profile`.",
+            ),
             ephemeral=True,
         )
 
@@ -48,18 +41,10 @@ class Set(GroupCog, name="set"):
     @discord.app_commands.describe(waka_token="The new wakatime token.")
     async def token(self, interaction: discord.Interaction, waka_token: str):
         await interaction.response.defer()
-        user = UserData.read(interaction.user.id)
 
-        if user is None:
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    color=self.color.red,
-                    description=f"{interaction.user.mention}, you are not registered yet!",
-                ).set_footer(text="use /register instead"),
-                ephemeral=True,
-            )
+        if (user := await self.bot.user_is_unkown(interaction)) is None:
             return
-        
+
         if (await wakapi.get_current(waka_token)) is None:
             await interaction.followup.send(
                 embed=discord.Embed(

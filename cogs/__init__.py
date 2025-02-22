@@ -31,7 +31,7 @@ class GroupCog(commands.GroupCog):
         log_id = int(datetime.now(UTC).timestamp())
         log_dir = "./data/errors"
         os.makedirs(log_dir, exist_ok=True)
-        with open(f"/{log_id}.log", "w") as file:
+        with open(f"{log_dir}/{log_id}.log", "w") as file:
             file.writelines(
                 [
                     f"User: {interaction.user.display_name} ({interaction.user.id})\n",
