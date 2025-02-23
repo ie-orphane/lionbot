@@ -1,6 +1,9 @@
 import json
 import os
 import pprint
+import env
+from utils import Log
+from typing import Any, Self, List
 
 
 class Model:
@@ -29,29 +32,41 @@ class ModelEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-class Document(Model):
+class Author(Model):
+    @staticmethod
+    def __write(obj: Any, fp: str) -> None:
+        try:
+            json.dumps(obj)
+            with open(f"{env.BASE_DIR}/data/{fp}", "w") as file:
+                json.dump(obj, file, cls=ModelEncoder, indent=2)
+        except TypeError:
+            Log.error("Models", "error while parsing")
+
+
+class Document(Author):
     @classmethod
-    def exists(cls, id: str) -> bool:
+    def exists(cls: Self, id: str) -> bool:
         docs = [data.id for data in cls.read_all()]
         return id in docs
 
     @classmethod
-    def create(cls, **data) -> None:
+    def create(cls: Self, **data) -> Self:
         docs = cls.read_all()
-        docs.append(cls(**data))
-        with open(f"./data/{cls.BASE}.json", "w") as file:
-            json.dump(docs, file, cls=ModelEncoder, indent=2)
+        doc = cls(**data)
+        docs.append(doc)
+        cls.__write(docs, f"{cls.BASE}.json")
+        return doc
 
     @classmethod
-    def read_all(cls):
-        with open(f"./data/{cls.BASE}.json", "r") as file:
+    def read_all(cls: Self) -> List[Self]:
+        with open(f"{env.BASE_DIR}/data/{cls.BASE}.json") as file:
             return [cls(**x) for x in json.load(file)]
 
-    def remove(self) -> None:
+    def remove(self) -> Self:
         docs = self.read_all()
         docs.remove(self)
-        with open(f"./data/{self.BASE}.json", "w") as file:
-            json.dump(docs, file, cls=ModelEncoder, indent=2)
+        self.__write(docs, f"{self.BASE}.json")
+        return self
 
 
 class Collection(Model):
@@ -61,33 +76,33 @@ class Collection(Model):
         return data_dict
 
     @classmethod
-    def read(cls, id: int | str):
+    def read(cls: Self, id: int | str) -> Self | None:
         try:
-            with open(f"./data/{cls.BASE}/{id}.json", "r") as file:
+            with open(f"{env.BASE_DIR}/data/{cls.BASE}/{id}.json") as file:
                 return cls(id=int(id), **json.load(file))
         except FileNotFoundError:
             return None
 
     @classmethod
-    def __get_ids(cls) -> list[str]:
+    def __get_ids(cls: Self) -> List[str]:
         return [
             filename[: filename.index(".")]
-            for filename in os.listdir(f"./data/{cls.BASE}")
+            for filename in os.listdir(f"{env.BASE_DIR}/data/{cls.BASE}")
         ]
 
     @classmethod
-    def read_all(cls):
+    def read_all(cls: Self) -> List[Self]:
         return [cls.read(id) for id in cls.__get_ids()]
 
     @classmethod
-    def exits(cls, id: str | int) -> bool:
+    def exits(cls: Self, id: str | int) -> bool:
         return str(id) in cls.__get_ids()
 
-    def update(self):
-        with open(f"./data/{self.BASE}/{self.id}.json", "w") as file:
+    def update(self) -> Self:
+        with open(f"{env.BASE_DIR}/data/{self.BASE}/{self.id}.json", "w") as file:
             json.dump(self, file, cls=ModelEncoder, indent=2)
         return self
 
-    def delete(self):
-        os.remove(f"./data/{self.BASE}/{self.id}.json")
+    def delete(self) -> Self:
+        os.remove(f"{env.BASE_DIR}/data/{self.BASE}/{self.id}.json")
         return self
