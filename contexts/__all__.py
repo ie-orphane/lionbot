@@ -2,7 +2,7 @@ import os
 import importlib
 import inspect
 from utils import Log
-from consts import EXLUDE_MODULE_FILES
+from consts import EXCLUDE_FILES
 
 
 # Path to the directory containing the modules (relative to the current file)
@@ -12,7 +12,7 @@ modules_dir = os.path.dirname(__file__)
 modules_name = [
     filename[:-3]
     for filename in os.listdir(modules_dir)
-    if filename.endswith(".py") and filename not in EXLUDE_MODULE_FILES
+    if filename.endswith(".py") and filename not in EXCLUDE_FILES
 ]
 
 # Dynamically import the modules and store them into a dictionary

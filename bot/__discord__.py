@@ -1,31 +1,56 @@
 import os
 import tasks
 import discord
+import json
 import contexts as ctx
 from utils import Log
 from config import get_config, get_user
 from discord.ext import commands
+from env import BOT_COGS
+from consts import EXCLUDE_FILES
 
 
 class DiscordBot(commands.Bot):
     def __init__(self):
-        super().__init__(command_prefix=".", intents=discord.Intents.all())
+        super().__init__(command_prefix=">", intents=discord.Intents.all())
 
     async def setup_hook(self) -> None:
-        initial_extensions = [
-            "cogs." + command_file[:-3]
-            for command_file in os.listdir("cogs")
-            if command_file not in ["__pycache__", "__init__.py"]
-        ]
+        if BOT_COGS != "ALL" and (
+            not (BOT_COGS.startswith("[") and BOT_COGS.endswith("]"))
+        ):
+            Log.error("Cogs", "Invalid format of BOT_COGS.")
+            return
 
-        for extension in initial_extensions:
-            await self.load_extension(extension)
+        cogs: list
 
-        Log.info("Cogs", f"{len(await self.tree.sync())} Slash Command(s)")
+        if BOT_COGS == "ALL":
+            cogs = [
+                "cogs." + command_file.removesuffix(".py")
+                for command_file in os.listdir("cogs")
+                if command_file.endswith(".py") and command_file not in EXCLUDE_FILES
+            ]
+        elif BOT_COGS.startswith("[") and BOT_COGS.endswith("]"):
+            try:
+                cogs = [
+                    "cogs." + command_file.removesuffix(".py")
+                    for command_file in os.listdir("cogs")
+                    if command_file.endswith(".py")
+                    and command_file not in EXCLUDE_FILES
+                    and command_file.removeprefix("__").removesuffix("__.py")
+                    in json.loads(BOT_COGS)
+                ]
+            except json.decoder.JSONDecodeError:
+                Log.error("Cogs", "Failed to parse BOT_COGS.")
+                return
+
+        for cog in cogs:
+            await self.load_extension(cog)
+
+        Log.info("Cogs", f"{len(await self.tree.sync())} Slash Command(s).")
 
     async def on_ready(self):
         Log.info("Bot", f"Logged in as {self.user}")
-        Log.info("Contexts", f"{len(ctx.all_contexts)} Command(s)")
+        Log.info("Contexts", f"{len(ctx.all_contexts)} Command(s).")
         tasks.start(self)
 
     async def on_message(self, message: discord.Message):

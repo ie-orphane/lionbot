@@ -10,16 +10,16 @@ class Bot(DiscordBot, BotEmbeds):
         self, channel_name: str, is_text_channel: bool = True
     ) -> TextChannel | None:
         if (channel_id := config.get_channel(channel_name)) is None:
-            Log.error("BotHelpers", f"{channel_name}: channel id not found")
+            Log.error("Bot", f"{channel_name}: channel id not found")
             return None
 
         if (channel := self.get_channel(channel_id)) is None:
-            Log.error("BotHelpers", f"{channel_name}: channel not found")
+            Log.error("Bot", f"{channel_name}: channel not found")
             return None
 
         if is_text_channel:
             if not isinstance(channel, TextChannel):
-                Log.error("BotHelpers", f"{channel_name}: channel is not a TextChannel")
+                Log.error("Bot", f"{channel_name}: channel is not a TextChannel")
                 return None
 
         return channel
