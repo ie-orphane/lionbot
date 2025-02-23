@@ -6,7 +6,7 @@ from utils import Log
 __all__ = ["get_channel", "check_channels"]
 
 
-ConfigChannel = Literal["welcome", "challenges", "gitlog", "events"]
+ConfigChannel = Literal["welcome", "challenges", "events"]
 
 
 def get_channel(channel: ConfigChannel) -> int | None:

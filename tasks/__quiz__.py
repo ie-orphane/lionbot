@@ -15,7 +15,6 @@ async def quiz(bot: commands.Bot):
     now = datetime.now(UTC)
 
     if (channel := bot.get_listed_channel("events")) is None:
-        Log.error("Gitlog", "error while getting gitlog channel")
         return
 
     current_quiz = QuizData.last()

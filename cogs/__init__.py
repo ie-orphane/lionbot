@@ -1,7 +1,6 @@
 import os
 import discord
 import traceback
-from utils import Log
 from discord.ext import commands
 from consts import COLOR
 from datetime import datetime, UTC
@@ -48,7 +47,6 @@ class Cog(commands.Cog):
         )
 
         if (error_channel := self.bot.get_listed_channel("error")) is None:
-            Log.error("Cogs", "error while getting error channel")
             return
 
         await error_channel.send(
@@ -108,7 +106,6 @@ class GroupCog(commands.GroupCog):
         )
 
         if (error_channel := self.bot.get_listed_channel("error")) is None:
-            Log.error("Cogs", "error while getting error channel")
             return
 
         await error_channel.send(

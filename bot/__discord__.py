@@ -2,11 +2,11 @@ import os
 import tasks
 import discord
 import json
+import env
 import contexts as ctx
 from utils import Log
 from config import get_config, get_user
 from discord.ext import commands
-import env
 from consts import EXCLUDE_FILES
 
 
@@ -98,7 +98,6 @@ class DiscordBot(commands.Bot):
             return
 
         if (welcome_channel := self.get_listed_channel("welcome")) is None:
-            Log.error("Gitlog", "error while getting welcome channel")
             return
 
         await welcome_channel.send(

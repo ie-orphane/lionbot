@@ -85,7 +85,6 @@ async def outlist(bot: commands.Bot):
         Log.job("Outlist", "starting...")
 
         if (events_channel := bot.get_listed_channel("events")) is None:
-            Log.error("Gitlog", "error while getting events channel")
             return
 
         await send_message(current_week, events_channel)
