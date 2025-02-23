@@ -1,7 +1,7 @@
 import time
 from utils import Log
 from typing import Literal
-from env import WAKATIME_API_URL
+import env
 from . import __self__ as api
 from consts import BUFFER_SLEEP_SECONDS
 from models import UserData
@@ -38,7 +38,7 @@ class WakatimeApi:
         *, token: str, endpoint: str = "users/current", action: str = "", **params
     ):
         return await api.get(
-            url=f"{WAKATIME_API_URL}/{'/'.join([path for path in f'{endpoint}/{action}'.split("/") if path])}",
+            url=f"{env.env.WAKATIME_API_URL}/{'/'.join([path for path in f'{endpoint}/{action}'.split("/") if path])}",
             headers={
                 "Authorization": f"Basic {token}",
                 "Content-Type": "application/json",
@@ -143,7 +143,7 @@ class WakatimeApi:
         try:
             start_time = time.time()
             summary = await api.get(
-                url=f"{WAKATIME_API_URL}/users/current/summaries",
+                url=f"{env.env.WAKATIME_API_URL}/users/current/summaries",
                 headers={
                     "Authorization": f"Basic {token}",
                     "Content-Type": "application/json",
@@ -179,7 +179,7 @@ class WakatimeApi:
                     start_time = time.time()
 
                     async with session.get(
-                        f"{WAKATIME_API_URL}/users/current/summaries",
+                        f"{env.WAKATIME_API_URL}/users/current/summaries",
                         headers={
                             "Authorization": f"Basic {user.token}",
                             "Content-Type": "application/json",

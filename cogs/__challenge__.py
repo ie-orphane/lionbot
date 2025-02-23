@@ -230,7 +230,26 @@ class Challenge(GroupCog, name="challenge"):
 
         with open("assets/challenges.md", "r") as f:
             await interaction.followup.send(
-                embed=discord.Embed(color=self.color.blue, description=f.read())
+                embed=discord.Embed(
+                    color=self.color.blue,
+                    description="\n".join(
+                        [
+                            "### /challenge request : get a new challenge"
+                            "- During the challenge, always follow the **law**  and doubt your code."
+                            "- You have 1 day to submit your code, if you pass the deadline your challenge will be evaluated as `DEAD`."
+                            "- After **7** tries of the same challenge, you will cost **7**% of the reward for every next request."
+                            "### /challenge submit : send your code challenge"
+                            "- Your code will be evaluated by a program called **bugini**."
+                            "- You will receive a message with challenge result (`OK` | `ERROR` | `KO` | `FORBIDDEN` | `TIMEOUT`)."
+                            "- The **reward** depend on the **difficulty** of the challenge."
+                            "### /challenge status : show your challenge journey"
+                            "- see your ancients and current challenges."
+                            "### /challenge log : see the failing part of the last challenge"
+                            "- With a cost **5**% of the reward."
+                            "- Only the `ERROR` and `KO` challenges will have a log."
+                        ]
+                    ),
+                )
             )
 
 

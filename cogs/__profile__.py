@@ -4,7 +4,7 @@ from consts import BOT_COINS_AMOUNT
 from utils import number
 from config import get_emoji
 from api import wakapi
-from env import WAKATIME_BASE_URL
+import env
 
 
 class Profile(Cog):
@@ -59,7 +59,7 @@ class Profile(Cog):
             return
 
         favorite_language = ""
-        user._socials["wakatime"] = WAKATIME_BASE_URL
+        user._socials["wakatime"] = env.WAKATIME_BASE_URL
 
         if (
             (user.token is not None)

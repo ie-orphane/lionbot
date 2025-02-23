@@ -6,7 +6,7 @@ import contexts as ctx
 from utils import Log
 from config import get_config, get_user
 from discord.ext import commands
-from env import BOT_COGS
+import env
 from consts import EXCLUDE_FILES
 
 
@@ -15,21 +15,21 @@ class DiscordBot(commands.Bot):
         super().__init__(command_prefix=">", intents=discord.Intents.all())
 
     async def setup_hook(self) -> None:
-        if BOT_COGS != "ALL" and (
-            not (BOT_COGS.startswith("[") and BOT_COGS.endswith("]"))
+        if env.BOT_COGS != "ALL" and (
+            not (env.BOT_COGS.startswith("[") and env.BOT_COGS.endswith("]"))
         ):
-            Log.error("Cogs", "Invalid format of BOT_COGS.")
+            Log.error("Cogs", "Invalid format of env.BOT_COGS.")
             return
 
         cogs: list
 
-        if BOT_COGS == "ALL":
+        if env.BOT_COGS == "ALL":
             cogs = [
                 "cogs." + command_file.removesuffix(".py")
                 for command_file in os.listdir("cogs")
                 if command_file.endswith(".py") and command_file not in EXCLUDE_FILES
             ]
-        elif BOT_COGS.startswith("[") and BOT_COGS.endswith("]"):
+        elif env.BOT_COGS.startswith("[") and env.BOT_COGS.endswith("]"):
             try:
                 cogs = [
                     "cogs." + command_file.removesuffix(".py")
@@ -37,10 +37,10 @@ class DiscordBot(commands.Bot):
                     if command_file.endswith(".py")
                     and command_file not in EXCLUDE_FILES
                     and command_file.removeprefix("__").removesuffix("__.py")
-                    in json.loads(BOT_COGS)
+                    in json.loads(env.BOT_COGS)
                 ]
             except json.decoder.JSONDecodeError:
-                Log.error("Cogs", "Failed to parse BOT_COGS.")
+                Log.error("Cogs", "Failed to parse env.BOT_COGS.")
                 return
 
         for cog in cogs:
