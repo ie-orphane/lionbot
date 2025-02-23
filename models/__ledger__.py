@@ -1,14 +1,17 @@
+import env
+import os
 import csv
 from models.__schema__ import Model
 from typing import Self, List, Literal
 import datetime as dt
 from zoneinfo import ZoneInfo
 
+
 __all__ = ["UserLedger"]
 
 
 class UserLedger(Model):
-    BASE = "data/transactions.csv"
+    BASE = os.path.join(os.path.abspath(env.BASE_DIR), "data", "transactions.csv")
     id: int
     datetime: dt.datetime
     amount: float
@@ -23,8 +26,9 @@ class UserLedger(Model):
 
     @classmethod
     def get(cls: Self, user_id: int | str) -> List[Self]:
-        ledger = []
-        with open(cls.BASE, mode="r", newline="") as file:
+        ledger: List[Self] = []
+
+        with open(cls.BASE, newline="") as file:
             reader = csv.DictReader(file)
 
             for row in reader:
@@ -34,6 +38,21 @@ class UserLedger(Model):
 
                 if row["id"] == str(user_id):
                     ledger.append(cls(**row))
+
+        return ledger
+
+    @classmethod
+    def get_all(cls: Self) -> List[Self]:
+        ledger: List[Self] = []
+
+        with open(cls.BASE, newline="") as file:
+            reader = csv.DictReader(file)
+
+            for row in reader:
+                if None in row:
+                    row["reason"] = ",".join([row["reason"]] + row[None])
+                    del row[None]
+                ledger.append(cls(**row))
 
         return ledger
 

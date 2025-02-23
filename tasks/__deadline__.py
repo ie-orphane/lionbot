@@ -1,4 +1,5 @@
 import discord
+import env
 from discord.ext import tasks, commands
 from models import ChannelData, FileData, UserData
 from datetime import datetime, UTC, timedelta
@@ -23,7 +24,7 @@ async def deadline(bot: commands.Bot):
         if file.time == now:
             Log.job("File", "sending")
             filechannel = bot.get_channel(file.channel)
-            await filechannel.send(file=discord.File(f"./assets/files/{file.id}"))
+            await filechannel.send(file=discord.File(f"{env.BASE_DIR}/storage/files/{file.id}"))
             file.remove()
             Log.job("File", f"{file.id} sended to {filechannel}!")
 

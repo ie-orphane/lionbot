@@ -1,4 +1,5 @@
 import json
+import env
 from datetime import datetime
 from models.__schema__ import Document
 
@@ -15,7 +16,7 @@ class ChannelData(Document):
 
     @classmethod
     def read_all(cls):
-        with open(f"./data/{cls.BASE}.json", "r") as file:
+        with open(f"{env.BASE_DIR}/data/{cls.BASE}.json", "r") as file:
             return [
                 cls(id=x["id"], role=x["role"], time=datetime.fromisoformat(x["time"]))
                 for x in json.load(file)

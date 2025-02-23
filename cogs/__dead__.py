@@ -1,4 +1,5 @@
 import discord
+import env
 from discord.ext import commands
 from models import ChannelData, FileData
 from typing import Literal
@@ -90,7 +91,7 @@ class Dead(GroupCog, name="dead"):
         )
         filename = f"{interaction.user.id}-{int(datetime.now(UTC).timestamp())}.{file.filename.split('.')[-1]}"
 
-        await file.save(f"./assets/files/{filename}")
+        await file.save(f"{env.BASE_DIR}/storage/files/{filename}")
         FileData.create(id=filename, channel=channel.id, time=deadtime)
 
         await interaction.followup.send(

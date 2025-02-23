@@ -19,6 +19,7 @@ class Migration:
         "subjects",
         "solutions",
         "logs",
+        "errors",
     ]
     config = {
         "global": {

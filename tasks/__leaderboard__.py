@@ -1,4 +1,5 @@
 import discord
+import env
 from api import wakapi
 from discord.ext import commands, tasks
 from utils import Log, get_week, leaderboard_image
@@ -85,7 +86,7 @@ async def leaderboard(bot: commands.Bot):
                 continue
             for position in leaderboard_data["messages"]:
                 file = discord.File(
-                    f"./assets/images/{leaderboard_data['alias']}_{position}_leaderboard.png",
+                    f"{env.BASE_DIR}/storage/images/{leaderboard_data['alias']}_{position}_leaderboard.png",
                     filename=f"{position}_leaderboard.png",
                 )
                 if (

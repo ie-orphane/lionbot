@@ -1,4 +1,5 @@
 import discord
+import env
 from datetime import datetime, UTC
 from utils import Log, charts, number
 from api import QuizApi
@@ -70,7 +71,7 @@ async def quiz(bot: commands.Bot):
         )
         if show_statistics := len(current_quiz.contributors) != 0:
             charts.answers(reactions, current_quiz.correct_answers.values(), "summary")
-            file = discord.File(f"./assets/images/summary.png", filename=f"summary.png")
+            file = discord.File(f"{env.BASE_DIR}/storage/images/summary.png", filename=f"summary.png")
             embed.set_image(url="attachment://summary.png")
             embed.description += f"\n\n:bar_chart: **Statistics**:"
         await message.reply(file=file if show_statistics else None, embed=embed)

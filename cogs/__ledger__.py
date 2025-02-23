@@ -24,7 +24,7 @@ class Ledger(Cog):
         transactions = []
         max_int = tuple(map(len, str(float(user.coins)).split(".")))
 
-        for transaction in UserLedger.get(user.id):
+        for transaction in UserLedger.get(user.id)[::-1]:
             max_int = (
                 max(max_int[0], len(str(float(transaction.amount)).split(".")[0])),
                 max(max_int[1], len(str(float(transaction.amount)).split(".")[1])),
@@ -43,7 +43,7 @@ class Ledger(Cog):
                         f"\u001b[0;30m{transaction.datetimezone:%d/%m/%y %H:%M}\u001b[0;0m "
                         f"{" " * (max_int[0] - len(str(float(transaction.amount)).split(".")[0]))}{transaction.op}{float(transaction.amount)}\u001b[0;0m{" " * (max_int[1] - len(str(float(transaction.amount)).split(".")[1]))}"
                         f" {transaction.reason}"
-                        for transaction in transactions
+                        for transaction in transactions[::-1]
                     ]
                     + [
                         f"{" " * 15}\u001b[0;30m{'-' * (max_int[0] + max_int[1] + 2):>16}\u001b[0;0m\n{"current":^16}"

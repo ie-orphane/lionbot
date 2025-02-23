@@ -1,10 +1,11 @@
+import os
+import env
 from discord.ext import tasks, commands
 from datetime import datetime, UTC
 from utils import get_files, Log, get_week, Week
 from models import UserData, WeekData
 from consts import GOLDEN_RATIO
 from api import wakapi
-
 
 THRESHOLD = 19_800
 FACTOR = THRESHOLD / GOLDEN_RATIO
@@ -13,7 +14,9 @@ FACTOR = THRESHOLD / GOLDEN_RATIO
 @tasks.loop(minutes=15)
 async def weekly_data(bot: commands.Bot):
     try:
-        weeks_file = get_files("./data/weeks")
+        weeks_file = get_files(
+            os.path.join(os.path.abspath(env.BASE_DIR), "data", "weeks")
+        )
 
         current_week: Week = get_week(week_argument="beforelast")
         week_count = current_week.count

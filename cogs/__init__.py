@@ -1,6 +1,7 @@
 import os
 import discord
 import traceback
+import env
 from discord.ext import commands
 from consts import COLOR
 from datetime import datetime, UTC
@@ -20,8 +21,7 @@ class Cog(commands.Cog):
         error: discord.app_commands.AppCommandError,
     ):
         log_id = int(datetime.now(UTC).timestamp())
-        log_dir = "./data/errors"
-        os.makedirs(log_dir, exist_ok=True)
+        log_dir = f"{env.BASE_DIR}/storage/errors"
         with open(f"{log_dir}/{log_id}.log", "w") as file:
             file.writelines(
                 [
@@ -79,7 +79,7 @@ class GroupCog(commands.GroupCog):
         error: discord.app_commands.AppCommandError,
     ):
         log_id = int(datetime.now(UTC).timestamp())
-        log_dir = "./data/errors"
+        log_dir = f"{env.BASE_DIR}/storage/errors"
         os.makedirs(log_dir, exist_ok=True)
         with open(f"{log_dir}/{log_id}.log", "w") as file:
             file.writelines(

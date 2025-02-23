@@ -58,7 +58,6 @@ class Register(Cog):
             coins=0,
             token=waka_token,
             training=None,
-            graduated=False,
             _challenges=[],
             _challenge=None,
             _socials={},

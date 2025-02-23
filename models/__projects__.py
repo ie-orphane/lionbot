@@ -1,4 +1,5 @@
 import json
+import env
 from models.__schema__ import Collection
 from uuid import uuid4
 from datetime import datetime
@@ -14,7 +15,7 @@ class ProjectData(Collection):
     @classmethod
     def read(cls, id: str):
         try:
-            with open(f"./data/{cls.BASE}/{id}.json", "r") as file:
+            with open(f"{env.BASE_DIR}/data/{cls.BASE}/{id}.json", "r") as file:
                 return cls(id=str(id), **json.load(file))
         except FileNotFoundError:
             return None

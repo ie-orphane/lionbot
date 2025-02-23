@@ -38,7 +38,7 @@ class WakatimeApi:
         *, token: str, endpoint: str = "users/current", action: str = "", **params
     ):
         return await api.get(
-            url=f"{env.env.WAKATIME_API_URL}/{'/'.join([path for path in f'{endpoint}/{action}'.split("/") if path])}",
+            url=f"{env.WAKATIME_API_URL}/{'/'.join([path for path in f'{endpoint}/{action}'.split("/") if path])}",
             headers={
                 "Authorization": f"Basic {token}",
                 "Content-Type": "application/json",
@@ -143,7 +143,7 @@ class WakatimeApi:
         try:
             start_time = time.time()
             summary = await api.get(
-                url=f"{env.env.WAKATIME_API_URL}/users/current/summaries",
+                url=f"{env.WAKATIME_API_URL}/users/current/summaries",
                 headers={
                     "Authorization": f"Basic {token}",
                     "Content-Type": "application/json",
@@ -167,6 +167,7 @@ class WakatimeApi:
         users_summary = []
         count = 0
         sleeped = 0
+        all_count = len(users)
 
         while True:
             async with aiohttp.ClientSession() as session:
@@ -199,10 +200,10 @@ class WakatimeApi:
                         count += 1
 
                         if response.status == 200:
-                            Log.info(
-                                "WAKATIME",
-                                f"{count:>2} {user.name:<21}: {time.time() - start_time:.3f}",
-                            )
+                            # Log.info(
+                            #     "WAKATIME",
+                            #     f"{count:>2} {user.name:<21}: {time.time() - start_time:.3f}",
+                            # )
                             if not (
                                 (
                                     user_summary := cls.__get_weekly_summary(
@@ -218,18 +219,17 @@ class WakatimeApi:
                             "WAKATIME", f"{response.status} - {await response.text()}"
                         )
 
+            Log.info(
+                "WAKATIME",
+                f"{count}/{all_count} ({count/all_count:%})  :  {time.time() - first_time:.2f} ({time.time() - first_time - sleeped:.2f})",
+            )
+
             if len(users) == 0:
                 break
 
-            Log.warning(
-                "WAKATIME",
-                f"Buffer sleeping ({time.time() - first_time - sleeped:.2f})",
-            )
+            Log.warning("WAKATIME", f"Buffer sleeping")
             sleeped += BUFFER_SLEEP_SECONDS
             await asyncio.sleep(BUFFER_SLEEP_SECONDS)
 
-        print(
-            f"{" " * 64}{time.time() - first_time:.2f} ({time.time() - first_time - sleeped:.2f})"
-        )
         users_summary.sort(key=lambda x: x.total_seconds, reverse=True)
         return users_summary

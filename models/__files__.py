@@ -1,4 +1,4 @@
-import json, os
+import json, os, env
 from datetime import datetime
 from models.__schema__ import Document, ModelEncoder
 
@@ -15,7 +15,7 @@ class FileData(Document):
 
     @classmethod
     def read_all(cls):
-        with open(f"./data/{cls.BASE}.json", "r") as file:
+        with open(f"{env.BASE_DIR}/data/{cls.BASE}.json") as file:
             return [
                 cls(
                     id=x["id"],
@@ -28,6 +28,6 @@ class FileData(Document):
     def remove(self) -> None:
         files = FileData.read_all()
         files.remove(self)
-        os.remove(f"./assets/files/{self.id}")
-        with open(f"./data/{self.BASE}.json", "w") as file:
+        os.remove(f"{env.BASE_DIR}/storage/files/{self.id}")
+        with open(f"{env.BASE_DIR}/data/{self.BASE}.json", "w") as file:
             json.dump(files, file, cls=ModelEncoder, indent=2)
