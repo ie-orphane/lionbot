@@ -160,8 +160,5 @@ cython_debug/
 #.idea/
 
 # discord.py
-data*/
 test*
-assets/
-bot/*config*
 .vscode/
