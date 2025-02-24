@@ -1,3 +1,4 @@
+import env
 import matplotlib.pyplot as plt
 import matplotlib
 from consts import COLOR
@@ -41,6 +42,5 @@ def answers(answers: dict[str, int], colors: list[bool], filename: str) -> None:
     for position in ("left", "right", "top"):
         ax.spines[position].set_visible(False)
 
-
-    fig.savefig(f"assets/images/{filename}.png", format="png", dpi=150)
+    fig.savefig(f"{env.BASE_DIR}/storage/images/{filename}.png", format="png", dpi=150)
     plt.close(fig)

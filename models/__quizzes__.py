@@ -1,5 +1,6 @@
 import os
 import json
+import env
 import datetime as dt
 from typing import Literal, Self
 from .__schema__ import Collection
@@ -20,7 +21,7 @@ class QuizFields:
     difficulty: Literal["Easy", "Medium", "Hard"]
     message_id: int = 0
     emojis: dict
-    contributors: list[int]
+    contributions: dict[str, str]
     date: dt.date | None = None
     ended: bool = False
 
@@ -62,8 +63,8 @@ class QuizData(Collection, QuizFields):
         ]
         new.ID = new.id
         new.emojis = {}
-        new.contributors = []
-        new.id = len(os.listdir(f"data/{cls.BASE}"))
+        new.contributions = {}
+        new.id = len(os.listdir(f"{env.BASE_DIR}/data/{cls.BASE}"))
         new.update()
         return new
 
