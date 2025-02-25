@@ -23,7 +23,7 @@ class Set(GroupCog, name="set"):
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=self.color.red,
-                    description=f"{interaction.user.mention}, oops 🫣!\n{get_emoji(social, "")}{social.capitalize()}'s link **`{link}`** is invalid.",
+                    description=f"{interaction.user.mention}, oops 🫣!\n{get_emoji(social, "")} {social.capitalize()}'s link **`{link}`** is invalid.",
                 ),
                 ephemeral=True,
             )

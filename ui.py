@@ -30,6 +30,7 @@ class QuizButton(
         return cls(match["id"], match["key"])
 
     async def callback(self, interaction: discord.Interaction) -> None:
+        await interaction.response.defer(ephemeral=True)
         quiz: QuizData = QuizData.read(self.quiz_id)
         if str(interaction.user.id) in quiz.contributions:
             await interaction.response.send_message(
@@ -42,7 +43,7 @@ class QuizButton(
             return
         quiz.contributions[interaction.user.id] = self.answer_key
         quiz.update()
-        await interaction.response.send_message(
+        await interaction.followup.send(
             embed=discord.Embed(
                 color=COLOR.green,
                 description=f"{interaction.user.mention} ✅,\nyour answer has been submitted successfully!\nThanks for participating.",

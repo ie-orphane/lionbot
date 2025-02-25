@@ -62,18 +62,17 @@ class Profile(Cog):
         user._socials["wakatime"] = env.WAKATIME_BASE_URL
 
         if (
-            (user.token is not None)
-            and (
-                (user_data := await wakapi.get_stats(user.token, "all_time"))
-                is not None
+            not (user.token is None)
+            and not (
+                (user_data := await wakapi.get_stats(user.token, "all_time")) is None
             )
-            and ((user_data := user_data.get("data")) is not None)
+            and not ((user_data := user_data.get("data")) is None)
         ):
-            user._socials["wakatime"] += f"/@{user_data['user_id']}"
-            if languages := user_data["languages"]:
-                favorite_language = sorted(languages, key=lambda x: x["total_seconds"])[
-                    -1
-                ]
+            user._socials["wakatime"] += f"/@{user_data.get('user_id', '')}"
+            if languages := user_data.get("languages"):
+                favorite_language = sorted(
+                    languages, key=lambda x: x.get("total_seconds", 0)
+                )[-1]
 
         embed = discord.Embed(
             color=self.color.yellow,
