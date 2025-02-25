@@ -1,7 +1,6 @@
 import pickle
 import json
 import os
-import env
 import matplotlib
 import matplotlib.pyplot as plt
 from .__colorful__ import Color as clr
@@ -232,6 +231,6 @@ def leaderboard_image(template: str, image: str, data: list, **heading_data: dic
             )
 
     # save the figure as an image
-    fig.savefig(f"{env.BASE_DIR}/storage/images/{image}_{template}_leaderboard.png", format="png")
+    fig.savefig(f"{__import__("env").BASE_DIR}/storage/images/{image}_{template}_leaderboard.png", format="png")
 
     plt.close(fig)

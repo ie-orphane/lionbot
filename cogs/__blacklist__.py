@@ -1,7 +1,5 @@
 import discord
-import datetime as dt
 from discord.ext import commands
-from utils import open_file, get_week
 from config import get_emoji
 from consts import OUTLIST_AMOUNT
 from utils import number
@@ -25,8 +23,6 @@ class Blacklist(GroupCog, name="blacklist"):
             if role.name == "Black List":
                 black_list_role = role
 
-        amount = OUTLIST_AMOUNT
-
         if (
             black_list_role is None
             or interaction.user.get_role(black_list_role.id) is None
@@ -39,8 +35,8 @@ class Blacklist(GroupCog, name="blacklist"):
                     embed=discord.Embed(
                         color=self.color.yellow,
                         description=(
-                            f"{interaction.user.mention}, congrats for joining **BlackList**.\n"
-                            f"To appeal 😔, you must pay {number(amount)} {get_emoji('coin')}."
+                            f"{interaction.user.mention}, congrats for joining {black_list_role.mention}.\n"
+                            f"To appeal 😔, you must pay {number(OUTLIST_AMOUNT)} {get_emoji('coin')}."
                         ),
                     )
                 )
@@ -49,49 +45,31 @@ class Blacklist(GroupCog, name="blacklist"):
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=self.color.red,
-                    description=f"{interaction.user.mention}, next time maybe 🤔.\nWe can't find you in blacklist.",
+                    description=f"{interaction.user.mention}, next time maybe 🤔.\nWe can't find you in {black_list_role.mention}.",
                 ).set_footer(text="wanna join it?")
             )
             user.greylist = True
             user.update()
             return
 
-        this_week = get_week()
-        weeks = open_file("data/outlist.json")
-        current_week = weeks.get(str(this_week.count))
-
-        if (
-            not (current_week is None)
-            and (current_week["claimed_by"] is None)
-            and dt.datetime.fromisoformat(current_week["started_at"])
-            <= dt.datetime.now(dt.UTC).replace(second=0, microsecond=0)
-            <= dt.datetime.fromisoformat(current_week["started_at"])
-            + dt.timedelta(seconds=current_week["ends_in"])
-        ):
-            amount = current_week["amout"]
-
-        if user.coins < amount:
+        if user.coins < OUTLIST_AMOUNT:
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=self.color.red,
-                    description=f"{interaction.user.mention}, you need {number(amount - user.coins)} {get_emoji("coin")} more.",
+                    description=f"{interaction.user.mention}, you need {number(OUTLIST_AMOUNT - user.coins)} {get_emoji("coin")} more.",
                 )
             )
             return
 
         await interaction.user.remove_roles(black_list_role)
 
-        if amount != OUTLIST_AMOUNT:
-            current_week["claimed_by"] = interaction.user.id
-            open_file("data/outlist.json", weeks)
-
         user.greylist = False
-        user.sub_coins(amount, "blacklist out")
+        user.sub_coins(OUTLIST_AMOUNT, "blacklist out")
 
         await interaction.followup.send(
             embed=discord.Embed(
                 color=self.color.green,
-                description=f"{interaction.user.mention}, congarts 🥳!\nYou paied {number(amount)} {get_emoji("coin")}",
+                description=f"{interaction.user.mention}, congarts 🥳!\nYou paied {number(OUTLIST_AMOUNT)} {get_emoji("coin")}.",
             ).set_footer(text="you're free now."),
         )
 
