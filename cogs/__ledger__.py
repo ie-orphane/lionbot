@@ -16,9 +16,11 @@ class Ledger(Cog):
 
         member = member or interaction.user
 
-        if (await self.bot.user_is_admin(interaction, member)) or (
-            user := await self.bot.user_is_unkown(interaction, member)
-        ) is None:
+        if (
+            await self.bot.user_on_cooldown(interaction, interaction.command.qualified_name)
+            or (await self.bot.user_is_admin(interaction, member))
+            or (user := await self.bot.user_is_unkown(interaction, member)) is None
+        ):
             return
 
         transactions = []

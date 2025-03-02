@@ -1,7 +1,8 @@
 import discord
 from models import UserData
 from consts import COLOR
-from config import get_config, get_users
+from config import get_config, get_users, get_cooldown
+from datetime import datetime, timedelta, UTC
 
 
 class BotEmbeds:
@@ -69,3 +70,40 @@ class BotEmbeds:
             )
             return True
         return False
+
+    @staticmethod
+    async def user_on_cooldown(interaction: discord.Interaction, label: str) -> bool:
+        if (interaction.user.id in get_users("owner", "coach", nullable=False)) or (
+            (user := UserData.read(interaction.user.id)) is None
+        ):
+            return False
+
+        if user.cooldowns is None:
+            user.cooldowns = {}
+
+        if user.cooldowns.get(label) is None:
+            user.cooldowns[label] = str(datetime.now(UTC))
+            user.update()
+            return False
+
+        available_time = datetime.fromisoformat(user.cooldowns[label]) + timedelta(
+            seconds=get_cooldown(label)
+        )
+
+        if available_time < datetime.now(UTC):
+            user.cooldowns[label] = str(datetime.now(UTC))
+            user.update()
+            return False
+
+        await interaction.followup.send(
+            embed=discord.Embed(
+                color=COLOR.red,
+                description=(
+                    f"{interaction.user.mention}, ⏰\n"
+                    f"You are on cooldown for this command!\n"
+                    f"Next available in <t:{int(available_time.timestamp())}:T>."
+                ),
+            )
+        )
+
+        return True

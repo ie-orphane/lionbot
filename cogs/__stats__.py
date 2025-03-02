@@ -77,9 +77,11 @@ class Stats(Cog):
             )
             return
 
-        if (await self.bot.user_is_admin(interaction, member)) or (
-            user := await self.bot.user_is_unkown(interaction, member)
-        ) is None:
+        if (
+            await self.bot.user_on_cooldown(interaction, interaction.command.qualified_name)
+            or (await self.bot.user_is_admin(interaction, member))
+            or (user := await self.bot.user_is_unkown(interaction, member)) is None
+        ):
             return
 
         if user.token is None:
@@ -141,7 +143,9 @@ class Stats(Cog):
 
             daily_average = user_stats.get("human_readable_daily_average", -1)
             total = user_stats.get("human_readable_total", -1)
-            duration = user_stats.get("human_readable_range", duration.replace("_", " "))
+            duration = user_stats.get(
+                "human_readable_range", duration.replace("_", " ")
+            )
             langs = user_stats.get("languages", [])
 
         embed = (

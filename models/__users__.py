@@ -75,6 +75,7 @@ class UserData(Collection):
     _challenges: list[dict]
     _challenge: dict | None = None
     _log: dict | None = None
+    cooldowns: dict | None = None
     _socials: dict
     achievments: dict
     greylist: bool = False
