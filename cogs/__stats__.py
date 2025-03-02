@@ -106,7 +106,7 @@ class Stats(Cog):
             )
             .set_author(
                 name=user.name,
-                icon_url=interaction.user.display_avatar,
+                icon_url=member.display_avatar,
                 url=user_data.get("profile_url"),
             )
             .set_footer(text=f"duration  -  {duration}")
