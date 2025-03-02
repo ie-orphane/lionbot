@@ -139,10 +139,23 @@ class Stats(Cog):
                 )
                 return
 
-            daily_average = user_stats["human_readable_daily_average"]
-            total = user_stats["human_readable_total"]
-            duration = user_stats["human_readable_range"]
-            langs = user_stats["languages"]
+            daily_average = user_stats.get("human_readable_daily_average", -1)
+            total = user_stats.get("human_readable_total", -1)
+            duration = user_stats.get("human_readable_range", duration.replace("_", " "))
+            langs = user_stats.get("languages", [])
+
+        embed = (
+            discord.Embed(
+                color=self.color.yellow,
+                description=f"**Total**: {total}\n**Daily Average**: {daily_average}",
+            )
+            .set_author(
+                name=user.name,
+                icon_url=interaction.user.display_avatar,
+                url=user_data.get("profile_url"),
+            )
+            .set_footer(text=f"duration  -  {duration}")
+        )
 
         languages = {
             lang["name"]: lang["text"]
@@ -162,18 +175,10 @@ class Stats(Cog):
             ]
         )
 
-        await interaction.followup.send(
-            embed=discord.Embed(
-                color=self.color.yellow,
-                description=f"**Total**: {total}\n**Daily Average**: {daily_average}\n**Languages**:\n>>> {languages}",
-            )
-            .set_author(
-                name=user.name,
-                icon_url=user_data["photo"],
-                url=user_data["profile_url"],
-            )
-            .set_footer(text=f"duration  -  {duration}")
-        )
+        if len(languages) > 0:
+            embed.description += f"\n**Languages**:\n>>> {languages}"
+
+        await interaction.followup.send(embed=embed)
 
 
 async def setup(bot):
