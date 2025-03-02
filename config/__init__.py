@@ -1,7 +1,6 @@
 from .__self__ import *
 from .__channels__ import *
 from .__emojis__ import *
-from .__extensions__ import *
 from .__users__ import *
 from .__messages__ import *
 from .__cooldowns__ import *
