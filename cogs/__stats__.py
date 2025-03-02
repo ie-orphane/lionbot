@@ -51,22 +51,13 @@ class Stats(Cog):
                     extension_count[extension] += 1
                     total_count += 1
 
-            max_lang_len = len(max(extension_count.keys(), key=len))
-
-            languages = "\n".join(
-                map(
-                    lambda x: f"{get_emoji(x[0])} {x[0]:<{max_lang_len}} - {convert_seconds(int(x[1] * factor * GOLDEN_RATIO))}",
-                    sorted(extension_count.items(), key=lambda x: x[1], reverse=True),
-                )
-            )
-
-            await interaction.followup.send(
-                embed=discord.Embed(
+            embed = (
+                discord.Embed(
                     color=self.color.yellow,
                     description=(
                         f"**Total**: {convert_seconds(int(total_count * factor * GOLDEN_RATIO))}\n"
                         f"**Daily Average**: {convert_seconds(int((total_count * factor * GOLDEN_RATIO) / daily_factor))}\n"
-                        f"**Languages**:\n>>> {languages}"
+                        f"**Languages**:\n>>> "
                     ),
                 )
                 .set_author(
@@ -75,10 +66,24 @@ class Stats(Cog):
                 )
                 .set_footer(text=f"duration  -  {duration}")
             )
+
+            max_lang_len = len(max(extension_count.keys(), key=len))
+
+            for lang in sorted(
+                extension_count.items(), key=lambda x: x[1], reverse=True
+            ):
+                text = f"{get_emoji(lang[0])} {lang[0]:<{max_lang_len}} - {convert_seconds(int(lang[1] * factor * GOLDEN_RATIO))}"
+                if len(embed.description) + len(text) > 4096:
+                    break
+                embed.description += f"{text}\n"
+
+            await interaction.followup.send(embed=embed)
             return
 
         if (
-            await self.bot.user_on_cooldown(interaction, interaction.command.qualified_name)
+            await self.bot.user_on_cooldown(
+                interaction, interaction.command.qualified_name
+            )
             or (await self.bot.user_is_admin(interaction, member))
             or (user := await self.bot.user_is_unkown(interaction, member)) is None
         ):

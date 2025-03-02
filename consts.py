@@ -11,7 +11,7 @@ OUTLIST_AMOUNT = GOLDEN_RATIO**11
 MESSAGE = Message()
 COLOR = Color()
 
-EXCLUDE_DIRS = ["__pycache__", ".git", "venv"]
+EXCLUDE_DIRS = ["__pycache__", ".git", ".venv", "venv"]
 
 
 # ------ config ------
