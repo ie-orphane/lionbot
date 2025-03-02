@@ -1,8 +1,99 @@
 import discord
+import os
 from models import UserData
-from consts import COLOR
-from config import get_config, get_users, get_cooldown
-from datetime import datetime, timedelta, UTC
+from typing import Literal
+from consts import COLOR, EXCLUDE_DIRS, BOT_COINS_AMOUNT, GOLDEN_RATIO
+from config import get_config, get_users, get_cooldown, get_extension, get_emoji
+from datetime import datetime, timedelta, UTC, date
+from utils import convert_seconds, number
+
+
+class SelfEmbeds:
+    @staticmethod
+    def stats(
+        bot,
+        duration: Literal[
+            "last_24_hours", "last_7_days", "last_30_days", "last_year", "all_time"
+        ],
+    ) -> discord.Embed:
+        factor, daily_factor = {
+            "all_time": (
+                30 * 24 * 3600,
+                (datetime.now(UTC).date() - date(year=2023, month=7, day=24)).days,
+            ),
+            "last_year": (24 * 3600, 365),
+            "last_30_days": (3600, 30),
+            "last_7_days": (60, 7),
+            "last_24_hours": (1, 1),
+        }[duration]
+
+        extension_count = {}
+        total_count = 0
+        for _, dirs, files in os.walk("."):
+            dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS]
+
+            for file in files:
+                extension = get_extension(file.split(".")[-1])
+                extension_count.setdefault(extension, 0)
+                extension_count[extension] += 1
+                total_count += 1
+
+        embed = (
+            discord.Embed(
+                color=COLOR.yellow,
+                description=(
+                    f"**Total**: {convert_seconds(int(total_count * factor * GOLDEN_RATIO))}\n"
+                    f"**Daily Average**: {convert_seconds(int((total_count * factor * GOLDEN_RATIO) / daily_factor))}\n"
+                    f"**Languages**:\n>>> "
+                ),
+            )
+            .set_author(
+                name=bot.user.name,
+                icon_url=bot.user.avatar,
+            )
+            .set_footer(text=f"duration  -  {duration.replace('_', ' ')}")
+        )
+
+        max_lang_len = len(max(extension_count.keys(), key=len))
+
+        for lang in sorted(extension_count.items(), key=lambda x: x[1], reverse=True):
+            text = f"{get_emoji(lang[0])} {lang[0]:<{max_lang_len}} - {convert_seconds(int(lang[1] * factor * GOLDEN_RATIO))}"
+            if len(embed.description) + len(text) > 4096:
+                break
+            embed.description += f"{text}\n"
+
+        return embed
+
+    @staticmethod
+    def profile(bot) -> discord.Embed:
+        return (
+            discord.Embed(
+                color=COLOR.yellow,
+            )
+            .set_author(name=bot.user.name, icon_url=bot.user.avatar)
+            .add_field(
+                name="Class",
+                value=f"> **Coding** - Discord Integration",
+                inline=False,
+            )
+            .add_field(
+                name="Coins",
+                value=f"> {number(BOT_COINS_AMOUNT)} {get_emoji("coin")}",
+                inline=False,
+            )
+            .add_field(
+                name="Favorite Language",
+                value=f"> {get_emoji("Python")}  Python",
+                inline=False,
+            )
+            .add_field(
+                name="Socials",
+                value=(
+                    f"- [{get_emoji("github")}  github]({get_config("REPOSITORY")})\n"
+                    f"- [{get_emoji("portfolio")}  portfolio](https://lionsgeek.ma/)"
+                ),
+            )
+        )
 
 
 class BotEmbeds:
@@ -105,5 +196,25 @@ class BotEmbeds:
                 ),
             )
         )
+
+        return True
+
+    async def user_is_self(
+        self,
+        interaction: discord.Interaction,
+        member: discord.User | discord.Member,
+        **kwargs,
+    ) -> bool:
+        if self.user.id != member.id:
+            return False
+        match interaction.command.qualified_name:
+            case "profile":
+                await interaction.followup.send(
+                    embed=SelfEmbeds.profile(self),
+                )
+            case "stats":
+                await interaction.followup.send(
+                    embed=SelfEmbeds.stats(self, kwargs.get("duration", "all_time")),
+                )
 
         return True

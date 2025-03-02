@@ -1,10 +1,9 @@
+import env
 import discord
 from cogs import Cog
-from consts import BOT_COINS_AMOUNT
 from utils import number
 from config import get_emoji
 from api import wakapi
-import env
 
 
 class Profile(Cog):
@@ -20,41 +19,11 @@ class Profile(Cog):
 
         member = member or interaction.user
 
-        if interaction.application_id == member.id:
-            embed = (
-                discord.Embed(
-                    color=self.color.yellow,
-                )
-                .set_author(name=member.name, icon_url=member.avatar)
-                .add_field(
-                    name="Class",
-                    value=f"> **Coding** - Discord Integration",
-                    inline=False,
-                )
-                .add_field(
-                    name="Coins",
-                    value=f"> {number(BOT_COINS_AMOUNT)} {get_emoji("coin")}",
-                    inline=False,
-                )
-                .add_field(
-                    name="Favorite Language",
-                    value=f"> {get_emoji("Python")}  Python",
-                    inline=False,
-                )
-                .add_field(
-                    name="Socials",
-                    value=(
-                        f"- [{get_emoji("github")}  github](https://github.com/ie-orphane/lionbot)\n"
-                        f"- [{get_emoji("portfolio")}  portfolio](https://lionsgeek.ma/)"
-                    ),
-                )
-            )
-
-            await interaction.followup.send(embed=embed)
-            return
-
         if (
-            await self.bot.user_on_cooldown(interaction, interaction.command.qualified_name)
+            await self.bot.user_is_self(interaction, member)
+            or await self.bot.user_on_cooldown(
+                interaction, interaction.command.qualified_name
+            )
             or (await self.bot.user_is_admin(interaction, member))
             or (user := await self.bot.user_is_unkown(interaction, member)) is None
         ):

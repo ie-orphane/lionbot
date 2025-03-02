@@ -1,11 +1,8 @@
-import os
 import discord
 from typing import Literal
-from datetime import datetime, UTC, timedelta, date
+from datetime import datetime, UTC, timedelta
 from cogs import Cog
-from config import get_emoji, get_extension
-from consts import EXCLUDE_DIRS, GOLDEN_RATIO
-from utils import convert_seconds
+from config import get_emoji
 from api import wakapi
 
 
@@ -28,60 +25,9 @@ class Stats(Cog):
 
         member = member or interaction.user
 
-        if interaction.application_id == member.id:
-            factor, daily_factor = {
-                "all_time": (
-                    30 * 24 * 3600,
-                    (datetime.now(UTC).date() - date(year=2023, month=7, day=24)).days,
-                ),
-                "last_year": (24 * 3600, 365),
-                "last_30_days": (3600, 30),
-                "last_7_days": (60, 7),
-                "last_24_hours": (1, 1),
-            }[duration]
-
-            extension_count = {}
-            total_count = 0
-            for _, dirs, files in os.walk("."):
-                dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS]
-
-                for file in files:
-                    extension = get_extension(file.split(".")[-1])
-                    extension_count.setdefault(extension, 0)
-                    extension_count[extension] += 1
-                    total_count += 1
-
-            embed = (
-                discord.Embed(
-                    color=self.color.yellow,
-                    description=(
-                        f"**Total**: {convert_seconds(int(total_count * factor * GOLDEN_RATIO))}\n"
-                        f"**Daily Average**: {convert_seconds(int((total_count * factor * GOLDEN_RATIO) / daily_factor))}\n"
-                        f"**Languages**:\n>>> "
-                    ),
-                )
-                .set_author(
-                    name=member.name,
-                    icon_url=member.avatar,
-                )
-                .set_footer(text=f"duration  -  {duration}")
-            )
-
-            max_lang_len = len(max(extension_count.keys(), key=len))
-
-            for lang in sorted(
-                extension_count.items(), key=lambda x: x[1], reverse=True
-            ):
-                text = f"{get_emoji(lang[0])} {lang[0]:<{max_lang_len}} - {convert_seconds(int(lang[1] * factor * GOLDEN_RATIO))}"
-                if len(embed.description) + len(text) > 4096:
-                    break
-                embed.description += f"{text}\n"
-
-            await interaction.followup.send(embed=embed)
-            return
-
         if (
-            await self.bot.user_on_cooldown(
+            await self.bot.user_is_self(interaction, member, duration=duration)
+            or await self.bot.user_on_cooldown(
                 interaction, interaction.command.qualified_name
             )
             or (await self.bot.user_is_admin(interaction, member))
