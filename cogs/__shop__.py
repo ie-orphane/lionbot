@@ -17,7 +17,7 @@ class Shop(GroupCog, name="shop"):
         if check:
             await interaction.followup.send(
                 embed=discord.Embed(
-                    title="❌ Submission failed!",
+                    title="❌ Submission failed",
                     color=COLOR.red,
                     description=f"{interaction.user.mention}, {body} 🚫",
                 ).set_footer(text=foot),
@@ -71,11 +71,36 @@ class Shop(GroupCog, name="shop"):
         ):
             return
 
+        if (channel := self.bot.get_listed_channel("approve")) is None:
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    title="❌ Submission failed",
+                    color=COLOR.red,
+                    description=f"{interaction.user.mention}, approval channel not found! 🫣",
+                ).set_footer(text="Please contact the owner."),
+                ephemeral=True,
+            )
+            return
+
         item = ItemData.create(title, price, user.id, description)
+
+        await channel.send(
+            embed=discord.Embed(
+                color=COLOR.blue,
+                title="📦 New Submission",
+                description=(
+                    f"**ID**: `{item.id}`\n"
+                    f"**Title**: {item.title}\n"
+                    f"**Price**: {number(item.price)} {get_emoji('coin')}\n"
+                    f"**Description**: {item.description or 'N/A'}\n"
+                    f"**Author**: {interaction.user.mention}"
+                ),
+            )
+        )
 
         embed = discord.Embed(
             color=self.color.green,
-            title="✅ Submission Successful!",
+            title="✅ Submission Succeeded",
             description=(
                 f"{interaction.user.mention}, item sent for review! 🕵️\n\n"
                 f"Item information:\n"
