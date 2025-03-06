@@ -1,9 +1,11 @@
 import json
 import env
 import os
+import random
+import string
+import time
 from models.__schema__ import Collection
 from models.__users__ import UserData
-from uuid import uuid4
 from datetime import datetime, UTC
 from typing import Literal
 
@@ -44,6 +46,20 @@ class ItemData(Collection):
         ]
 
     @classmethod
+    def __get_id(cls) -> list[str]:
+        ids = cls.__get_ids()
+        _id: str
+        while True:
+            __id = list(str(int(time.time()))) + random.choices(
+                string.ascii_letters, k=8
+            )
+            random.shuffle(__id)
+            _id = "".join(__id)
+            if _id not in ids:
+                break
+        return _id
+
+    @classmethod
     def read(cls, id: str):
         try:
             with open(f"{env.BASE_DIR}/data/{cls.BASE}/{id}.json", "r") as file:
@@ -53,16 +69,8 @@ class ItemData(Collection):
 
     @classmethod
     def create(cls, title: str, price: float, author_id: int, description: str = None):
-        ids = cls.__get_ids()
-
-        item_id = None
-        while True:
-            item_id = str(uuid4())
-            if item_id and item_id not in ids:
-                break
-
         item = cls(
-            id=item_id,
+            id=cls.__get_id(),
             title=title,
             price=price,
             author_id=author_id,
