@@ -6,7 +6,7 @@ from utils import Log
 
 class Migration:
     data = {
-        "dirs": ["projects", "quizes", "users", "weeks"],
+        "dirs": ["projects", "quizes", "users", "weeks", "items"],
         "files": {
             "[]": ["channels", "evaluations", "files"],
             "{}": ["outlist"],
