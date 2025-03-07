@@ -94,7 +94,7 @@ class Shop(GroupCog, name="shop"):
                     f"**Name**: {item.name}\n"
                     f"**Price**: {number(item.price)} {get_emoji('coin')}\n"
                     f"**Description**: {item.description or 'N/A'}\n"
-                    f"**Author**: {interaction.user.mention}\n"
+                    f"**Author**: {interaction.user.mention} ({item.author.name})\n"
                     f"**Status**: Pending ⏳"
                 ),
             ),
@@ -106,12 +106,10 @@ class Shop(GroupCog, name="shop"):
             title="✅ Submission Succeeded",
             description=(
                 f"{interaction.user.mention}, item sent for review! 🕵️\n\n"
-                f"Item information:\n"
                 f"**ID**: `{item.id}`\n"
                 f"**Name**: {item.name}\n"
                 f"**Price**: {number(item.price)} {get_emoji('coin')}\n"
-                f"**Description**: {item.description or 'N/A'}\n"
-                f"**Author**: {interaction.user.mention}"
+                f"**Description**: {item.description or 'N/A'}"
             ),
         ).set_footer(text="Please be patient. ⏳")
 

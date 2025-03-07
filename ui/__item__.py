@@ -6,6 +6,7 @@ import re
 from datetime import datetime, UTC
 from config import get_emoji
 from models import ItemData
+from utils import number
 
 
 __all__ = ["ItemView"]
@@ -16,7 +17,7 @@ class ItemModal(discord.ui.Modal, title="Feedback"):
         label="What do you think is wrong about this item?",
         style=discord.TextStyle.long,
         placeholder="Type your feedback here...",
-        min_length=83,
+        min_length=41,
         max_length=199,
     )
 
@@ -63,8 +64,6 @@ class ItemModal(discord.ui.Modal, title="Feedback"):
     async def on_error(
         self, interaction: discord.Interaction, error: Exception
     ) -> None:
-        await interaction.response.defer(ephemeral=True)
-
         log_id = int(datetime.now(UTC).timestamp())
         log_dir = f"{env.BASE_DIR}/storage/errors"
         with open(f"{log_dir}/{log_id}.log", "w") as file:
@@ -130,10 +129,16 @@ class ItemView(discord.ui.View):
             _id = match.group(1)
 
         if _id is None:
-            raise ValueError("Failed to get item ID.")
+            raise Exception("Failed to get item ID.")
 
         if (item := ItemData.read(_id)) is None:
-            raise ValueError("Failed to get item data.")
+            raise Exception("Failed to get item data.")
+
+        channel: discord.ForumChannel = self.bot.get_listed_channel(
+            channel_name="shop", is_text_channel=False
+        )
+        if channel is None:
+            raise Exception("Shop channel not found")
 
         item.status = "approved"
         item.approved_at = str(datetime.now(UTC))
@@ -144,6 +149,16 @@ class ItemView(discord.ui.View):
             "Pending ⏳", f"Approved {get_emoji('yes', '✅')}"
         )
         await original.edit(embed=embed, view=None)
+
+        message = ""
+        if item.description is not None:
+            message = f"{item.description}\n"
+        message += (
+            f"Price: {number(item.price)} {get_emoji('coin')}\n"
+            f"By: {item.author.mention} ({item.author.name})"
+        )
+
+        await channel.create_thread(name=f"{item.name}", content=message)
 
         await interaction.followup.send(
             embed=discord.Embed(
@@ -165,8 +180,6 @@ class ItemView(discord.ui.View):
         error: Exception,
         item: discord.ui.Button,
     ) -> None:
-        await interaction.response.defer(ephemeral=True)
-
         log_id = int(datetime.now(UTC).timestamp())
         log_dir = f"{env.BASE_DIR}/storage/errors"
         with open(f"{log_dir}/{log_id}.log", "w") as file:
