@@ -6,7 +6,7 @@ from utils import number
 from cogs import GroupCog
 from models import ItemData
 from consts import COLOR
-from ui import ItemView
+from ui import ItemReView
 
 
 @discord.app_commands.guild_only()
@@ -98,7 +98,7 @@ class Shop(GroupCog, name="shop"):
                     f"**Status**: Pending ⏳"
                 ),
             ),
-            view=ItemView(self.bot),
+            view=ItemReView(self.bot),
         )
 
         embed = discord.Embed(

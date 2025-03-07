@@ -9,7 +9,7 @@ from models import ItemData
 from utils import number
 
 
-__all__ = ["ItemView"]
+__all__ = ["ItemReView", "ItemBuyBtn", "ItemBuyView"]
 
 
 class ItemModal(discord.ui.Modal, title="Feedback"):
@@ -108,7 +108,87 @@ class ItemModal(discord.ui.Modal, title="Feedback"):
         )
 
 
-class ItemView(discord.ui.View):
+class ItemBuyBtn(
+    discord.ui.DynamicItem[discord.ui.Button], template=r"(?P<id>[0-9a-zA-Z]+)"
+):
+    def __init__(self, _id: str) -> None:
+        super().__init__(discord.ui.Button(custom_id=f"{_id}", label="💸 Buy"))
+        self.id = _id
+
+    @classmethod
+    async def from_custom_id(
+        cls,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+        match: re.Match[str],
+        /,
+    ):
+        return cls(match["id"])
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        await interaction.response.defer(ephemeral=True)
+
+        item: ItemData = ItemData.read(self.id)
+        item.update()
+
+
+
+class ItemBuyView(discord.ui.View):
+    def __init__(self, bot):
+        super().__init__(timeout=None)
+        self.bot = bot
+
+    async def on_error(
+        self,
+        interaction: discord.Interaction,
+        error: Exception,
+        item: discord.ui.Button,
+    ) -> None:
+        log_id = int(datetime.now(UTC).timestamp())
+        log_dir = f"{env.BASE_DIR}/storage/errors"
+        with open(f"{log_dir}/{log_id}.log", "w") as file:
+            file.writelines(
+                [
+                    f"User: {interaction.user.display_name} ({interaction.user.id})\n",
+                    f"Interaction: {item.custom_id} ({interaction.id})\n",
+                    f"Server: {interaction.guild} #{interaction.channel}\n",
+                    f"Error: {error}\n",
+                ]
+            )
+            traceback.print_exc(file=file)
+
+        await interaction.followup.send(
+            embed=discord.Embed(
+                color=COLOR.red,
+                description=(
+                    "**Oops!** The bot sometimes takes a nap. 💤\n"
+                    "Don't worry, we'll fix the issue as soon as possible!\n\n"
+                    f"📝 **Error ID:** `{log_id}`"
+                ),
+            ).set_footer(
+                text="If this error occurs multiple times, please contact the owner."
+            )
+        )
+
+        if (error_channel := self.bot.get_listed_channel("error")) is None:
+            return
+
+        await error_channel.send(
+            embed=discord.Embed(
+                color=COLOR.red,
+                description=(
+                    f"User: {interaction.user.mention} ({interaction.user.id})\n"
+                    f"Interaction: {item.custom_id} ({interaction.id})\n"
+                    f"Server: {interaction.guild} #{interaction.channel}\n"
+                    f"Log: `{log_id}`\n"
+                    f"Error: {error}\n"
+                    f"```\n{traceback.format_exc()}\n```"
+                ),
+            )
+        )
+
+
+class ItemReView(discord.ui.View):
     def __init__(self, bot):
         super().__init__(timeout=None)
         self.bot = bot
@@ -158,7 +238,11 @@ class ItemView(discord.ui.View):
             f"By: {item.author.mention} ({item.author.name})"
         )
 
-        await channel.create_thread(name=f"{item.name}", content=message)
+        await channel.create_thread(
+            name=f"{item.name}",
+            content=message,
+            view=ItemBuyView(self.bot).add_item(ItemBuyBtn(item.id)),
+        )
 
         await interaction.followup.send(
             embed=discord.Embed(
@@ -214,7 +298,7 @@ class ItemView(discord.ui.View):
                 color=COLOR.red,
                 description=(
                     f"User: {interaction.user.mention} ({interaction.user.id})\n"
-                    f"Interaction: ItemView ({interaction.id})\n"
+                    f"Interaction: {item.custom_id} ({interaction.id})\n"
                     f"Server: {interaction.guild} #{interaction.channel}\n"
                     f"Log: `{log_id}`\n"
                     f"Error: {error}\n"
