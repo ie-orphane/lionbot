@@ -28,13 +28,13 @@ class Shop(GroupCog, name="shop"):
 
     @discord.app_commands.command(description="Add new item in the shop.")
     @discord.app_commands.describe(
-        _title="Item's title", _description="Item's description", price="Item's price"
+        _name="Item's name", _description="Item's description", price="Item's price"
     )
-    @discord.app_commands.rename(_title="title", _description="description")
+    @discord.app_commands.rename(_name="name", _description="description")
     async def add(
         self,
         interaction: discord.Interaction,
-        _title: discord.app_commands.Range[str, 3, 11],
+        _name: discord.app_commands.Range[str, 3, 11],
         price: int,
         _description: discord.app_commands.Range[str, 11, 97] = None,
     ):
@@ -43,7 +43,7 @@ class Shop(GroupCog, name="shop"):
         if (user := await self.bot.user_is_unkown(interaction)) is None:
             return
 
-        title = re.sub(r"\s+", " ", _title).strip()
+        name = re.sub(r"\s+", " ", _name).strip()
         description = (
             re.sub(r"\s+", " ", _description).strip()
             if _description is not None
@@ -59,8 +59,8 @@ class Shop(GroupCog, name="shop"):
             )
             or await self.check(
                 interaction,
-                11 < len(title) < 3,
-                f"**{title}** is an invalid title!",
+                11 < len(name) < 3,
+                f"**{name}** is an invalid name!",
                 "It must be between 3 and 11 characters.",
             )
             or await self.check(
@@ -83,7 +83,7 @@ class Shop(GroupCog, name="shop"):
             )
             return
 
-        item = ItemData.create(title, price, user.id, description)
+        item = ItemData.create(name, price, user.id, description)
 
         await channel.send(
             embed=discord.Embed(
@@ -91,7 +91,7 @@ class Shop(GroupCog, name="shop"):
                 title="📦 New Submission",
                 description=(
                     f"**ID**: `{item.id}`\n"
-                    f"**Title**: {item.title}\n"
+                    f"**Name**: {item.name}\n"
                     f"**Price**: {number(item.price)} {get_emoji('coin')}\n"
                     f"**Description**: {item.description or 'N/A'}\n"
                     f"**Author**: {interaction.user.mention}\n"
@@ -108,7 +108,7 @@ class Shop(GroupCog, name="shop"):
                 f"{interaction.user.mention}, item sent for review! 🕵️\n\n"
                 f"Item information:\n"
                 f"**ID**: `{item.id}`\n"
-                f"**Title**: {item.title}\n"
+                f"**Name**: {item.name}\n"
                 f"**Price**: {number(item.price)} {get_emoji('coin')}\n"
                 f"**Description**: {item.description or 'N/A'}\n"
                 f"**Author**: {interaction.user.mention}"

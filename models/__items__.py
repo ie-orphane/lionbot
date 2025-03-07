@@ -13,7 +13,7 @@ from typing import Literal
 class ItemData(Collection):
     BASE = "items"
     id: str
-    title: str
+    name: str
     price: float
     created_at: datetime
     author_id: int
@@ -69,14 +69,15 @@ class ItemData(Collection):
             return None
 
     @classmethod
-    def create(cls, title: str, price: float, author_id: int, description: str = None):
+    def create(cls, name: str, price: float, author_id: int, description: str = None):
         item = cls(
             id=cls.__get_id(),
-            title=title,
+            name=name,
             price=price,
             author_id=author_id,
             created_at=str(datetime.now(UTC)),
         )
+
         if description is not None:
             item.description = description
 
