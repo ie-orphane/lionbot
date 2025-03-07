@@ -99,6 +99,10 @@ class UserData(Collection):
     @property
     def challenges(self):
         return [UserChallenge(**challenge_data) for challenge_data in self._challenges]
+    
+    @property
+    def mention(self):
+        return f"<@{self.id}>"
 
     def sub_coins(self, amount: int, reason: str):
         with open(os.path.join(os.path.abspath(env.BASE_DIR), "data", "transactions.csv"), "a") as f:
