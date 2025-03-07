@@ -20,6 +20,7 @@ class ItemData(Collection):
     description: str = None
     denied_at: datetime = None
     approved_at: datetime = None
+    feedback: str = None
     status: Literal["pending", "denied", "approved"] = "pending"
 
     @property

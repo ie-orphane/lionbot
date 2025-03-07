@@ -8,7 +8,7 @@ from utils import Log
 from config import get_config, get_user
 from discord.ext import commands
 from consts import EXCLUDE_FILES
-from ui import QuizView, QuizButton
+from ui import QuizView, QuizButton, ItemView
 
 
 class DiscordBot(commands.Bot):
@@ -50,6 +50,7 @@ class DiscordBot(commands.Bot):
         Log.info("Cogs", f"{len(await self.tree.sync())} Slash Command(s).")
 
         self.add_view(QuizView())
+        self.add_view(ItemView(self))
         self.add_dynamic_items(QuizButton)
 
     async def on_ready(self):

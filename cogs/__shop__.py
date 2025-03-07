@@ -6,6 +6,7 @@ from utils import number
 from cogs import GroupCog
 from models import ItemData
 from consts import COLOR
+from ui import ItemView
 
 
 @discord.app_commands.guild_only()
@@ -86,16 +87,18 @@ class Shop(GroupCog, name="shop"):
 
         await channel.send(
             embed=discord.Embed(
-                color=COLOR.blue,
+                color=COLOR.orange,
                 title="📦 New Submission",
                 description=(
                     f"**ID**: `{item.id}`\n"
                     f"**Title**: {item.title}\n"
                     f"**Price**: {number(item.price)} {get_emoji('coin')}\n"
                     f"**Description**: {item.description or 'N/A'}\n"
-                    f"**Author**: {interaction.user.mention}"
+                    f"**Author**: {interaction.user.mention}\n"
+                    f"**Status**: Pending ⏳"
                 ),
-            )
+            ),
+            view=ItemView(self.bot),
         )
 
         embed = discord.Embed(
