@@ -3,6 +3,8 @@ from consts import COLOR
 import traceback
 import env
 import re
+from io import BytesIO
+import requests
 from datetime import datetime, UTC
 from config import get_emoji
 from models import ItemData, UserData
@@ -313,10 +315,16 @@ class ItemReView(discord.ui.View):
             f"By: {item.author.mention} ({item.author.name})"
         )
 
+        response = requests.get(item.image)
+        file = None
+        if response.status_code == 200:
+            file = discord.File(BytesIO(response.content), filename=f"{item.name}.png")
+
         await channel.create_thread(
             name=f"{item.name}",
             content=message,
             view=ItemBuyView(self.bot).add_item(ItemBuyBtn(item.id)),
+            file=file,
         )
 
         await interaction.followup.send(

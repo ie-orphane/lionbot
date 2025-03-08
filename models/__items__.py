@@ -22,6 +22,7 @@ class ItemData(Collection):
     denied_at: datetime = None
     approved_at: datetime = None
     feedback: str = None
+    image: str = None
     status: Literal["pending", "denied", "approved"] = "pending"
 
     @property
