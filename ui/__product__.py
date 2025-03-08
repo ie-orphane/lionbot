@@ -7,16 +7,16 @@ from io import BytesIO
 import requests
 from datetime import datetime, UTC
 from config import get_emoji
-from models import ItemData, UserData
+from models import ProductData, UserData
 from utils import number
 
 
-__all__ = ["ItemReView", "ItemBuyBtn", "ItemBuyView"]
+__all__ = ["ProductReView", "ProductBuyBtn", "ProductBuyView"]
 
 
-class ItemModal(discord.ui.Modal, title="Feedback"):
+class ProductModal(discord.ui.Modal, title="Feedback"):
     feedback = discord.ui.TextInput(
-        label="What do you think is wrong about this item?",
+        label="What is the issue with this product?",
         style=discord.TextStyle.long,
         placeholder="Type your feedback here...",
         min_length=41,
@@ -38,15 +38,15 @@ class ItemModal(discord.ui.Modal, title="Feedback"):
             _id = match.group(1)
 
         if _id is None:
-            raise ValueError("Failed to get item ID.")
+            raise ValueError("Failed to get product ID.")
 
-        if (item := ItemData.read(_id)) is None:
-            raise ValueError("Failed to get item data.")
+        if (product := ProductData.read(_id)) is None:
+            raise ValueError("Failed to get product data.")
 
-        item.feedback = self.feedback.value
-        item.status = "denied"
-        item.denied_at = str(datetime.now(UTC))
-        item.update()
+        product.feedback = self.feedback.value
+        product.status = "denied"
+        product.denied_at = str(datetime.now(UTC))
+        product.update()
 
         embed.color = COLOR.red
         embed.description = (
@@ -58,7 +58,9 @@ class ItemModal(discord.ui.Modal, title="Feedback"):
         await interaction.followup.send(
             embed=discord.Embed(
                 color=COLOR.red,
-                description=(f"Item Denied!\n\n**Feedback:**\n{self.feedback.value}"),
+                description=(
+                    f"Product Denied!\n\n**Feedback:**\n{self.feedback.value}"
+                ),
             ),
             ephemeral=True,
         )
@@ -72,7 +74,7 @@ class ItemModal(discord.ui.Modal, title="Feedback"):
             file.writelines(
                 [
                     f"User: {interaction.user.display_name} ({interaction.user.id})\n",
-                    f"Interaction: item:modal ({interaction.id})\n",
+                    f"Interaction: product:modal ({interaction.id})\n",
                     f"Server: {interaction.guild} #{interaction.channel}\n",
                     f"Error: {error}\n",
                 ]
@@ -100,7 +102,7 @@ class ItemModal(discord.ui.Modal, title="Feedback"):
                 color=COLOR.red,
                 description=(
                     f"User: {interaction.user.mention} ({interaction.user.id})\n"
-                    f"Interaction: ItemModal ({interaction.id})\n"
+                    f"Interaction: ProductModal ({interaction.id})\n"
                     f"Server: {interaction.guild} #{interaction.channel}\n"
                     f"Log: `{log_id}`\n"
                     f"Error: {error}\n"
@@ -110,7 +112,7 @@ class ItemModal(discord.ui.Modal, title="Feedback"):
         )
 
 
-class ItemBuyBtn(
+class ProductBuyBtn(
     discord.ui.DynamicItem[discord.ui.Button], template=r"(?P<id>[0-9a-zA-Z]+)"
 ):
     def __init__(self, _id: str) -> None:
@@ -136,7 +138,7 @@ class ItemBuyBtn(
                     color=COLOR.red,
                     description=(
                         f"✋ {interaction.user.mention}, \n"
-                        + "you need to register before buying this item.\n"
+                        + "you need to register before buying this product.\n"
                         + "Use the `/register` command."
                     ),
                 ),
@@ -144,58 +146,58 @@ class ItemBuyBtn(
             )
             return
 
-        item: ItemData = ItemData.read(self.id)
+        product: ProductData = ProductData.read(self.id)
 
-        if item.buyers is not None and user.id in item.buyers:
+        if product.buyers is not None and user.id in product.buyers:
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=COLOR.red,
                     description=(
                         f"🫣 {interaction.user.mention},\n"
-                        f"You've already bought **{item.name}**."
+                        f"You've already bought **{product.name}**."
                     ),
                 ),
                 ephemeral=True,
             )
             return
 
-        if item is None or item.status != "approved":
+        if product is None or product.status != "approved":
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=COLOR.red,
-                    description=f"😔 {interaction.user.mention},\n**{item.name}** is no longer available.",
+                    description=f"😔 {interaction.user.mention},\n**{product.name}** is no longer available.",
                 ),
                 ephemeral=True,
             )
             return
 
-        if user.coins < item.price:
+        if user.coins < product.price:
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=COLOR.red,
                     description=(
                         f"😔 {interaction.user.mention},\n"
-                        f"You need {number(item.price - user.coins)} more {get_emoji('coin')} to buy **{item.name}**."
+                        f"You need {number(product.price - user.coins)} more {get_emoji('coin')} to buy **{product.name}**."
                     ),
                 ),
                 ephemeral=True,
             )
             return
 
-        item.buy(user)
+        product.buy(user)
 
         original = await interaction.original_response()
         if re.search(r"Purchases: `(\d+)`", original.content):
             await original.edit(
                 content=re.sub(
                     r"Purchases: `(\d+)`",
-                    f"Purchases: `{len(item.buyers)}`",
+                    f"Purchases: `{len(product.buyers)}`",
                     original.content,
                 )
             )
         else:
             lines = original.content.split("\n")
-            lines.insert(-1, f"Purchases: `{len(item.buyers)}`")
+            lines.insert(-1, f"Purchases: `{len(product.buyers)}`")
             await original.edit(content="\n".join(lines))
 
         await interaction.followup.send(
@@ -203,14 +205,14 @@ class ItemBuyBtn(
                 color=COLOR.green,
                 description=(
                     f"🎉 {interaction.user.mention},\n"
-                    f"You've successfully bought **{item.name}** for {number(item.price)} {get_emoji('coin')}."
+                    f"You've successfully bought **{product.name}** for {number(product.price)} {get_emoji('coin')}."
                 ),
             ),
             ephemeral=True,
         )
 
 
-class ItemBuyView(discord.ui.View):
+class ProductBuyView(discord.ui.View):
     def __init__(self, bot):
         super().__init__(timeout=None)
         self.bot = bot
@@ -219,7 +221,7 @@ class ItemBuyView(discord.ui.View):
         self,
         interaction: discord.Interaction,
         error: Exception,
-        item: discord.ui.Button,
+        product: discord.ui.Button,
     ) -> None:
         log_id = int(datetime.now(UTC).timestamp())
         log_dir = f"{env.BASE_DIR}/storage/errors"
@@ -227,7 +229,7 @@ class ItemBuyView(discord.ui.View):
             file.writelines(
                 [
                     f"User: {interaction.user.display_name} ({interaction.user.id})\n",
-                    f"Interaction: {item.custom_id} ({interaction.id})\n",
+                    f"Interaction: {product.custom_id} ({interaction.id})\n",
                     f"Server: {interaction.guild} #{interaction.channel}\n",
                     f"Error: {error}\n",
                 ]
@@ -255,7 +257,7 @@ class ItemBuyView(discord.ui.View):
                 color=COLOR.red,
                 description=(
                     f"User: {interaction.user.mention} ({interaction.user.id})\n"
-                    f"Interaction: {item.custom_id} ({interaction.id})\n"
+                    f"Interaction: {product.custom_id} ({interaction.id})\n"
                     f"Server: {interaction.guild} #{interaction.channel}\n"
                     f"Log: `{log_id}`\n"
                     f"Error: {error}\n"
@@ -265,13 +267,13 @@ class ItemBuyView(discord.ui.View):
         )
 
 
-class ItemReView(discord.ui.View):
+class ProductReView(discord.ui.View):
     def __init__(self, bot):
         super().__init__(timeout=None)
         self.bot = bot
 
     @discord.ui.button(
-        emoji=get_emoji("yes", None), label="Approve", custom_id="item:btn:approve"
+        emoji=get_emoji("yes", None), label="Approve", custom_id="product:btn:approve"
     )
     async def approve(
         self, interaction: discord.Interaction, button: discord.ui.Button
@@ -286,10 +288,10 @@ class ItemReView(discord.ui.View):
             _id = match.group(1)
 
         if _id is None:
-            raise Exception("Failed to get item ID.")
+            raise Exception("Failed to get product ID.")
 
-        if (item := ItemData.read(_id)) is None:
-            raise Exception("Failed to get item data.")
+        if (product := ProductData.read(_id)) is None:
+            raise Exception("Failed to get product data.")
 
         channel: discord.ForumChannel = self.bot.get_listed_channel(
             channel_name="shop", is_text_channel=False
@@ -297,9 +299,9 @@ class ItemReView(discord.ui.View):
         if channel is None:
             raise Exception("Shop channel not found")
 
-        item.status = "approved"
-        item.approved_at = str(datetime.now(UTC))
-        item.update()
+        product.status = "approved"
+        product.approved_at = str(datetime.now(UTC))
+        product.update()
 
         embed.color = COLOR.green
         embed.description = embed.description.replace(
@@ -308,44 +310,47 @@ class ItemReView(discord.ui.View):
         await original.edit(embed=embed, view=None)
 
         message = ""
-        if item.description is not None:
-            message = f"{item.description}\n"
+        if product.description is not None:
+            message = f"{product.description}\n"
         message += (
-            f"Price: {number(item.price)} {get_emoji('coin')}\n"
-            f"By: {item.author.mention} ({item.author.name})"
+            f"Price: {number(product.price)} {get_emoji('coin')}\n"
+            f"By: {product.author.mention} ({product.author.name})"
         )
 
-        response = requests.get(item.image)
-        file = None
-        if response.status_code == 200:
-            file = discord.File(BytesIO(response.content), filename=f"{item.name}.png")
+        file = discord.utils.MISSING
+        if product.image is not None:
+            response = requests.get(product.image)
+            if response.status_code == 200:
+                file = discord.File(
+                    BytesIO(response.content), filename=f"{product.name}.png"
+                )
 
         await channel.create_thread(
-            name=f"{item.name}",
+            name=f"{product.name}",
             content=message,
-            view=ItemBuyView(self.bot).add_item(ItemBuyBtn(item.id)),
+            view=ProductBuyView(self.bot).add_item(ProductBuyBtn(product.id)),
             file=file,
         )
 
         await interaction.followup.send(
             embed=discord.Embed(
                 color=COLOR.green,
-                description="Item Approved!",
+                description="Product Approved!",
             ),
             ephemeral=True,
         )
 
     @discord.ui.button(
-        emoji=get_emoji("no", None), label="Deny", custom_id="item:btn:deny"
+        emoji=get_emoji("no", None), label="Deny", custom_id="product:btn:deny"
     )
     async def deny(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_modal(ItemModal(self.bot))
+        await interaction.response.send_modal(ProductModal(self.bot))
 
     async def on_error(
         self,
         interaction: discord.Interaction,
         error: Exception,
-        item: discord.ui.Button,
+        product: discord.ui.Button,
     ) -> None:
         log_id = int(datetime.now(UTC).timestamp())
         log_dir = f"{env.BASE_DIR}/storage/errors"
@@ -353,7 +358,7 @@ class ItemReView(discord.ui.View):
             file.writelines(
                 [
                     f"User: {interaction.user.display_name} ({interaction.user.id})\n",
-                    f"Interaction: {item.custom_id} ({interaction.id})\n",
+                    f"Interaction: {product.custom_id} ({interaction.id})\n",
                     f"Server: {interaction.guild} #{interaction.channel}\n",
                     f"Error: {error}\n",
                 ]
@@ -381,7 +386,7 @@ class ItemReView(discord.ui.View):
                 color=COLOR.red,
                 description=(
                     f"User: {interaction.user.mention} ({interaction.user.id})\n"
-                    f"Interaction: {item.custom_id} ({interaction.id})\n"
+                    f"Interaction: {product.custom_id} ({interaction.id})\n"
                     f"Server: {interaction.guild} #{interaction.channel}\n"
                     f"Log: `{log_id}`\n"
                     f"Error: {error}\n"

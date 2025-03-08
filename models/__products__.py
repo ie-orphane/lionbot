@@ -10,8 +10,8 @@ from datetime import datetime, UTC
 from typing import Literal
 
 
-class ItemData(Collection):
-    BASE = "items"
+class ProductData(Collection):
+    BASE = "products"
     id: str
     name: str
     price: float
@@ -72,7 +72,7 @@ class ItemData(Collection):
 
     @classmethod
     def create(cls, name: str, price: float, author_id: int, description: str):
-        item = cls(
+        product = cls(
             id=cls.__get_id(),
             name=name,
             price=price,
@@ -81,7 +81,7 @@ class ItemData(Collection):
             description=description,
         )
 
-        return item.update()
+        return product.update()
 
     def buy(self, buyer: UserData):
         self.buyers = self.buyers or []

@@ -4,13 +4,13 @@ from discord.ext import commands
 from config import get_emoji
 from utils import number
 from cogs import GroupCog
-from models import ItemData
+from models import ProductData
 from consts import COLOR
-from ui import ItemReView
+from ui import ProductReView
 
 
 @discord.app_commands.guild_only()
-class Shop(GroupCog, name="shop"):
+class Product(GroupCog, name="product"):
     @staticmethod
     async def check(
         interaction: discord.Interaction, check: bool, body: str, foot: str
@@ -26,12 +26,12 @@ class Shop(GroupCog, name="shop"):
             )
         return check
 
-    @discord.app_commands.command(description="Add new item in the shop.")
+    @discord.app_commands.command(description="Add new product in the shop.")
     @discord.app_commands.describe(
-        _name="Item's name",
-        _description="Item's description",
-        price="Item's price",
-        image="Item's image",
+        _name="Product's name",
+        _description="Product's description",
+        price="Product's price",
+        image="Product's image",
     )
     @discord.app_commands.rename(_name="name", _description="description")
     async def add(
@@ -83,7 +83,7 @@ class Shop(GroupCog, name="shop"):
             )
             return
 
-        item = ItemData.create(name, price, user.id, description)
+        product = ProductData.create(name, price, user.id, description)
         if image is not None:
             if image.content_type is None or not image.content_type.startswith(
                 "image/"
@@ -105,23 +105,23 @@ class Shop(GroupCog, name="shop"):
                     ephemeral=True,
                 )
                 return
-            item.image = image.url
-            item.update()
+            product.image = image.url
+            product.update()
 
         await channel.send(
             embed=discord.Embed(
                 color=COLOR.orange,
                 title="📦 New Submission",
                 description=(
-                    f"**ID**: `{item.id}`\n"
-                    f"**Name**: {item.name}\n"
-                    f"**Price**: {number(item.price)} {get_emoji('coin')}\n"
-                    f"**Description**: {item.description}\n"
-                    f"**Author**: {interaction.user.mention} ({item.author.name})\n"
+                    f"**ID**: `{product.id}`\n"
+                    f"**Name**: {product.name}\n"
+                    f"**Price**: {number(product.price)} {get_emoji('coin')}\n"
+                    f"**Description**: {product.description}\n"
+                    f"**Author**: {interaction.user.mention} ({product.author.name})\n"
                     f"**Status**: Pending ⏳"
                 ),
-            ).set_image(url=item.image),
-            view=ItemReView(self.bot),
+            ).set_image(url=product.image),
+            view=ProductReView(self.bot),
         )
 
         embed = (
@@ -129,19 +129,19 @@ class Shop(GroupCog, name="shop"):
                 color=self.color.green,
                 title="✅ Submission Succeeded",
                 description=(
-                    f"{interaction.user.mention}, item sent for review! 🕵️\n\n"
-                    f"**ID**: `{item.id}`\n"
-                    f"**Name**: {item.name}\n"
-                    f"**Price**: {number(item.price)} {get_emoji('coin')}\n"
-                    f"**Description**: {item.description}"
+                    f"{interaction.user.mention}, product sent for review! 🕵️\n\n"
+                    f"**ID**: `{product.id}`\n"
+                    f"**Name**: {product.name}\n"
+                    f"**Price**: {number(product.price)} {get_emoji('coin')}\n"
+                    f"**Description**: {product.description}"
                 ),
             )
             .set_footer(text="Please be patient. ⏳")
-            .set_image(url=item.image)
+            .set_image(url=product.image)
         )
 
         await interaction.followup.send(embed=embed)
 
 
 async def setup(bot: commands.Bot):
-    await bot.add_cog(Shop(bot))
+    await bot.add_cog(Product(bot))
