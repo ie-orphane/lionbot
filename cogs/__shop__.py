@@ -36,7 +36,7 @@ class Shop(GroupCog, name="shop"):
         interaction: discord.Interaction,
         _name: discord.app_commands.Range[str, 3, 11],
         price: int,
-        _description: discord.app_commands.Range[str, 11, 97] = None,
+        _description: discord.app_commands.Range[str, 11, 97],
     ):
         await interaction.response.defer(ephemeral=True)
 
@@ -44,11 +44,7 @@ class Shop(GroupCog, name="shop"):
             return
 
         name = re.sub(r"\s+", " ", _name).strip()
-        description = (
-            re.sub(r"\s+", " ", _description).strip()
-            if _description is not None
-            else None
-        )
+        description = re.sub(r"\s+", " ", _description).strip()
 
         if (
             await self.check(
@@ -65,7 +61,7 @@ class Shop(GroupCog, name="shop"):
             )
             or await self.check(
                 interaction,
-                description is not None and 97 < len(description) < 11,
+                97 < len(description) < 11,
                 f"**{description}** is an invalid description!",
                 "It must be between 11 and 97 characters.",
             )
@@ -93,7 +89,7 @@ class Shop(GroupCog, name="shop"):
                     f"**ID**: `{item.id}`\n"
                     f"**Name**: {item.name}\n"
                     f"**Price**: {number(item.price)} {get_emoji('coin')}\n"
-                    f"**Description**: {item.description or 'N/A'}\n"
+                    f"**Description**: {item.description}\n"
                     f"**Author**: {interaction.user.mention} ({item.author.name})\n"
                     f"**Status**: Pending ⏳"
                 ),
@@ -109,7 +105,7 @@ class Shop(GroupCog, name="shop"):
                 f"**ID**: `{item.id}`\n"
                 f"**Name**: {item.name}\n"
                 f"**Price**: {number(item.price)} {get_emoji('coin')}\n"
-                f"**Description**: {item.description or 'N/A'}"
+                f"**Description**: {item.description}"
             ),
         ).set_footer(text="Please be patient. ⏳")
 

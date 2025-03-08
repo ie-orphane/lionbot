@@ -17,7 +17,7 @@ class ItemData(Collection):
     price: float
     created_at: datetime
     author_id: int
-    description: str = None
+    description: str
     denied_at: datetime = None
     approved_at: datetime = None
     feedback: str = None
@@ -69,16 +69,14 @@ class ItemData(Collection):
             return None
 
     @classmethod
-    def create(cls, name: str, price: float, author_id: int, description: str = None):
+    def create(cls, name: str, price: float, author_id: int, description: str):
         item = cls(
             id=cls.__get_id(),
             name=name,
             price=price,
             author_id=author_id,
             created_at=str(datetime.now(UTC)),
+            description=description,
         )
-
-        if description is not None:
-            item.description = description
 
         return item.update()
