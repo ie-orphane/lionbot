@@ -18,6 +18,7 @@ class ItemData(Collection):
     created_at: datetime
     author_id: int
     description: str
+    buyers: list[int] = None
     denied_at: datetime = None
     approved_at: datetime = None
     feedback: str = None
@@ -80,3 +81,10 @@ class ItemData(Collection):
         )
 
         return item.update()
+
+    def buy(self, buyer: UserData):
+        self.buyers = self.buyers or []
+        self.buyers.append(int(buyer.id))
+        self.author.add_coins(self.price, f"{self.name} purchase")
+        buyer.sub_coins(self.price, f"{self.name} purchase")
+        return self.update()

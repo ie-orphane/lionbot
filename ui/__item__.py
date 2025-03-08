@@ -5,7 +5,7 @@ import env
 import re
 from datetime import datetime, UTC
 from config import get_emoji
-from models import ItemData
+from models import ItemData, UserData
 from utils import number
 
 
@@ -128,9 +128,84 @@ class ItemBuyBtn(
     async def callback(self, interaction: discord.Interaction) -> None:
         await interaction.response.defer(ephemeral=True)
 
-        item: ItemData = ItemData.read(self.id)
-        item.update()
+        if (user := UserData.read(interaction.user.id)) is None:
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    color=COLOR.red,
+                    description=(
+                        f"✋ {interaction.user.mention}, \n"
+                        + "you need to register before buying this item.\n"
+                        + "Use the `/register` command."
+                    ),
+                ),
+                ephemeral=True,
+            )
+            return
 
+        item: ItemData = ItemData.read(self.id)
+
+        if item.buyers is not None and user.id in item.buyers:
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    color=COLOR.red,
+                    description=(
+                        f"🫣 {interaction.user.mention},\n"
+                        f"You've already bought **{item.name}**."
+                    ),
+                ),
+                ephemeral=True,
+            )
+            return
+
+        if item is None or item.status != "approved":
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    color=COLOR.red,
+                    description=f"😔 {interaction.user.mention},\n**{item.name}** is no longer available.",
+                ),
+                ephemeral=True,
+            )
+            return
+
+        if user.coins < item.price:
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    color=COLOR.red,
+                    description=(
+                        f"😔 {interaction.user.mention},\n"
+                        f"You need {number(item.price - user.coins)} more {get_emoji('coin')} to buy **{item.name}**."
+                    ),
+                ),
+                ephemeral=True,
+            )
+            return
+
+        item.buy(user)
+
+        original = await interaction.original_response()
+        if re.search(r"Purchases: `(\d+)`", original.content):
+            await original.edit(
+                content=re.sub(
+                    r"Purchases: `(\d+)`",
+                    f"Purchases: `{len(item.buyers)}`",
+                    original.content,
+                )
+            )
+        else:
+            lines = original.content.split("\n")
+            lines.insert(-1, f"Purchases: `{len(item.buyers)}`")
+            await original.edit(content="\n".join(lines))
+
+        await interaction.followup.send(
+            embed=discord.Embed(
+                color=COLOR.green,
+                description=(
+                    f"🎉 {interaction.user.mention},\n"
+                    f"You've successfully bought **{item.name}** for {number(item.price)} {get_emoji('coin')}."
+                ),
+            ),
+            ephemeral=True,
+        )
 
 
 class ItemBuyView(discord.ui.View):
