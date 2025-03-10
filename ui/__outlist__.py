@@ -1,7 +1,7 @@
 import discord
 import env
 from config import get_emoji
-from utils import get_week, open_file, number
+from utils import get_week, open_file, number, on_error
 import datetime as dt
 from consts import COLOR
 from zoneinfo import ZoneInfo
@@ -129,3 +129,11 @@ class OutlistView(discord.ui.View):
         embed.description += f"\n\n**Escaper(s)**:\n- {interaction.user.mention}"
 
         await original.edit(embed=original.embeds[0], view=self)
+
+    async def on_error(
+        self,
+        interaction: discord.Interaction,
+        error: Exception,
+        item: discord.ui.Button | discord.ui.Select,
+    ):
+        return await on_error(self, interaction, error, item.custom_id)

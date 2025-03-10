@@ -3,6 +3,7 @@ import re
 from config import get_reaction
 from models import QuizData
 from consts import COLOR
+from utils import on_error
 
 
 class QuizButton(
@@ -55,3 +56,11 @@ class QuizButton(
 class QuizView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
+
+    async def on_error(
+        self,
+        interaction: discord.Interaction,
+        error: Exception,
+        item: discord.ui.Button | discord.ui.Select,
+    ):
+        return await on_error(self, interaction, error, item.custom_id)

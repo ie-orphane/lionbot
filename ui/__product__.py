@@ -1,14 +1,12 @@
 import discord
 from consts import COLOR
-import traceback
-import env
 import re
 from io import BytesIO
 import requests
 from datetime import datetime, UTC
 from config import get_emoji
 from models import ProductData, UserData
-from utils import number
+from utils import number, on_error
 
 
 __all__ = ["ProductReView", "ProductBuyBtn", "ProductBuyView"]
@@ -68,48 +66,7 @@ class ProductModal(discord.ui.Modal, title="Feedback"):
     async def on_error(
         self, interaction: discord.Interaction, error: Exception
     ) -> None:
-        log_id = int(datetime.now(UTC).timestamp())
-        log_dir = f"{env.BASE_DIR}/storage/errors"
-        with open(f"{log_dir}/{log_id}.log", "w") as file:
-            file.writelines(
-                [
-                    f"User: {interaction.user.display_name} ({interaction.user.id})\n",
-                    f"Interaction: product:modal ({interaction.id})\n",
-                    f"Server: {interaction.guild} #{interaction.channel}\n",
-                    f"Error: {error}\n",
-                ]
-            )
-            traceback.print_exc(file=file)
-
-        await interaction.followup.send(
-            embed=discord.Embed(
-                color=COLOR.red,
-                description=(
-                    "**Oops!** The bot sometimes takes a nap. 💤\n"
-                    "Don't worry, we'll fix the issue as soon as possible!\n\n"
-                    f"📝 **Error ID:** `{log_id}`"
-                ),
-            ).set_footer(
-                text="If this error occurs multiple times, please contact the owner."
-            )
-        )
-
-        if (error_channel := self.bot.get_listed_channel("error")) is None:
-            return
-
-        await error_channel.send(
-            embed=discord.Embed(
-                color=COLOR.red,
-                description=(
-                    f"User: {interaction.user.mention} ({interaction.user.id})\n"
-                    f"Interaction: ProductModal ({interaction.id})\n"
-                    f"Server: {interaction.guild} #{interaction.channel}\n"
-                    f"Log: `{log_id}`\n"
-                    f"Error: {error}\n"
-                    f"```\n{traceback.format_exc()}\n```"
-                ),
-            )
-        )
+        return await on_error(self, interaction, error, "product:modal")
 
 
 class ProductBuyBtn(
@@ -221,50 +178,9 @@ class ProductBuyView(discord.ui.View):
         self,
         interaction: discord.Interaction,
         error: Exception,
-        product: discord.ui.Button,
-    ) -> None:
-        log_id = int(datetime.now(UTC).timestamp())
-        log_dir = f"{env.BASE_DIR}/storage/errors"
-        with open(f"{log_dir}/{log_id}.log", "w") as file:
-            file.writelines(
-                [
-                    f"User: {interaction.user.display_name} ({interaction.user.id})\n",
-                    f"Interaction: {product.custom_id} ({interaction.id})\n",
-                    f"Server: {interaction.guild} #{interaction.channel}\n",
-                    f"Error: {error}\n",
-                ]
-            )
-            traceback.print_exc(file=file)
-
-        await interaction.followup.send(
-            embed=discord.Embed(
-                color=COLOR.red,
-                description=(
-                    "**Oops!** The bot sometimes takes a nap. 💤\n"
-                    "Don't worry, we'll fix the issue as soon as possible!\n\n"
-                    f"📝 **Error ID:** `{log_id}`"
-                ),
-            ).set_footer(
-                text="If this error occurs multiple times, please contact the owner."
-            )
-        )
-
-        if (error_channel := self.bot.get_listed_channel("error")) is None:
-            return
-
-        await error_channel.send(
-            embed=discord.Embed(
-                color=COLOR.red,
-                description=(
-                    f"User: {interaction.user.mention} ({interaction.user.id})\n"
-                    f"Interaction: {product.custom_id} ({interaction.id})\n"
-                    f"Server: {interaction.guild} #{interaction.channel}\n"
-                    f"Log: `{log_id}`\n"
-                    f"Error: {error}\n"
-                    f"```\n{traceback.format_exc()}\n```"
-                ),
-            )
-        )
+        item: discord.ui.Button | discord.ui.Select,
+    ):
+        return await on_error(self, interaction, error, item.custom_id)
 
 
 class ProductReView(discord.ui.View):
@@ -350,47 +266,6 @@ class ProductReView(discord.ui.View):
         self,
         interaction: discord.Interaction,
         error: Exception,
-        product: discord.ui.Button,
-    ) -> None:
-        log_id = int(datetime.now(UTC).timestamp())
-        log_dir = f"{env.BASE_DIR}/storage/errors"
-        with open(f"{log_dir}/{log_id}.log", "w") as file:
-            file.writelines(
-                [
-                    f"User: {interaction.user.display_name} ({interaction.user.id})\n",
-                    f"Interaction: {product.custom_id} ({interaction.id})\n",
-                    f"Server: {interaction.guild} #{interaction.channel}\n",
-                    f"Error: {error}\n",
-                ]
-            )
-            traceback.print_exc(file=file)
-
-        await interaction.followup.send(
-            embed=discord.Embed(
-                color=COLOR.red,
-                description=(
-                    "**Oops!** The bot sometimes takes a nap. 💤\n"
-                    "Don't worry, we'll fix the issue as soon as possible!\n\n"
-                    f"📝 **Error ID:** `{log_id}`"
-                ),
-            ).set_footer(
-                text="If this error occurs multiple times, please contact the owner."
-            )
-        )
-
-        if (error_channel := self.bot.get_listed_channel("error")) is None:
-            return
-
-        await error_channel.send(
-            embed=discord.Embed(
-                color=COLOR.red,
-                description=(
-                    f"User: {interaction.user.mention} ({interaction.user.id})\n"
-                    f"Interaction: {product.custom_id} ({interaction.id})\n"
-                    f"Server: {interaction.guild} #{interaction.channel}\n"
-                    f"Log: `{log_id}`\n"
-                    f"Error: {error}\n"
-                    f"```\n{traceback.format_exc()}\n```"
-                ),
-            )
-        )
+        item: discord.ui.Button | discord.ui.Select,
+    ):
+        return await on_error(self, interaction, error, item.custom_id)
