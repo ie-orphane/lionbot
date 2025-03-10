@@ -200,10 +200,6 @@ class WakatimeApi:
                         count += 1
 
                         if response.status == 200:
-                            # Log.info(
-                            #     "WAKATIME",
-                            #     f"{count:>2} {user.name:<21}: {time.time() - start_time:.3f}",
-                            # )
                             if not (
                                 (
                                     user_summary := cls.__get_weekly_summary(
@@ -221,7 +217,7 @@ class WakatimeApi:
 
             Log.info(
                 "WAKATIME",
-                f"{count}/{all_count} ({count/all_count:%})  :  {time.time() - first_time:.2f} ({time.time() - first_time - sleeped:.2f})",
+                f"{count}/{all_count} ({count/all_count:.2%})  :  {time.time() - first_time:.2f} ({time.time() - first_time - sleeped:.2f})",
             )
 
             if len(users) == 0:

@@ -2,7 +2,7 @@ import discord
 import env
 from api import wakapi
 from discord.ext import commands, tasks
-from utils import Log, get_week, leaderboard_image
+from utils import Log, get_week, charts
 from datetime import datetime
 from config import get_message, set_message, get_config
 from zoneinfo import ZoneInfo
@@ -44,7 +44,7 @@ async def leaderboard(bot: commands.Bot):
         ]
 
         if len(all_users) > 0:
-            leaderboard_image(
+            await charts.leaderboard(
                 "top",
                 "global",
                 all_users[: len(all_users) // 3],
@@ -52,12 +52,12 @@ async def leaderboard(bot: commands.Bot):
                 start=current_week.human_readable_start,
                 end=current_week.human_readable_end,
             )
-            leaderboard_image(
+            await charts.leaderboard(
                 "middle",
                 "global",
                 all_users[len(all_users) // 3 : 2 * len(all_users) // 3],
             )
-            leaderboard_image(
+            await charts.leaderboard(
                 "bottom",
                 "global",
                 all_users[2 * len(all_users) // 3 :],
@@ -65,7 +65,7 @@ async def leaderboard(bot: commands.Bot):
             )
 
         for training, coders in trainings_summary.items():
-            leaderboard_image(
+            await charts.leaderboard(
                 "top",
                 training,
                 coders[: len(coders) // 2],
@@ -73,7 +73,7 @@ async def leaderboard(bot: commands.Bot):
                 start=current_week.human_readable_start,
                 end=current_week.human_readable_end,
             )
-            leaderboard_image(
+            await charts.leaderboard(
                 "bottom", training, coders[len(coders) // 2 :], time=current_time
             )
 

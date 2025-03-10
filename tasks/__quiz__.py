@@ -61,7 +61,7 @@ async def quiz(bot: commands.Bot):
                     f"\n\n:book: **Explanation**:\n{current_quiz.explanation}"
                 )
             if shoW_details:
-                charts.answers(
+                await charts.answers(
                     answers, current_quiz.correct_answers.values(), "summary"
                 )
                 file = discord.File(

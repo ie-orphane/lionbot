@@ -1,8 +1,6 @@
 import pickle
 import json
 import os
-import matplotlib
-import matplotlib.pyplot as plt
 from .__colorful__ import Color as clr
 from typing import Literal
 from datetime import datetime, timedelta, date, UTC
@@ -10,7 +8,6 @@ from datetime import datetime, timedelta, date, UTC
 
 __all__ = [
     "get_week",
-    "leaderboard_image",
     "open_file",
     "log",
     "get_files",
@@ -20,19 +17,16 @@ __all__ = [
 
 
 def convert_seconds(total_seconds: int) -> str:
-    # Define time units in seconds
     time_units = [
-        ("y", 365 * 24 * 3600),  # 1 year = 365 days
-        ("mo", 30 * 24 * 3600),  # 1 month = 30 days (approx)
-        ("d", 24 * 3600),  # 1 day = 24 hours
-        ("h", 3600),  # 1 hour = 3600 seconds
-        ("min", 60),  # 1 minute = 60 seconds
-        ("s", 1),  # 1 second = 1 second
+        ("y", 365 * 24 * 3600),
+        ("mo", 30 * 24 * 3600),
+        ("d", 24 * 3600),
+        ("h", 3600),
+        ("min", 60),
+        ("s", 1),
     ]
 
     result = []
-
-    # Loop through time units and calculate
     for label, unit in time_units:
         if total_seconds >= unit:
             value, total_seconds = divmod(total_seconds, unit)
@@ -132,105 +126,3 @@ def get_week(*, week_argument="last", end_date=None) -> Week | list:
             return weeks
         case _:
             return weeks[int(week_argument) - 1]
-
-
-def leaderboard_image(template: str, image: str, data: list, **heading_data: dict):
-    text_color = "white"
-    background_color = "black"
-
-    match template:
-        case "top":
-            ybottom = -0.5
-            x = -1
-            heading = f"ax.set_title('Week {heading_data['count']}  -  {heading_data['start']}  ~ {heading_data['end']}', pad=0, loc='center', va='top', fontsize=13, weight='bold', color=text_color)"
-
-        case "bottom":
-            ybottom = -1
-            x = 0
-            heading = f"plt.figtext(.5, .1, 'Last Update  -  {heading_data['time']}', fontsize=7.5,  ha='center', color=text_color)"
-
-        case "middle":
-            ybottom = -1
-            x = 0
-            heading = f""
-
-    # setting variables
-    w = 785
-    h = 43 * len(data)
-    rows = len(data) + 2  # number of rows that we want
-    cols = 8  # number of columns that we want
-
-    # setting structure
-    try:
-        fig, ax = plt.subplots(facecolor=background_color)
-    except AttributeError:
-        matplotlib.use("Agg")
-        fig, ax = plt.subplots(facecolor=background_color)
-
-    fig.set_size_inches(w / 100, h / 100)
-
-    ax.set_ylim(ybottom, rows)  #  y limits
-    ax.set_xlim(0, cols)  #  X limits
-
-    fig.tight_layout(rect=(0, 0, 1, 0.94))
-    ax.axis("off")  # removing all the spines
-
-    # iterating over each row of the dataframe and plot the text #FFD700 #CD7F32 #C0C0C0
-    for index, user in enumerate(data[::-1]):
-        # ploting all data
-        for xpos, name in [
-            (0.5, ""),
-            (0.75, "Coder"),
-            (2.875, "Total"),
-            (4.25, "Languages"),
-        ]:
-            ax.text(
-                x=xpos,
-                y=index + 1 + x,
-                s=user[name],
-                va="center",
-                color=text_color,
-                size=8.5 if name == "Coder" else 9.5,
-                weight="bold" if name == "Coder" else "normal",
-                ha="center" if name == "" else "left",
-            )
-
-    # Adding the headers
-    for xpos, name in [
-        (0.5, ""),
-        (0.75, "Coder"),
-        (2.875, "Total"),
-        (4.25, "Languages"),
-    ]:
-        ax.text(xpos, rows - 1 + x, name, weight="bold", size=11, color=text_color)
-
-    # Adding heading (title / footenote)
-    exec(heading)
-
-    # adds main line below the headers
-    ax.plot(
-        [0.25, cols - 0.25],
-        [rows - 1.375 + x, rows - 1.375 + x],
-        ls="-",
-        lw=1,
-        c=text_color,
-    )
-
-    # adds main line below the data
-    ax.plot([0.25, cols - 0.25], [0.5 + x, 0.5 + x], ls="-", lw=1, c=text_color)
-
-    # adds multiple lines below each row
-    for index in range(len(data)):
-        if index != 0:
-            ax.plot(
-                [0.25, cols - 0.2],
-                [index + 0.5 + x, index + 0.5 + x],
-                ls="-",
-                lw=".375",
-                c=text_color,
-            )
-
-    # save the figure as an image
-    fig.savefig(f"{__import__("env").BASE_DIR}/storage/images/{image}_{template}_leaderboard.png", format="png")
-
-    plt.close(fig)
