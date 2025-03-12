@@ -41,6 +41,26 @@ class ProductModal(discord.ui.Modal, title="Feedback"):
         if (product := ProductData.read(_id)) is None:
             raise ValueError("Failed to get product data.")
 
+        if (
+            user := await interaction.guild.fetch_member(product.author_id)
+        ) is not None:
+            try:
+                await user.send(
+                    embed=discord.Embed(
+                        color=COLOR.red,
+                        description=(
+                            f"Unfortunately, your product **{product.name}** has been denied. ❌\n\n"
+                            f"**Reason:**\n```\n{self.feedback.value}\n```\n\n"
+                        ),
+                    )
+                    .set_footer(
+                        text="Please review the feedback, make the necessary changes, and feel free to resubmit it."
+                    )
+                    .set_thumbnail(url=product.image)
+                )
+            except discord.Forbidden:
+                pass
+
         product.feedback = self.feedback.value
         product.status = "denied"
         product.denied_at = str(datetime.now(UTC))
@@ -57,7 +77,8 @@ class ProductModal(discord.ui.Modal, title="Feedback"):
             embed=discord.Embed(
                 color=COLOR.red,
                 description=(
-                    f"Product Denied!\n\n**Feedback:**\n{self.feedback.value}"
+                    f"The product **{product.name}** has been denied. ❌\n\n"
+                    f"**Feedback:**\n```\n{self.feedback.value}\n```"
                 ),
             ),
             ephemeral=True,
@@ -144,18 +165,37 @@ class ProductBuyBtn(
         product.buy(user)
 
         original = await interaction.original_response()
-        if re.search(r"Purchases: `(\d+)`", original.content):
+        if re.search(r"Sales: `(\d+)`", original.content):
             await original.edit(
                 content=re.sub(
-                    r"Purchases: `(\d+)`",
-                    f"Purchases: `{len(product.buyers)}`",
+                    r"Sales: `(\d+)`",
+                    f"Sales: `{len(product.buyers)}`",
                     original.content,
                 )
             )
         else:
             lines = original.content.split("\n")
-            lines.insert(-1, f"Purchases: `{len(product.buyers)}`")
+            lines.insert(-1, f"Sales: `{len(product.buyers)}`")
             await original.edit(content="\n".join(lines))
+
+        if (
+            user := await interaction.guild.fetch_member(product.author_id)
+        ) is not None:
+            try:
+                await user.send(
+                    embed=discord.Embed(
+                        color=COLOR.yellow,
+                        description=(
+                            f"Great news! Someone has just bought your product **{product.name}**! 🎉\n\n"
+                        ),
+                    )
+                    .set_footer(
+                        text="Thank you for being a part of our marketplace! We look forward to your continued success!"
+                    )
+                    .set_thumbnail(url=product.image)
+                )
+            except discord.Forbidden:
+                pass
 
         await interaction.followup.send(
             embed=discord.Embed(
@@ -164,7 +204,7 @@ class ProductBuyBtn(
                     f"🎉 {interaction.user.mention},\n"
                     f"You've successfully bought **{product.name}** for {number(product.price)} {get_emoji('coin')}."
                 ),
-            ),
+            ).set_thumbnail(url=product.image),
             ephemeral=True,
         )
 
@@ -172,7 +212,7 @@ class ProductBuyBtn(
 class ProductBuyView(discord.ui.View):
     def __init__(self, bot):
         super().__init__(timeout=None)
-        self.bot = bot
+        self.bot: discord.ext.commands.Bot = bot
 
     async def on_error(
         self,
@@ -186,7 +226,7 @@ class ProductBuyView(discord.ui.View):
 class ProductReView(discord.ui.View):
     def __init__(self, bot):
         super().__init__(timeout=None)
-        self.bot = bot
+        self.bot: discord.ext.commands.Bot = bot
 
     @discord.ui.button(
         emoji=get_emoji("yes", None), label="Approve", custom_id="product:btn:approve"
@@ -248,10 +288,31 @@ class ProductReView(discord.ui.View):
             file=file,
         )
 
+        if (
+            user := await interaction.guild.fetch_member(product.author_id)
+        ) is not None:
+            try:
+                await user.send(
+                    embed=discord.Embed(
+                        color=COLOR.green,
+                        description=(
+                            f"Good news 🤩!\n**{product.name}** has been successfully approved! ✅\n"
+                            "It is now ready to be listed in the shop for purchase."
+                        ),
+                    ).set_footer(
+                        text="Thank you for your submission, and we hope it performs well in the shop!"
+                    )
+                )
+            except discord.Forbidden:
+                pass
+
         await interaction.followup.send(
             embed=discord.Embed(
                 color=COLOR.green,
-                description="Product Approved!",
+                description=(
+                    f"The product **{product.name}** has been successfully approved! ✅\n\n"
+                    "It is now ready to be listed in the shop for purchase. "
+                ),
             ),
             ephemeral=True,
         )
