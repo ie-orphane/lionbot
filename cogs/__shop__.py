@@ -10,7 +10,7 @@ from ui import ProductReView
 
 
 @discord.app_commands.guild_only()
-class Product(GroupCog, name="product"):
+class Shop(GroupCog, name="shop"):
     @staticmethod
     async def check(
         interaction: discord.Interaction, check: bool, body: str, foot: str
@@ -144,4 +144,4 @@ class Product(GroupCog, name="product"):
 
 
 async def setup(bot: commands.Bot):
-    await bot.add_cog(Product(bot))
+    await bot.add_cog(Shop(bot))
