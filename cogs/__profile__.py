@@ -15,7 +15,7 @@ class Profile(Cog):
         interaction: discord.Interaction,
         member: discord.Member | discord.User = None,
     ):
-        await interaction.response.defer()
+        await interaction.response.defer(ephemeral=True)
         self.cog_interaction(interaction, member=member)
 
         member = member or interaction.user

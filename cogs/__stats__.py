@@ -20,7 +20,7 @@ class Stats(Cog):
             "last 24 hours", "last 7 days", "last 30 days", "last year", "all time"
         ] = "all time",
     ):
-        await interaction.response.defer()
+        await interaction.response.defer(ephemeral=True)
         self.cog_interaction(interaction, duration=duration, member=member)
 
         duration = duration.replace(" ", "_")
