@@ -299,9 +299,11 @@ class ProductReView(discord.ui.View):
                             f"Good news 🤩!\n**{product.name}** has been successfully approved! ✅\n"
                             "It is now ready to be listed in the shop for purchase."
                         ),
-                    ).set_footer(
+                    )
+                    .set_footer(
                         text="Thank you for your submission, and we hope it performs well in the shop!"
                     )
+                    .set_thumbnail(url=product.image)
                 )
             except discord.Forbidden:
                 pass
