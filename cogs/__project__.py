@@ -21,7 +21,7 @@ class Project(GroupCog, name="project"):
                 embed=discord.Embed(
                     color=self.color.red,
                     description=(
-                        f"❌ {interaction.user.id}, \n"
+                        f"❌ {interaction.user.mention}, \n"
                         f"the provided project Id **`{id}`** seems to be invalid."
                         "\nPlease ensure you're using the correct one."
                     ),
@@ -86,7 +86,7 @@ class Project(GroupCog, name="project"):
                 embed=discord.Embed(
                     color=self.color.red,
                     description=(
-                        f"❌ {interaction.user.id}, \n"
+                        f"❌ {interaction.user.mention}, \n"
                         f"the provided project Id **`{id}`** seems to be invalid."
                         "\nPlease ensure you're using the correct one."
                     ),
@@ -168,7 +168,7 @@ class _Project(GroupCog, name="__project"):
                 embed=discord.Embed(
                     color=self.color.red,
                     description=(
-                        f"❌ {interaction.user.id}, \n"
+                        f"❌ {interaction.user.mention}, \n"
                         f"the provided project Id **`{id}`** seems to be invalid."
                         "\nPlease ensure you're using the correct one."
                     ),
@@ -181,7 +181,7 @@ class _Project(GroupCog, name="__project"):
         content = project.name.lower().strip().replace(" ", "_")
 
         for user_id, link in project.links.items():
-            content += f"\n{UserData.read(user_id).name.lower().replace(" ", "_")}={link['link']}"
+            content += f"\n{UserData.read(user_id).name.lower().replace(" ", "_")}={link}"
 
         await interaction.followup.send(f"```bash\n{content}```")
 
