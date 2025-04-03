@@ -21,6 +21,8 @@ class Stats(Cog):
         ] = "all time",
     ):
         await interaction.response.defer()
+        self.cog_interaction(interaction, duration=duration, member=member)
+
         duration = duration.replace(" ", "_")
 
         member = member or interaction.user

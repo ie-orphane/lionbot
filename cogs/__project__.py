@@ -11,6 +11,7 @@ class Project(GroupCog, name="project"):
     @discord.app_commands.describe(id="The project's ID.", link="The project's link.")
     async def submit(self, interaction: discord.Interaction, id: str, link: str):
         await interaction.response.defer()
+        self.cog_interaction(interaction, id=id, link=link)
 
         if (await self.bot.user_is_unkown(interaction)) is None:
             return
@@ -75,6 +76,7 @@ class Project(GroupCog, name="project"):
     @discord.app_commands.describe(id="The project's ID.", link="The project's link.")
     async def edit(self, interaction: discord.Interaction, id: str, link: str):
         await interaction.response.defer()
+        self.cog_interaction(interaction, id=id, link=link)
 
         if (await self.bot.user_is_unkown(interaction)) is None:
             return
@@ -140,6 +142,7 @@ class _Project(GroupCog, name="__project"):
     @discord.app_commands.command(description="List all the projects.")
     async def all(self, interaction: discord.Interaction):
         await interaction.response.defer()
+        self.cog_interaction(interaction)
 
         projects = ProjectData.read_all()
         max_length = max(4, *map(lambda x: len(x.name), projects))
@@ -158,6 +161,7 @@ class _Project(GroupCog, name="__project"):
     @discord.app_commands.describe(id="The project's ID.")
     async def links(self, interaction: discord.Interaction, id: str):
         await interaction.response.defer()
+        self.cog_interaction(interaction, id=id)
 
         if (project := ProjectData.read(id)) is None:
             await interaction.followup.send(
@@ -199,6 +203,9 @@ class _Project(GroupCog, name="__project"):
         minutes: discord.app_commands.Range[int, 0, 59] = 0,
     ):
         await interaction.response.defer()
+        self.cog_interaction(
+            interaction, name=name, day=day, hours=hours, minutes=minutes
+        )
 
         days = {
             (datetime.now(UTC) + timedelta(days=day))

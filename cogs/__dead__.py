@@ -29,6 +29,14 @@ class Dead(GroupCog, name="dead"):
         minutes: discord.app_commands.Range[int, 0, 59] = 0,
     ):
         await interaction.response.defer()
+        self.cog_interaction(
+            interaction,
+            channel=channel,
+            role=role,
+            day=day,
+            hours=hours,
+            minutes=minutes,
+        )
 
         if ChannelData.exists(channel.id):
             await interaction.followup.send(

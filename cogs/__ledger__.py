@@ -13,6 +13,7 @@ class Ledger(Cog):
         member: discord.Member | discord.User = None,
     ):
         await interaction.response.defer()
+        self.cog_interaction(interaction, member=member)
 
         member = member or interaction.user
 

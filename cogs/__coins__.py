@@ -21,6 +21,7 @@ class Coins(GroupCog, name="coins"):
         reason: str,
     ):
         await interaction.response.defer()
+        self.cog_interaction(interaction, member=member, amount=amount, reason=reason)
 
         if amount <= 0:
             await interaction.followup.send(

@@ -11,6 +11,7 @@ class Transfer(Cog):
         self, interaction: discord.Interaction, amount: int, member: discord.Member
     ):
         await interaction.response.defer()
+        self.cog_interaction(interaction, amount=amount, member=member)
 
         if amount <= 0:
             await interaction.followup.send(

@@ -14,6 +14,7 @@ class Set(GroupCog, name="set"):
     )
     async def social(self, interaction: discord.Interaction, social: Social, link: str):
         await interaction.response.defer()
+        self.cog_interaction(interaction, social=social, link=link)
 
         if (user := await self.bot.user_is_unkown(interaction)) is None:
             return
@@ -41,6 +42,7 @@ class Set(GroupCog, name="set"):
     @discord.app_commands.describe(waka_token="The new wakatime token.")
     async def token(self, interaction: discord.Interaction, waka_token: str):
         await interaction.response.defer()
+        self.cog_interaction(interaction, waka_token=waka_token)
 
         if (user := await self.bot.user_is_unkown(interaction)) is None:
             return

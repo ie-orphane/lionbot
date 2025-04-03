@@ -43,6 +43,9 @@ class Shop(GroupCog, name="shop"):
         image: discord.Attachment = None,
     ):
         await interaction.response.defer(ephemeral=True)
+        self.cog_interaction(
+            interaction, name=_name, price=price, description=_description, image=image
+        )
 
         if (user := await self.bot.user_is_unkown(interaction)) is None:
             return

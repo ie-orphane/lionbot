@@ -1,6 +1,7 @@
 import discord
 import traceback
 import env
+import os
 from discord.ext import commands
 from consts import COLOR
 from datetime import datetime, UTC
@@ -61,6 +62,21 @@ class __Cog:
                 ),
             )
         )
+
+    def cog_interaction(self, interaction: discord.Interaction, **params):
+        better = lambda x: '"' + x + '"' if isinstance(x, str) and " " in x else x
+        with open(
+            os.path.join(os.path.abspath(env.BASE_DIR), "data", "interactions.csv"), "a"
+        ) as f:
+            print(
+                better(datetime.now(UTC)),
+                interaction.user.id,
+                better(interaction.user.display_name),
+                better(interaction.command.qualified_name),
+                *[f"{key}:{better(value)}" for key, value in params.items()],
+                file=f,
+                sep=",",
+            )
 
 
 class Cog(__Cog, commands.Cog): ...

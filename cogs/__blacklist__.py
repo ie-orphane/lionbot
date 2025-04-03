@@ -13,6 +13,7 @@ class Blacklist(GroupCog, name="blacklist"):
     )
     async def out(self, interaction: discord.Interaction):
         await interaction.response.defer()
+        self.cog_interaction(interaction)
 
         if (user := await self.bot.user_is_unkown(interaction)) is None:
             return

@@ -19,6 +19,7 @@ class Register(Cog):
         waka_token: str,
     ):
         await interaction.response.defer()
+        self.cog_interaction(interaction, name=name, waka_token=waka_token)
 
         user_data = UserData.read(interaction.user.id)
 

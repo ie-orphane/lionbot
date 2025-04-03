@@ -11,7 +11,10 @@ class Migration:
             "[]": ["channels", "evaluations", "files"],
             "{}": ["outlist"],
         },
-        "tables": [("transactions", "datetime,id,current,operation,amount,reason")],
+        "tables": [
+            ("transactions", "datetime,id,current,operation,amount,reason"),
+            ("interactions", "datetime,id,name,command,options"),
+        ],
     }
     storage = [
         "files",
@@ -31,7 +34,6 @@ class Migration:
         "leaderboard": {dict: ("ALL",)},
         "msgs": {dict: ("LEADERBOARD",)},
     }
-
 
     @classmethod
     def run(cls) -> None:

@@ -9,13 +9,15 @@ class Help(Cog):
     @discord.app_commands.command(description="List all bot commands.")
     async def help(self, interaction: discord.Interaction):
         await interaction.response.defer()
+        self.cog_interaction(interaction)
 
         commands = await self.bot.tree.fetch_commands()
         embed = discord.Embed(
             color=self.color.yellow,
             description=f"{self.bot.user.display_name} is a tool built to help you track your stats and improve your coding skills.\n\n\n ",
         ).set_author(
-            name=f"Salam {interaction.user.display_name}!", icon_url=interaction.user.avatar
+            name=f"Salam {interaction.user.display_name}!",
+            icon_url=interaction.user.avatar,
         )
 
         categories: dict[
