@@ -9,7 +9,7 @@ from consts import COLOR
 from ui import ProductReView
 
 
-@discord.app_commands.guild_only()
+@discord.app_commands.dm_only()
 class Shop(GroupCog, name="shop"):
     @staticmethod
     async def check(
@@ -38,11 +38,11 @@ class Shop(GroupCog, name="shop"):
         self,
         interaction: discord.Interaction,
         _name: discord.app_commands.Range[str, 3, 11],
-        price: int,
+        price: discord.app_commands.Range[int, 1],
         _description: discord.app_commands.Range[str, 11, 97],
         image: discord.Attachment = None,
     ):
-        await interaction.response.defer(ephemeral=True)
+        await interaction.response.defer()
         self.cog_interaction(
             interaction, name=_name, price=price, description=_description, image=image
         )
@@ -53,25 +53,16 @@ class Shop(GroupCog, name="shop"):
         name = re.sub(r"\s+", " ", _name).strip()
         description = re.sub(r"\s+", " ", _description).strip()
 
-        if (
-            await self.check(
-                interaction,
-                price <= 0,
-                f"**{price}** is an invalid price!",
-                "It must be greater than 0.",
-            )
-            or await self.check(
-                interaction,
-                11 < len(name) < 3,
-                f"**{name}** is an invalid name!",
-                "It must be between 3 and 11 characters.",
-            )
-            or await self.check(
-                interaction,
-                97 < len(description) < 11,
-                f"**{description}** is an invalid description!",
-                "It must be between 11 and 97 characters.",
-            )
+        if await self.check(
+            interaction,
+            11 < len(name) < 3,
+            f"**{name}** is an invalid name!",
+            "It must be between 3 and 11 characters.",
+        ) or await self.check(
+            interaction,
+            97 < len(description) < 11,
+            f"**{description}** is an invalid description!",
+            "It must be between 11 and 97 characters.",
         ):
             return
 
