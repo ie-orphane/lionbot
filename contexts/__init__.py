@@ -36,7 +36,7 @@ async def run(bot: commands.Bot, message: discord.Message) -> None:
     if (command is None) or ((ctx := all_contexts.get(command)) is None):
         return
 
-    options = {"message": message}
+    options = {"bot": bot, "message": message}
 
     for name, param in ctx.args.items():
         value = _options.get(name)

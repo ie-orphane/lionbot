@@ -7,11 +7,17 @@ from types import MappingProxyType
 
 
 class Context:
-    def __init__(self, func, args: MappingProxyType[str, inspect.Parameter]):
+    def __init__(
+        self, *, name, func, args: MappingProxyType[str, inspect.Parameter], desc: str
+    ):
         self.args: dict[str, inspect.Parameter] = {
-            name: param for name, param in args.items() if name != "message"
+            name: param
+            for name, param in args.items()
+            if name not in ("message", "bot")
         }
         self.func = func
+        self.name = name
+        self.desc = desc
 
     async def __call__(self, **options):
         return await self.func(**options)
@@ -44,8 +50,15 @@ for module_name in modules_name:
     try:
         module_func = getattr(module, "run")
     except AttributeError:
-        Log.warning("Context", f"cannot found {module_name} context function")
+        Log.warning("Context", f"Missing run function: {module_name}")
         continue
+
+    module_desc = None
+    try:
+        module_desc = getattr(module, "description")
+    except AttributeError:
+        Log.warning("Context", f"Missing description: {module_name}")
+    module_desc = module_desc or ""
 
     if not inspect.iscoroutinefunction(module_func):
         Log.warning("Context", f"{module_name} is not an async function")
@@ -54,7 +67,14 @@ for module_name in modules_name:
     arguments = inspect.signature(module_func).parameters
     arguments_count = len(arguments)
 
-    if arguments_count == 0 or "message" not in arguments:
+    if "bot" not in arguments:
+        Log.warning(
+            "Context",
+            f"bot: discord.ext.commands.Bot argument missing in '{module_name}'",
+        )
+        continue
+
+    if "message" not in arguments:
         Log.warning(
             "Context", f"message: discord.Message argument missing in '{module_name}'"
         )
@@ -79,7 +99,12 @@ for module_name in modules_name:
     if invalid:
         continue
 
-    all_contexts[module_name] = Context(module_func, arguments)
+    all_contexts[module_name] = Context(
+        name=module_name,
+        func=module_func,
+        args=arguments,
+        desc=module_desc,
+    )
 
 # Update the __all__ list to include the dynamically imported modules
 __all__ = list(all_contexts.keys())

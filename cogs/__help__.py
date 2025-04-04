@@ -12,12 +12,16 @@ class Help(Cog):
         self.cog_interaction(interaction)
 
         commands = await self.bot.tree.fetch_commands()
-        embed = discord.Embed(
-            color=self.color.yellow,
-            description=f"{self.bot.user.display_name} is a tool built to help you track your stats and improve your coding skills.\n\n\n ",
-        ).set_author(
-            name=f"Salam {interaction.user.display_name}!",
-            icon_url=interaction.user.avatar,
+        embed = (
+            discord.Embed(
+                color=self.color.yellow,
+                description=f"{self.bot.user.display_name} is a tool built to help you track your stats and improve your coding skills.\n\n\n ",
+            )
+            .set_author(
+                name=f"Salam {interaction.user.display_name} !",
+                icon_url=interaction.user.avatar.url,
+            )
+            .set_footer(text="Also try >help")
         )
 
         categories: dict[
