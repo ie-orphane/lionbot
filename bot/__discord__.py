@@ -88,12 +88,7 @@ class DiscordBot(commands.Bot):
             await message.channel.send(answer)
             return
 
-        if (owner_id := get_user("owner")) is None:
-            Log.error("Bot", "owner id not found")
-            return
-
-        if message.author.id == owner_id:
-            await ctx.run(self, message)
+        await ctx.run(self, message)
 
     async def on_member_join(self, member: discord.Member):
         if (guild_id := get_config("GUILD")) is None:
