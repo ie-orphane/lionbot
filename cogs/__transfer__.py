@@ -1,6 +1,7 @@
 import discord
 from config import get_emoji
 from cogs import Cog
+from utils import number
 
 
 class Transfer(Cog):
@@ -8,28 +9,23 @@ class Transfer(Cog):
     @discord.app_commands.command(description="Send coins to your fellow geek.")
     @discord.app_commands.describe(amount="Choose an amount.", member="Choose a geek.")
     async def transfer(
-        self, interaction: discord.Interaction, amount: int, member: discord.Member
+        self,
+        interaction: discord.Interaction,
+        amount: discord.app_commands.Range[int, 1],
+        member: discord.Member,
     ):
         await interaction.response.defer()
         self.cog_interaction(interaction, amount=amount, member=member)
 
-        if amount <= 0:
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    title="❌ Transaction denied!",
-                    color=self.color.red,
-                    description=f"{interaction.user.mention}, **{amount}** is an invalid amount!",
-                ).set_footer(text="the minimum amount is 1."),
-                ephemeral=True,
-            )
-            return
-
         if member == interaction.user:
             await interaction.followup.send(
                 embed=discord.Embed(
-                    title="❌ Transaction denied!",
                     color=self.color.red,
-                    description=f"{interaction.user.mention}, you can't transfer coins to yourself!",
+                    title="❌ Transaction denied!",
+                    description=(
+                        f"✋ {interaction.user.mention},\n"
+                        f"you can't transfer coins to yourself!"
+                    ),
                 ),
                 ephemeral=True,
             )
@@ -53,9 +49,11 @@ class Transfer(Cog):
             await interaction.followup.send(
                 embed=discord.Embed(
                     color=self.color.red,
+                    title="❌ Transaction denied!",
                     description=(
-                        f"{member.mention}, you don't have {amount} {get_emoji("coin")}!"
-                        f"\nYour current balance is {user.coins} {get_emoji("coin")}."
+                        f"✋ {interaction.user.mention},\n"
+                        f"you don't have {number(amount)} {get_emoji("coin")}!"
+                        f"\nYour current balance is {number(user.coins)} {get_emoji("coin")}."
                     ),
                 ),
                 ephemeral=True,
@@ -71,8 +69,13 @@ class Transfer(Cog):
         await interaction.followup.send(
             embed=discord.Embed(
                 color=self.color.yellow,
-                description=f"{amount} {get_emoji("coin")} transfered from {interaction.user.mention} to {member.mention}.",
-            )
+                title="✅ Transaction completed!",
+                description=(
+                    f"`Amount`: {number(amount)} {get_emoji("coin")}\n"
+                    f"`Sender`: {interaction.user.mention}\n"
+                    f"`Recipient`: {member.mention}"
+                ),
+            ),
         )
 
 
