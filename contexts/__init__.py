@@ -2,6 +2,8 @@ import discord
 import re
 from discord.ext import commands
 from .__all__ import all_contexts
+from consts import COLOR
+from typing import get_origin, get_args
 
 
 def parse(context: str) -> tuple[str, dict]:
@@ -31,6 +33,13 @@ def parse(context: str) -> tuple[str, dict]:
 
 
 async def run(bot: commands.Bot, message: discord.Message) -> None:
+    """
+    Run the command based on the message content.
+    Args:
+        bot (commands.Bot): The bot instance.
+        message (discord.Message): The message containing the command.
+    """
+
     command, _options = parse(message.content)
 
     if (command is None) or ((ctx := all_contexts.get(command)) is None):
@@ -42,14 +51,79 @@ async def run(bot: commands.Bot, message: discord.Message) -> None:
         value = _options.get(name)
 
         if value is None:
-            print(f"Missing argument: `{name}`")
+            await message.reply(
+                embed=discord.Embed(
+                    color=COLOR.red,
+                    description=(
+                        f"Missing argument: **`{name}`**\n" f"\nUsage: {ctx.usage}"
+                    ),
+                ),
+                mention_author=True,
+                delete_after=11,
+            )
+            await message.delete(delay=11)
             return
 
-        try:
-            value = param.annotation(value)
-        except ValueError:
-            print(f"Invalid argument type: `{name}`")
-            return
+        if (origin := get_origin(param.annotation)) is None:
+            try:
+                value = param.annotation(value)
+            except ValueError:
+                await message.reply(
+                    embed=discord.Embed(
+                        color=COLOR.red,
+                        description=(
+                            f"Invalid argument  value: **`{value}`** for `{name}`.\n"
+                            f"\nExpected type: **`{param.annotation.__name__}`**"
+                        ),
+                    ),
+                    mention_author=True,
+                    delete_after=11,
+                )
+                await message.delete(delay=11)
+                return
+        elif origin is list:
+            value = value.split(",")
+            if discord.Member in (args := get_args(param.annotation)):
+                members = []
+                for i, m in enumerate(value):
+                    if m.strip() == "":
+                        continue
+                    if re.match(r"^<@!?(\d+)>$", m.strip()) or re.match(
+                        r"^\d+$", m.strip()
+                    ):
+                        user_id = int(re.sub(r"[<@!>]", "", m.strip()))
+                        try:
+                            members.append(
+                                await bot.fetch_user(
+                                    int(re.sub(r"[<@!>]", "", m.strip()))
+                                )
+                            )
+                        except discord.NotFound:
+                            await message.reply(
+                                embed=discord.Embed(
+                                    color=COLOR.red,
+                                    description=(f"Member not found: <@{user_id}>"),
+                                ),
+                                mention_author=True,
+                                delete_after=11,
+                            )
+                            await message.delete(delay=11)
+                            return
+                    else:
+                        await message.reply(
+                            embed=discord.Embed(
+                                color=COLOR.red,
+                                description=(
+                                    f"Invalid value: **`{m}`** for `{name}`.\n"
+                                    f"\nExcepted types: **`Member.mention`** | **`Member.id`**"
+                                ),
+                            ),
+                            mention_author=True,
+                            delete_after=11,
+                        )
+                        await message.delete(delay=11)
+                        return
+                value = members
 
         options[name] = value
 

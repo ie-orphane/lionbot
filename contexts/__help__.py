@@ -21,10 +21,8 @@ async def run(*, bot: commands.Bot, message: discord.Message) -> None:
         if ctx.name == "help":
             continue
 
-        embed.description += f"\n\n**`>{ctx.name}`**"
-        if ctx.args:
-            embed.description += " " + " ".join(f"`{name}`" for name in ctx.args)
+        embed.description += "\n\n" + ctx.usage
         if ctx.desc:
-            embed.description += f"\n{ctx.desc}"
+            embed.description += f"\n\t{ctx.desc}"
 
-    await message.channel.send(embed=embed)
+    await message.reply(embed=embed, mention_author=False)

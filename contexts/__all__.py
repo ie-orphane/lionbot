@@ -19,6 +19,16 @@ class Context:
         self.name = name
         self.desc = desc
 
+    @property
+    def usage(self) -> str:
+        usage = f"**`>{self.name}`**"
+        if self.args:
+            usage += " " + " ".join(
+                f"`{name}:{param.annotation.__name__}`"
+                for name, param in self.args.items()
+            )
+        return usage
+
     async def __call__(self, **options):
         return await self.func(**options)
 
