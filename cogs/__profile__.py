@@ -1,21 +1,25 @@
-import env
 import discord
-from cogs import Cog
-from utils import number
-from config import get_emoji
+
+import env
 from api import wakapi
+from cogs import Cog
+from config import get_emoji, get_user, get_users
+from utils import number
 
 
 class Profile(Cog):
     @discord.app_commands.guild_only()
     @discord.app_commands.command(description="View the basic geek information.")
-    @discord.app_commands.describe(member="Choose a fellow geek.")
+    @discord.app_commands.describe(
+        member="Choose a fellow geek.", private="View profile in private."
+    )
     async def profile(
         self,
         interaction: discord.Interaction,
         member: discord.Member | discord.User = None,
+        private: bool = True,
     ):
-        await interaction.response.defer(ephemeral=True)
+        await interaction.response.defer(ephemeral=private)
         self.cog_interaction(interaction, member=member)
 
         member = member or interaction.user
@@ -46,39 +50,33 @@ class Profile(Cog):
                     languages, key=lambda x: x.get("total_seconds", 0)
                 )[-1]
 
-        embed = discord.Embed(
-            color=self.color.yellow,
-        ).set_author(name=user.name, icon_url=member.avatar)
-
-        if user.training and user.training.startswith("coding"):
-            embed.add_field(
-                name="Class",
-                value=f"> **Coding** - Web Development **{user.training.removeprefix("coding")}**",
-                inline=False,
-            )
-
-        embed.add_field(
-            name="Coins",
-            value=f"> {number(user.coins)} {get_emoji("coin")}",
-            inline=False,
+        embed = discord.Embed(color=self.color.yellow, description="").set_author(
+            name=user.name, icon_url=member.avatar
         )
 
+        if user.training and user.training.startswith("coding"):
+            embed.description += f"\n`Class`: **Coding** - Web Development **{user.training.removeprefix("coding")}**"
         if favorite_language:
-            embed.add_field(
-                name="Favorite Language",
-                value=f"> {get_emoji(favorite_language['name'])} {favorite_language['name']}",
-                inline=False,
-            )
+            embed.description += f"\n`Favorite Language`: {get_emoji(favorite_language['name'])} {favorite_language['name']}"
 
-        embed.add_field(
-            name="Socials",
-            value="\n".join(
-                [
-                    f"- [{get_emoji(social)}  {social}]({link})"
-                    for social, link in user.socials
-                    if link
-                ]
-            ),
+        embed.description += f"\n\n`Coins`: {number(user.coins)} {get_emoji("coin")}"
+        emblems = []
+        if user.id == get_user("owner"):
+            emblems.append(get_emoji("owner", None))
+        if user.id in get_users("admins"):
+            emblems.append(get_emoji("admin", None))
+        if user.id in get_users("coaches"):
+            emblems.append(get_emoji("coach", None))
+        emblems = [emblem for emblem in emblems if emblem is not None]
+        if emblems:
+            embed.description += "\n`Emblems`: " + "".join(emblems)
+
+        embed.description += "\n\n`Socials`:\n" + "\n".join(
+            [
+                f"{get_emoji('empty')}[{get_emoji(social)}  {social}]({link})"
+                for social, link in user.socials
+                if link
+            ]
         )
 
         await interaction.followup.send(embed=embed)

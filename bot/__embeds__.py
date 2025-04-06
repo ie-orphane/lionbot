@@ -4,7 +4,8 @@ from typing import Literal
 
 import discord
 
-from config import get_users, get_config, get_cooldown, get_emoji, get_extension
+from config import (get_config, get_cooldown, get_emoji, get_extension,
+                    get_users)
 from consts import BOT_COINS_AMOUNT, COLOR, EXCLUDE_DIRS, GOLDEN_RATIO
 from models import UserData
 from utils import convert_seconds, number
@@ -68,34 +69,18 @@ class SelfEmbeds:
 
     @staticmethod
     def profile(bot) -> discord.Embed:
-        return (
-            discord.Embed(
-                color=COLOR.yellow,
-            )
-            .set_author(name=bot.user.name, icon_url=bot.user.avatar)
-            .add_field(
-                name="Class",
-                value=f"> **Coding** - Discord Integration",
-                inline=False,
-            )
-            .add_field(
-                name="Coins",
-                value=f"> {number(BOT_COINS_AMOUNT)} {get_emoji("coin")}",
-                inline=False,
-            )
-            .add_field(
-                name="Favorite Language",
-                value=f"> {get_emoji("Python")}  Python",
-                inline=False,
-            )
-            .add_field(
-                name="Socials",
-                value=(
-                    f"- [{get_emoji("github")}  github]({get_config("REPOSITORY")})\n"
-                    f"- [{get_emoji("portfolio")}  portfolio](https://lionsgeek.ma/)"
-                ),
-            )
-        )
+        return discord.Embed(
+            color=COLOR.yellow,
+            description=(
+                f"`Class`: **Coding** - Discord Integration"
+                f"\n`Favorite Language`: {get_emoji('Python')}  Python"
+                f"\n\n`Coins`: {number(BOT_COINS_AMOUNT)} {get_emoji("coin")}"
+                f"\n`Emblems`: {get_emoji("bot")}"
+                "\n\n`Socials`:\n"
+                f"{get_emoji('empty')}[{get_emoji("github")}  github]({get_config("REPOSITORY")})\n"
+                f"{get_emoji('empty')}[{get_emoji("portfolio")}  portfolio](https://lionsgeek.ma/)"
+            ),
+        ).set_author(name=bot.user.name, icon_url=bot.user.avatar)
 
 
 class BotEmbeds:
