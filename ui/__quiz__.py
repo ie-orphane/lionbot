@@ -8,12 +8,12 @@ from utils import on_error
 
 class QuizButton(
     discord.ui.DynamicItem[discord.ui.Button],
-    template=r"(?P<id>[0-9]+):(?P<key>[a-z]+)",
+    template=r"quiz:(?P<id>[0-9]+):(?P<key>[a-z]+)",
 ):
     def __init__(self, quiz_id: int | str, answer_key: str) -> None:
         super().__init__(
             discord.ui.Button(
-                custom_id=f"{quiz_id}:{answer_key}",
+                custom_id=f"quiz:{quiz_id}:{answer_key}",
                 label=get_reaction(answer_key, ""),
             )
         )

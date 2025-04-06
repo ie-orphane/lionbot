@@ -91,10 +91,10 @@ class ProductModal(discord.ui.Modal, title="Feedback"):
 
 
 class ProductBuyBtn(
-    discord.ui.DynamicItem[discord.ui.Button], template=r"(?P<id>[0-9a-zA-Z]+)"
+    discord.ui.DynamicItem[discord.ui.Button], template=r"buy:(?P<id>[0-9a-zA-Z]+)"
 ):
     def __init__(self, _id: str) -> None:
-        super().__init__(discord.ui.Button(custom_id=f"{_id}", label="💸 Buy"))
+        super().__init__(discord.ui.Button(custom_id=f"buy:{_id}", label="💸 Buy"))
         self.id = _id
 
     @classmethod

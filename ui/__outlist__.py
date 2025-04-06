@@ -31,7 +31,7 @@ class OutlistView(discord.ui.View):
             view=None, content=message.content.replace("Started", "Ended")
         )
 
-    @discord.ui.button(label="🏃 out")
+    @discord.ui.button(label="🏃 out", custom_id="out")
     async def out(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.defer(ephemeral=True)
 
