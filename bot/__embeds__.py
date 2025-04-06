@@ -1,10 +1,12 @@
-import discord
 import os
-from models import UserData
+from datetime import UTC, date, datetime, timedelta
 from typing import Literal
-from consts import COLOR, EXCLUDE_DIRS, BOT_COINS_AMOUNT, GOLDEN_RATIO
-from config import get_config, get_users, get_cooldown, get_extension, get_emoji
-from datetime import datetime, timedelta, UTC, date
+
+import discord
+
+from config import get_users, get_config, get_cooldown, get_emoji, get_extension
+from consts import BOT_COINS_AMOUNT, COLOR, EXCLUDE_DIRS, GOLDEN_RATIO
+from models import UserData
 from utils import convert_seconds, number
 
 
@@ -130,7 +132,7 @@ class BotEmbeds:
         interaction: discord.Interaction,
         member: discord.Member | discord.User,
     ) -> bool:
-        admins = get_users("owner", "coach", nullable=False)
+        admins = get_users("admins")
         roles: set[discord.Role] = set()
         if not ((main_guild := self.get_guild(get_config("GUILD"))) is None):
             roles = {
@@ -164,7 +166,7 @@ class BotEmbeds:
 
     @staticmethod
     async def user_on_cooldown(interaction: discord.Interaction, label: str) -> bool:
-        if (interaction.user.id in get_users("owner", "coach", nullable=False)) or (
+        if (interaction.user.id in get_users("admins")) or (
             (user := UserData.read(interaction.user.id)) is None
         ):
             return False

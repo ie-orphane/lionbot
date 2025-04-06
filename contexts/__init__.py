@@ -4,7 +4,7 @@ from typing import get_args, get_origin
 import discord
 from discord.ext import commands
 
-from config import get_admins, get_owner
+from config import get_user, get_users
 from consts import COLOR
 
 from .__all__ import all_contexts
@@ -49,8 +49,8 @@ async def run(bot: commands.Bot, message: discord.Message) -> None:
     if (command is None) or ((ctx := all_contexts.get(command)) is None):
         return
 
-    if (ctx.only.admin and message.author.id not in get_admins()) or (
-        ctx.only.owner and message.author.id != get_owner()
+    if (ctx.only.admin and message.author.id not in get_users("admins")) or (
+        ctx.only.owner and message.author.id != get_user("owner")
     ):
         return
 
