@@ -87,7 +87,7 @@ async def __run__(
         )
         return
 
-    user.sub_coins(amount, "huge transfer")
+    user.sub_coins(_amount, "huge transfer")
     user.update()
 
     for r in recipient:
