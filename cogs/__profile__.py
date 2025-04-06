@@ -3,7 +3,7 @@ import discord
 import env
 from api import wakapi
 from cogs import Cog
-from config import get_emoji, get_user, get_users
+from config import get_all, get_emoji
 from utils import number
 
 
@@ -60,16 +60,18 @@ class Profile(Cog):
             embed.description += f"\n`Favorite Language`: {get_emoji(favorite_language['name'])} {favorite_language['name']}"
 
         embed.description += f"\n\n`Coins`: {number(user.coins)} {get_emoji("coin")}"
-        emblems = []
-        if user.id == get_user("owner"):
-            emblems.append(get_emoji("owner", None))
-        if user.id in get_users("admins"):
-            emblems.append(get_emoji("admin", None))
-        if user.id in get_users("coaches"):
-            emblems.append(get_emoji("coach", None))
-        emblems = [emblem for emblem in emblems if emblem is not None]
-        if emblems:
-            embed.description += "\n`Emblems`: " + "".join(emblems)
+        if (users := get_all("users")) is not None:
+            emblems = []
+            for field, data in users.items():
+                if isinstance(data, int):
+                    if user.id == data:
+                        emblems.append(get_emoji(field.lower(), None))
+                elif isinstance(data, list):
+                    if user.id in data:
+                        emblems.append(get_emoji(field.lower(), None))
+            emblems = [emblem for emblem in emblems if emblem is not None]
+            if emblems:
+                embed.description += "\n`Emblems`: " + "".join(emblems)
 
         embed.description += "\n\n`Socials`:\n" + "\n".join(
             [

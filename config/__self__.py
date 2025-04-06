@@ -1,21 +1,43 @@
 import os
+from typing import Any, Dict, Literal
+
 import env
-from utils import open_file, Log
-from typing import Literal, Any, Dict
+from utils import Log, open_file
 
-
-__all__ = ["get_config", "set_config"]
+__all__ = ["get_config", "set_config", "get_all"]
 
 
 CONFIG_DIR: str = os.path.join(os.path.abspath(env.BASE_DIR), "config")
 CONFIG_SUFFIX: str = "json"
 
 
-ConfigPrefix = Literal["global", "msgs", "leaderboard"]
+ConfigPrefix = Literal["global", "msgs", "leaderboard", "emojis", "users"]
 
 
 file_data: Dict[str, Any] = {}
 modified_datetime: Dict[str, float] = {}
+
+
+def get_all(prefix: ConfigPrefix = "global") -> Any | None:
+    global file_data
+    global modified_datetime
+
+    file_path = f"{CONFIG_DIR}/{prefix}.{CONFIG_SUFFIX}"
+
+    if not os.path.exists(file_path):
+        Log.error("Config", f"{os.path.relpath(file_path)}: no such file.")
+        return
+
+    if not os.path.isfile(file_path):
+        Log.error("Config", f"{os.path.relpath(file_path)}: is not a regular file.")
+        return
+
+    if os.path.getmtime(file_path) != modified_datetime.get(prefix):
+        file_data[prefix] = open_file(file_path)
+        modified_datetime[prefix] = os.path.getmtime(file_path)
+        Log.info("Config", f"{os.path.relpath(file_path)}: readed!")
+
+    return file_data.get(prefix)
 
 
 def get_config(
@@ -31,9 +53,7 @@ def get_config(
         return
 
     if not os.path.isfile(file_path):
-        Log.error(
-            "Config", f"{os.path.relpath(file_path)}: is not a regular file."
-        )
+        Log.error("Config", f"{os.path.relpath(file_path)}: is not a regular file.")
         return
 
     if os.path.getmtime(file_path) != modified_datetime.get(config_prefix):
@@ -59,9 +79,7 @@ def set_config(
         return
 
     if not os.path.isfile(file_path):
-        Log.error(
-            "Config", f"{os.path.relpath(file_path)}: is not a regular file."
-        )
+        Log.error("Config", f"{os.path.relpath(file_path)}: is not a regular file.")
         return
 
     if (config_prefix not in file_data) or (config_prefix not in modified_datetime):
