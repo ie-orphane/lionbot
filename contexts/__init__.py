@@ -1,12 +1,16 @@
-import discord
 import re
+from typing import get_args, get_origin
+
+import discord
 from discord.ext import commands
-from .__all__ import all_contexts
+
+from config import get_admins, get_owner
 from consts import COLOR
-from typing import get_origin, get_args
+
+from .__all__ import all_contexts
 
 
-def parse(context: str) -> tuple[str, dict]:
+def __parse(context: str) -> tuple[str, dict]:
     """
     Parse a command string into a command and options.
     Args:
@@ -40,9 +44,14 @@ async def run(bot: commands.Bot, message: discord.Message) -> None:
         message (discord.Message): The message containing the command.
     """
 
-    command, _options = parse(message.content)
+    command, _options = __parse(message.content)
 
     if (command is None) or ((ctx := all_contexts.get(command)) is None):
+        return
+
+    if (ctx.only.admin and message.author.id not in get_admins()) or (
+        ctx.only.owner and message.author.id != get_owner()
+    ):
         return
 
     options = {"bot": bot, "message": message}
@@ -51,6 +60,9 @@ async def run(bot: commands.Bot, message: discord.Message) -> None:
         value = _options.get(name)
 
         if value is None:
+            if param.default is not param.empty:
+                continue
+
             await message.reply(
                 embed=discord.Embed(
                     color=COLOR.red,

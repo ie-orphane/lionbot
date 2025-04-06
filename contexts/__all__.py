@@ -7,7 +7,6 @@ from utils import Log
 
 from .__self__ import __NAME__, ctx
 
-
 all_contexts: dict[str, ctx] = {}
 modules_dir = Path(__file__).parent
 
@@ -37,6 +36,20 @@ for path, dirs, files in modules_dir.walk():
         if (module_desc is not None) and (not isinstance(module_desc, str)):
             Log.error(
                 __NAME__, f"Invalid: '{module_name}'.__DESCRIPTION__ must be a 'str'"
+            )
+            continue
+
+        admin_only: bool = getattr(module, "__ADMIN_ONLY__", False)
+        if not isinstance(admin_only, bool):
+            Log.error(
+                __NAME__, f"Invalid: '{module_name}'.__ADMIN_ONLY__ must be a 'bool'"
+            )
+            continue
+
+        owner_only: bool = getattr(module, "__OWNER_ONLY__", False)
+        if not isinstance(owner_only, bool):
+            Log.error(
+                __NAME__, f"Invalid: '{module_name}'.__OWNER_ONLY__ must be a 'bool'"
             )
             continue
 
@@ -92,6 +105,8 @@ for path, dirs, files in modules_dir.walk():
             func=module_func,
             args=arguments,
             desc=module_desc,
+            admin_only=admin_only,
+            owner_only=owner_only,
         )
 
 __all__ = list(all_contexts.keys())

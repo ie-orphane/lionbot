@@ -3,6 +3,7 @@ from typing import Any, Coroutine
 import discord
 from discord.ext import commands
 
+from config import get_admins, get_emoji, get_owner
 from consts import COLOR
 
 from .__all__ import all_contexts as ALL_CTXS
@@ -24,11 +25,19 @@ async def __run__(
     )
 
     for ctx in ALL_CTXS.values():
-        if ctx.name == "help":
+        if (
+            (ctx.name == "help")
+            or (ctx.only.admin and message.author.id not in get_admins())
+            or (ctx.only.owner and message.author.id != get_owner())
+        ):
             continue
 
         embed.description += "\n\n" + ctx.usage
+        if ctx.only.admin:
+            embed.description += get_emoji("admin", "")
+        elif ctx.only.owner:
+            embed.description += get_emoji("owner", "")
         if ctx.desc:
-            embed.description += f"\n\t{ctx.desc}"
+            embed.description += f"\n{ctx.desc}"
 
     await message.reply(embed=embed, mention_author=False)
