@@ -4,8 +4,14 @@ from typing import Literal
 
 import discord
 
-from config import (get_config, get_cooldown, get_emoji, get_extension,
-                    get_users)
+from config import (
+    get_config,
+    get_cooldown,
+    get_emblem,
+    get_emoji,
+    get_extension,
+    get_users,
+)
 from consts import BOT_COINS_AMOUNT, COLOR, EXCLUDE_DIRS, GOLDEN_RATIO
 from models import UserData
 from utils import convert_seconds, number
@@ -75,7 +81,7 @@ class SelfEmbeds:
                 f"`Class`: **Coding** - Discord Integration"
                 f"\n`Favorite Language`: {get_emoji('Python')}  Python"
                 f"\n\n`Coins`: {number(BOT_COINS_AMOUNT)} {get_emoji("coin")}"
-                f"\n`Emblems`: {get_emoji("bot")}"
+                f"\n`Emblems`: {get_emblem("bot")}"
                 "\n\n`Socials`:\n"
                 f"{get_emoji('empty')}[{get_emoji("github")}  github]({get_config("REPOSITORY")})\n"
                 f"{get_emoji('empty')}[{get_emoji("portfolio")}  portfolio](https://lionsgeek.ma/)"

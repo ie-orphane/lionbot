@@ -3,7 +3,7 @@ from typing import Any, Coroutine
 import discord
 from discord.ext import commands
 
-from config import get_users, get_emoji, get_user
+from config import get_emblem, get_user, get_users
 from consts import COLOR
 
 from .__all__ import all_contexts as ALL_CTXS
@@ -34,9 +34,9 @@ async def __run__(
 
         embed.description += "\n\n" + ctx.usage
         if ctx.only.admin:
-            embed.description += get_emoji("admin", "")
+            embed.description += get_emblem("admins")
         elif ctx.only.owner:
-            embed.description += get_emoji("owner", "")
+            embed.description += get_emblem("owner")
         if ctx.desc:
             embed.description += f"\n{ctx.desc}"
 

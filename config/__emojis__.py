@@ -1,9 +1,10 @@
-from utils import Log
 from typing import Literal
+
+from utils import Log
+
 from .__self__ import get_config
 
-
-__all__ = ["get_emoji", "get_reaction", "get_extension"]
+__all__ = ["get_emoji", "get_reaction", "get_extension", "get_emblem"]
 
 
 def get_emoji(
@@ -34,3 +35,11 @@ def get_extension(extension: str) -> str:
         Log.error("Config", "EXTENSIONS field not found")
         return extension
     return extensions.get(extension, extension)
+
+
+def get_emblem(emblem: str, default: str | None = "") -> str | None:
+    emblems: dict[str, str] = get_config("EMBLEMS", "emojis")
+    if emblems is None:
+        Log.error("Config", "EMBLEMS field not found")
+        return default
+    return emblems.get(emblem.lower(), default)

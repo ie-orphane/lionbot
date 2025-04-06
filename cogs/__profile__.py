@@ -3,7 +3,7 @@ import discord
 import env
 from api import wakapi
 from cogs import Cog
-from config import get_all, get_emoji
+from config import get_all, get_emblem, get_emoji
 from utils import number
 
 
@@ -65,10 +65,10 @@ class Profile(Cog):
             for field, data in users.items():
                 if isinstance(data, int):
                     if user.id == data:
-                        emblems.append(get_emoji(field.lower(), None))
+                        emblems.append(get_emblem(field, None))
                 elif isinstance(data, list):
                     if user.id in data:
-                        emblems.append(get_emoji(field.lower(), None))
+                        emblems.append(get_emblem(field, None))
             emblems = [emblem for emblem in emblems if emblem is not None]
             if emblems:
                 embed.description += "\n`Emblems`: " + "".join(emblems)
