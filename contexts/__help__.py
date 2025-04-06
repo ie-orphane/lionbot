@@ -1,10 +1,16 @@
+from typing import Any, Coroutine
+
 import discord
-from consts import COLOR
 from discord.ext import commands
+
+from consts import COLOR
+
 from .__all__ import all_contexts as ALL_CTXS
 
 
-async def run(*, bot: commands.Bot, message: discord.Message) -> None:
+async def __run__(
+    *, bot: commands.Bot, message: discord.Message
+) -> Coroutine[Any, Any, None]:
     embed = (
         discord.Embed(
             color=COLOR.yellow,

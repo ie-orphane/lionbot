@@ -1,16 +1,17 @@
+from typing import Any, Coroutine
+
 import discord
-from consts import COLOR
 from discord.ext import commands
-from models import UserData
+
 from config import get_emoji
+from consts import COLOR
+from models import UserData
 from utils import number
-from typing import Coroutine, Any
+
+__DESCRIPTION__ = "Transfer coins to your fellow geek(s)."
 
 
-description = "Transfer coins to your fellow geek(s)."
-
-
-async def error(
+async def __error(
     message: discord.Message, *desc: tuple[str]
 ) -> Coroutine[Any, Any, None]:
     """
@@ -31,7 +32,7 @@ async def error(
     await message.delete(delay=11)
 
 
-async def run(
+async def __run__(
     *,
     bot: commands.Bot,
     message: discord.Message,
@@ -48,11 +49,11 @@ async def run(
     """
 
     if amount < 1:
-        await error(message, "the amount must be greater than or equal to **1**.")
+        await __error(message, "the amount must be greater than or equal to **1**.")
         return
 
     if (user := UserData.read(message.author.id)) is None:
-        await error(
+        await __error(
             message,
             "you need to register before using `>transfer`.",
             "Instead, use the `/register` command.",
@@ -63,23 +64,23 @@ async def run(
 
     for m in member:
         if member.count(m) > 1:
-            await error(
+            await __error(
                 message, f"you can't transfer coins to the {m.mention} multiple times!"
             )
             return
 
         if m.id == message.author.id:
-            await error(message, f"you can't transfer coins to yourself!")
+            await __error(message, f"you can't transfer coins to yourself!")
             return
 
         if (r := UserData.read(m.id)) is None:
-            await error(message, f"{m.mention} is not registered yet!")
+            await __error(message, f"{m.mention} is not registered yet!")
             return
 
         recipient.append(r)
 
     if (_amount := amount * len(recipient)) > user.coins:
-        await error(
+        await __error(
             message,
             f"you don't have {number(_amount)} ({number(amount)}) {get_emoji('coin')}!",
             f"Your current balance is {number(user.coins)} {get_emoji('coin')}.",
