@@ -34,7 +34,7 @@ class QuizButton(
         await interaction.response.defer(ephemeral=True)
         quiz: QuizData = QuizData.read(self.quiz_id)
         if str(interaction.user.id) in quiz.contributions:
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 embed=discord.Embed(
                     color=COLOR.red,
                     description=f"{interaction.user.mention} 🚫,\nyou have already answered this quiz!\nPlease wait for the next one.",

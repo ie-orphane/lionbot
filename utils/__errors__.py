@@ -30,7 +30,8 @@ async def on_error(self, interaction: discord.Interaction, error: Exception, nam
                 ),
             ).set_footer(
                 text="If this error occurs multiple times, please contact the owner."
-            )
+            ),
+            ephemeral=True
         )
     except discord.NotFound:
         await interaction.user.send(

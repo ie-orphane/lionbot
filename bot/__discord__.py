@@ -1,14 +1,16 @@
-import os
-import tasks
-import discord
 import json
-import env
-import contexts as ctx
-from utils import Log
-from config import get_config, get_user
+import os
+
+import discord
 from discord.ext import commands
+
+import contexts as ctx
+import env
+import tasks
+import ui
+from config import get_config
 from consts import EXCLUDE_FILES
-from ui import QuizView, QuizButton, ProductReView, ProductBuyView, ProductBuyBtn
+from utils import Log
 
 
 class DiscordBot(commands.Bot):
@@ -49,10 +51,11 @@ class DiscordBot(commands.Bot):
 
         Log.info("Cogs", f"{len(await self.tree.sync())} Slash Command(s).")
 
-        self.add_view(QuizView())
-        self.add_view(ProductReView(self))
-        self.add_view(ProductBuyView(self))
-        self.add_dynamic_items(QuizButton, ProductBuyBtn)
+        self.add_view(ui.QuizView())
+        self.add_view(ui.ProductReView(self))
+        self.add_view(ui.ProductBuyView(self))
+        self.add_view(ui.ThelistView(self))
+        self.add_dynamic_items(ui.QuizButton, ui.ProductBuyBtn)
 
     async def on_ready(self):
         Log.info("Bot", f"Logged in as {self.user}")

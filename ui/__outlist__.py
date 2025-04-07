@@ -1,10 +1,12 @@
+import datetime as dt
+from zoneinfo import ZoneInfo
+
 import discord
+
 import env
 from config import get_emoji
-from utils import get_week, open_file, number, on_error
-import datetime as dt
 from consts import COLOR
-from zoneinfo import ZoneInfo
+from utils import get_week, number, on_error, open_file
 
 
 class OutlistView(discord.ui.View):
@@ -31,7 +33,7 @@ class OutlistView(discord.ui.View):
             view=None, content=message.content.replace("Started", "Ended")
         )
 
-    @discord.ui.button(label="🏃 out", custom_id="out")
+    @discord.ui.button(label="🏃 out", custom_id="outlist:out")
     async def out(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.defer(ephemeral=True)
 

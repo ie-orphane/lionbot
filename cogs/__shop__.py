@@ -1,12 +1,14 @@
-import discord
 import re
+
+import discord
 from discord.ext import commands
-from config import get_emoji
-from utils import number
+
 from cogs import GroupCog
+from config import get_emoji
+from consts import COLOR, OUTLIST_AMOUNT, INLIST_AMOUNT
 from models import ProductData
-from consts import COLOR
-from ui import ProductReView
+from ui import ProductReView, ThelistView
+from utils import number
 
 
 @discord.app_commands.dm_only()
@@ -137,5 +139,40 @@ class Shop(GroupCog, name="shop"):
         await interaction.followup.send(embed=embed)
 
 
+@discord.app_commands.guild_only()
+@discord.app_commands.default_permissions(administrator=True)
+class _Shop(GroupCog, name="__shop"):
+    @discord.app_commands.command(description="d")
+    async def add(self, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=True)
+        self.cog_interaction(interaction)
+
+        channel: discord.ForumChannel = self.bot.get_listed_channel(
+            channel_name="shop", is_text_channel=False
+        )
+        if channel is None:
+            raise Exception("Shop channel not found")
+
+        await channel.create_thread(
+            name=f"The List",
+            content=(
+                f"A way for escaping or joining the **list**.\n\n**`Prices`**:\n"
+                f"{get_emoji('empty')}- in: {number(INLIST_AMOUNT)} {get_emoji('coin')}\n"
+                f"{get_emoji('empty')}- out: {number(OUTLIST_AMOUNT)} {get_emoji('coin')}\n"
+                f"\n**`By`**: {self.bot.user.mention} (LionBot)"
+            ),
+            view=ThelistView(self.bot),
+        )
+
+        await interaction.followup.send(
+            embed=discord.Embed(
+                color=COLOR.green,
+                description=(f"**The List** has been added to the shop! ✅"),
+            ),
+            ephemeral=True,
+        )
+
+
 async def setup(bot: commands.Bot):
     await bot.add_cog(Shop(bot))
+    await bot.add_cog(_Shop(bot))
