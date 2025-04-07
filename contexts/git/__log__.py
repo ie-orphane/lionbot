@@ -12,7 +12,7 @@ __DESCRIPTION__ = "Show Git history."
 async def __run__(*, bot: commands.Bot, message: discord.Message, number: int = 7):
     try:
         result = subprocess.run(
-            f"git fetch && git log --oneline -{number} --color=always --decorate=short",
+            f"git log --oneline -{number} --color=always --decorate=short",
             shell=True,
             text=True,
             capture_output=True
