@@ -4,7 +4,7 @@ from utils import Log
 
 from .__self__ import get_config
 
-__all__ = ["get_emoji", "get_reaction", "get_extension", "get_emblem"]
+__all__ = ["get_emoji", "get_emojis", "get_reaction", "get_extension", "get_emblem"]
 
 
 def get_emoji(
@@ -16,6 +16,32 @@ def get_emoji(
         Log.error("Config", "EMOJIS field not found")
         return default
     return emojis.get(emoji.lower(), default)
+
+
+class _emojis:
+    def __init__(self, __default: str = " ", **kwargs: dict[str, str]):
+        self.__dict__.update(kwargs)
+        self.__default = __default
+
+    def __getattr__(self, _: str) -> str:
+        return self.__default
+
+    def __getitem__(self, key: str) -> str:
+        return getattr(self, key)
+
+
+def get_emojis(
+    *emoji: Literal["coin", "star", "wakatime", "github", "portfolio"],
+    default: str | None = " ",
+) -> _emojis:
+    emojis: dict[str, str] = get_config("EMOJIS", "emojis")
+    if emojis is None:
+        Log.error("Config", "EMOJIS field not found")
+        return _emojis(__default=default)
+    return _emojis(
+        __default=default,
+        **{_emoji: emojis.get(_emoji.lower(), default) for _emoji in emoji},
+    )
 
 
 def get_reaction(
