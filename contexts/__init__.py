@@ -49,6 +49,11 @@ async def run(bot: commands.Bot, message: discord.Message) -> None:
     if (command is None) or ((ctx := all_contexts.get(command)) is None):
         return
 
+    if (isinstance(message.channel, discord.DMChannel)) and (
+        message.author.id != get_user("owner")
+    ):
+        return
+
     if (ctx.only.admin and message.author.id not in get_users("admins")) or (
         ctx.only.owner and message.author.id != get_user("owner")
     ):
@@ -139,4 +144,5 @@ async def run(bot: commands.Bot, message: discord.Message) -> None:
 
         options[name] = value
 
+    
     await ctx(**options)
