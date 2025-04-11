@@ -54,4 +54,6 @@ else
     warn "requirements.txt does not exist. Skipping dependencies installation."
 fi
 
+cd $dir/.venv/bin && ln -s $dir/scripts/run.sh run
+
 info "Environment initialization complete!"
