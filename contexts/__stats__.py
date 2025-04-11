@@ -22,7 +22,7 @@ async def __run__(
     users: list[UserData] = UserData.read_all()
     top_users_by_coins = "".join(
         map(
-            lambda x: f"{emojis.empty}{emojis.empty}{x[0]} {x[1].name} (<@{x[1].id}>) {number(x[1].coins)} {emojis.coin}\n",
+            lambda x: f"{emojis.empty}{x[0]} {x[1].name} (<@{x[1].id}>) {number(x[1].coins)}\n",
             list(
                 zip(
                     [emojis["1st"], emojis["2nd"], emojis["3rd"]],
@@ -38,10 +38,10 @@ async def __run__(
     embed = discord.Embed(
         color=COLOR.blue,
         description=(
-            f"**Users**\n{emojis.empty}`total`: {total_users}\n\n"
-            f"**Coins**\n{emojis.empty}`total`: {number(total_coins)} {emojis.coin}\n"
-            f"{emojis.empty}`average`: {number(total_coins / total_users)} {emojis.coin}\n"
-            f"{emojis.empty}`top`: \n{top_users_by_coins}"
+            f"**Users**\n`total`: {total_users}\n\n"
+            f"{emojis.coin} **Coins**\n`total`: {number(total_coins)} \n"
+            f"`average`: {number(total_coins / total_users)}\n"
+            f"`top`: \n{top_users_by_coins}"
         ),
     )
 
