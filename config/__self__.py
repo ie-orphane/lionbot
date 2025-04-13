@@ -1,4 +1,5 @@
 import os
+import pprint
 from typing import Any, Dict, Literal
 
 import env
@@ -9,6 +10,20 @@ __all__ = ["get_config", "set_config", "get_all"]
 
 CONFIG_DIR: str = os.path.join(os.path.abspath(env.BASE_DIR), "config")
 CONFIG_SUFFIX: str = "json"
+
+
+class config:
+    def __init__(self, **kwargs) -> None:
+        self.__dict__.update(kwargs)
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__} {pprint.saferepr(object=self.__dict__)}"
+
+    def __eq__(self, other: object) -> bool:
+        return self.__dict__ == other.__dict__
+
+    def __to_dict__(self):
+        return self.__dict__
 
 
 ConfigPrefix = Literal["global", "msgs", "leaderboard", "emojis", "users"]

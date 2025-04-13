@@ -1,6 +1,6 @@
-from .__self__ import get_config, set_config
 from utils import Log
 
+from .__self__ import get_config, set_config
 
 __all__ = ["get_message", "set_message"]
 

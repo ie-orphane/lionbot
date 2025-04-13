@@ -1,9 +1,9 @@
 import json
 import os
 import pprint
+from typing import Any, List, Self
+
 import env
-from utils import Log
-from typing import Any, Self, List
 
 
 class Model:
@@ -32,18 +32,12 @@ class ModelEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-class Author(Model):
+class Document(Model):
     @staticmethod
     def __write(obj: Any, fp: str) -> None:
-        try:
-            json.dumps(obj)
-            with open(f"{env.BASE_DIR}/data/{fp}", "w") as file:
-                json.dump(obj, file, cls=ModelEncoder, indent=2)
-        except TypeError:
-            Log.error("Models", "error while parsing")
+        with open(f"{env.BASE_DIR}/data/{fp}", "w") as file:
+            json.dump(obj, file, cls=ModelEncoder, indent=2)
 
-
-class Document(Author):
     @classmethod
     def exists(cls: Self, id: str) -> bool:
         docs = [data.id for data in cls.read_all()]

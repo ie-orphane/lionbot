@@ -1,10 +1,9 @@
-from models.__users__ import UserData, UserChallenge
-from models.__weeks__ import WeekData
-from models.__files__ import FileData
-from models.__channels__ import ChannelData
-from models.__challenges__ import ChallengeData
-from models.__projects__ import ProjectData
-from models.__evaluations__ import EvaluationData
-from models.__quizzes__ import QuizData
-from models.__ledger__ import UserLedger
-from models.__products__ import ProductData
+from .__channels__ import ChannelData
+from .__evaluations__ import EvaluationData
+from .__files__ import FileData
+from .__ledger__ import UserLedger
+from .__products__ import ProductData
+from .__projects__ import ProjectData
+from .__quizzes__ import QuizData
+from .__users__ import UserChallenge, UserData
+from .__weeks__ import WeekData

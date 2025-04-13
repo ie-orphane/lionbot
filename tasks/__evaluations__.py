@@ -1,11 +1,13 @@
 import subprocess
+from datetime import UTC, datetime
+
 import discord
-from discord.ext import tasks, commands
-from models import EvaluationData
-from datetime import datetime, UTC
-from utils import Log
+from discord.ext import commands, tasks
+
 from config import get_emoji
 from consts import COLOR, MESSAGE
+from models import EvaluationData
+from utils import Log, number
 
 
 @tasks.loop(minutes=1)
@@ -18,7 +20,7 @@ async def evaluations(bot: commands.Bot):
         feedback = None
         result = "OK"
 
-        with open(evaluation.solution, "r") as f:
+        with open(evaluation.solution.path) as f:
             solution = f.read()
 
         forbiddens = set(
@@ -33,7 +35,8 @@ async def evaluations(bot: commands.Bot):
             for index, test in enumerate(evaluation.challenge.tests, 1):
                 try:
                     completed_process = subprocess.run(
-                        [evaluation.challenge.runner, evaluation.solution] + test.args,
+                        [evaluation.challenge.runner, evaluation.solution.path]
+                        + test.args,
                         capture_output=True,
                         text=True,
                         timeout=4,
@@ -87,7 +90,7 @@ async def evaluations(bot: commands.Bot):
                         + f"\033[0m\t\n{completed_process.stdout}"
                     )
                     result = "KO"
-                    print(f"\u274C [{index}] {test.description}")
+                    print(f"\u274c [{index}] {test.description}")
                     print(
                         " ".join(
                             ["$", evaluation.challenge.file]
@@ -106,13 +109,13 @@ async def evaluations(bot: commands.Bot):
 
             if result == "OK":
                 evaluation.user.add_coins(
-                    evaluation.challenge.coins, "challange reward"
+                    evaluation.challenge.coins, "challenge reward"
                 )
 
         evaluation.user._challenge.update(
             {
                 "evaluated": str(datetime.now(UTC)),
-                "_solution": evaluation.solution,
+                "_solution": evaluation.solution.filename,
                 "result": result,
             }
         )
@@ -121,7 +124,7 @@ async def evaluations(bot: commands.Bot):
         if feedback is not None:
             evaluation.user._log = {
                 "language": evaluation.challenge.language,
-                "level": evaluation.challenge.level,
+                "id": evaluation.challenge.id,
                 "name": evaluation.challenge.name,
                 "attempt": evaluation.user.challenge.attempt,
                 "trace": feedback,
@@ -141,19 +144,23 @@ async def evaluations(bot: commands.Bot):
                     discord.Embed(
                         color=COLOR.green,
                         description=(
-                            f"{MESSAGE.succeeding}\n\nChallenge : **{evaluation.challenge.name}"
-                            f"**\nLanguage : {evaluation.challenge.language}\nLevel : "
-                            f"{evaluation.challenge.level}\nResult : **{result}**\n"
-                            f"Reward : **{evaluation.challenge.coins}** {get_emoji("coin")}"
+                            f"{MESSAGE.succeeding}\n\n"
+                            f"**`Challenge`**: **{evaluation.challenge.name}**\n"
+                            f"**`Language`**: {evaluation.challenge.language} {get_emoji(evaluation.challenge.language)}\n"
+                            f"**`Level`**: {evaluation.challenge.level}\n"
+                            f"**`Result`**: **{result}**\n"
+                            f"**`Reward`**: {number(evaluation.challenge.coins)} {get_emoji("coin")}"
                         ),
                     )
                     if result == "OK"
                     else discord.Embed(
                         color=COLOR.red,
                         description=(
-                            f"{MESSAGE.failing}\n\nChallenge : **{evaluation.challenge.name}"
-                            f"**\nLanguage : {evaluation.challenge.language}\nLevel : "
-                            f"{evaluation.challenge.level}\nResult : **{result}**"
+                            f"{MESSAGE.failing}\n\n"
+                            f"**`Challenge`**: **{evaluation.challenge.name}**\n"
+                            f"**`Language`**: {evaluation.challenge.language} {get_emoji(evaluation.challenge.language)}\n"
+                            f"**`Level`**: {evaluation.challenge.level}\n"
+                            f"**`Result`**: **{result}**"
                         ),
                     )
                 )

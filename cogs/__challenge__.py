@@ -1,11 +1,13 @@
+from datetime import UTC, datetime
+
 import discord
 from discord.ext import commands
-from models import EvaluationData, UserChallenge
-from config import get_emoji
-from datetime import datetime, UTC
-from utils import Language, RelativeDateTime
-from consts import MESSAGE
+
 from cogs import GroupCog
+from config import ChallengeConfig, get_emoji
+from consts import MESSAGE
+from models import EvaluationData, UserChallenge
+from utils import Language, RelativeDateTime, number
 
 
 @discord.app_commands.dm_only()
@@ -35,10 +37,10 @@ class Challenge(GroupCog, name="challenge"):
                     description=(
                         f"### {interaction.user.mention}, you already requested a challenge!\n"
                         f"### {current_challenge.name}\n"
-                        f"```ansi\n{current_challenge.text}```\n"
-                        f"**Level** : {current_challenge.level}\n"
-                        f"**Reward** : {current_challenge.coins} {get_emoji("coin")}\n"
-                        f"**Excpected File** : {current_challenge.file}"
+                        f"```ansi\n{current_challenge.subject}```\n"
+                        f"**`Level`**: {current_challenge.level}\n"
+                        f"**`Reward`**: {number(current_challenge.coins)} {get_emoji("coin")}\n"
+                        f"**`Excpected File`**: {current_challenge.file}"
                     ),
                 )
             )
@@ -59,10 +61,10 @@ class Challenge(GroupCog, name="challenge"):
                 color=self.color.yellow,
                 title=challenge.name,
                 description=(
-                    f"```ansi\n{challenge.text}```\n"
-                    f"**Level** : {challenge.level}\n"
-                    f"**Reward** : {challenge.coins} {get_emoji("coin")}\n"
-                    f"**Excpected File** : {challenge.file}"
+                    f"```ansi\n{challenge.subject}```\n"
+                    f"**`Level`**: {challenge.level}\n"
+                    f"**`Reward`**: {number(challenge.coins)} {get_emoji("coin")}\n"
+                    f"**`Excpected File`**: {challenge.file}"
                 ),
             ).set_footer(text="as always follow the law and doubt your code!"),
         )
@@ -81,7 +83,7 @@ class Challenge(GroupCog, name="challenge"):
                 embed=discord.Embed(
                     color=self.color.red,
                     description=f"{interaction.user.mention}, you don't have any challenge to submit!",
-                ).set_footer(text="use /challenge request instead")
+                ).set_footer(text="instead, use /challenge request")
             )
             return
 
@@ -105,9 +107,9 @@ class Challenge(GroupCog, name="challenge"):
 
         try:
             solution = current_challenge.solution
-            await file.save(solution)
+            await file.save(solution.path)
             if current_challenge.additionales:
-                with open(solution, "a") as f:
+                with open(solution.path, "a") as f:
                     print(current_challenge.additionales, file=f)
         except discord.errors.HTTPException or discord.errors.NotFound as e:
             await interaction.followup.send(
@@ -198,7 +200,7 @@ class Challenge(GroupCog, name="challenge"):
         for challenge in user.challenges:
             if (
                 challenge.language == user_log.language
-                and challenge.level == user_log.level
+                and challenge.id == user_log.id
                 and challenge.attempt == user_log.attempt
             ):
                 user.sub_coins(user_log.cost, "log cost")
@@ -210,8 +212,8 @@ class Challenge(GroupCog, name="challenge"):
                         title=user_log.name,
                         description=(
                             f"```ansi\n{user_log.trace}```\n"
-                            f"**Result** : {user_log.result}\n"
-                            f"**Cost** : {user_log.cost} {get_emoji("coin")}"
+                            f"**`Result`**: {user_log.result}\n"
+                            f"**`Cost`**: {number(user_log.cost)} {get_emoji("coin")}"
                         ),
                     )
                 )
@@ -228,29 +230,32 @@ class Challenge(GroupCog, name="challenge"):
     async def help(self, interaction: discord.Interaction):
         await interaction.response.defer()
 
-        with open("assets/challenges.md", "r") as f:
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    color=self.color.blue,
-                    description="\n".join(
+        await interaction.followup.send(
+            embed=discord.Embed(
+                color=self.color.blue,
+                description=(
+                    "### /challenge request : get a new challenge\n"
+                    + "- During the challenge, always follow the **law**  and doubt your code.\n"
+                    + "- You have 1 day to submit your code, if you pass the deadline your challenge will be evaluated as `DEAD`.\n"
+                    + "- After **7** tries of the same challenge, you will cost **7**% of the reward for every next request.\n"
+                    + "### /challenge submit : send your code challenge\n"
+                    + "- Your code will be evaluated by a program called **bugini**.\n"
+                    + "- You will receive a message with challenge result (`OK` | `ERROR` | `KO` | `FORBIDDEN` | `TIMEOUT`).\n"
+                    + "- The **reward** depend on the **difficulty** of the challenge.\n"
+                    + "".join(
                         [
-                            "### /challenge request : get a new challenge"
-                            "- During the challenge, always follow the **law**  and doubt your code."
-                            "- You have 1 day to submit your code, if you pass the deadline your challenge will be evaluated as `DEAD`."
-                            "- After **7** tries of the same challenge, you will cost **7**% of the reward for every next request."
-                            "### /challenge submit : send your code challenge"
-                            "- Your code will be evaluated by a program called **bugini**."
-                            "- You will receive a message with challenge result (`OK` | `ERROR` | `KO` | `FORBIDDEN` | `TIMEOUT`)."
-                            "- The **reward** depend on the **difficulty** of the challenge."
-                            "### /challenge status : show your challenge journey"
-                            "- see your ancients and current challenges."
-                            "### /challenge log : see the failing part of the last challenge"
-                            "- With a cost **5**% of the reward."
-                            "- Only the `ERROR` and `KO` challenges will have a log."
+                            f"  - {difficulty}: {number(coins)} {get_emoji('coin')}\n"
+                            for difficulty, coins in ChallengeConfig.COINS.items()
                         ]
-                    ),
-                )
+                    )
+                    + "### /challenge status : show your challenge journey\n"
+                    + "- see your ancients and current challenges.\n"
+                    + "### /challenge log : see the failing part of the last challenge\n"
+                    + "- With a cost **5**% of the reward.\n"
+                    + "- Only the `ERROR` and `KO` challenges will have a log.\n"
+                ),
             )
+        )
 
 
 async def setup(bot: commands.Bot):

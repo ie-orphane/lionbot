@@ -1,32 +1,37 @@
 import json
+
+import env
+from config import ChallengeConfig, get_challenge_by_id
 from models.__schema__ import Document
-from models import UserData, ChallengeData
+from models.__users__ import UserData, solution
 
 
 class EvaluationData(Document):
     BASE: str = "evaluations"
-    solution: str
+    solution: solution
     user: UserData
-    challenge: ChallengeData
+    challenge: ChallengeConfig
 
     def __to_dict__(self):
         self.__dict__.update(
             user=self.user.id,
-            level=self.challenge.level,
+            id=self.challenge.id,
             language=self.challenge.language,
         )
         if "challenge" in self.__dict__:
             self.__dict__.pop("challenge")
+        if "solution" in self.__dict__:
+            self.__dict__["solution"] = self.solution.filename
         return self.__dict__
 
     @classmethod
     def read_all(cls):
-        with open(f"./data/{cls.BASE}.json", "r") as file:
+        with open(f"{env.BASE_DIR}/data/{cls.BASE}.json") as file:
             return [
                 cls(
-                    solution=x["solution"],
+                    solution=solution(filename=x["solution"]),
                     user=UserData.read(x["user"]),
-                    challenge=ChallengeData.read(x["language"], x["level"]),
+                    challenge=get_challenge_by_id(x["language"], x["id"]),
                 )
                 for x in json.load(file)
             ]

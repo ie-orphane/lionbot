@@ -1,26 +1,35 @@
-import re
 import os
-import env
-import requests
+import re
+from datetime import UTC, datetime
 from urllib.parse import urlparse
-from models.__schema__ import Collection, Relation, Model
-from models.__challenges__ import ChallengeData, ChallengeFields
-from datetime import datetime, UTC
+
+import requests
+
+import env
+from config import ChallengeConfig, get_challenge, get_challenge_by_id, get_challenges
+from models.__schema__ import Collection, Model
 from utils import Language, Result, Social
 
 
 class Log(Model):
     name: str
     language: Language
-    level: int
+    id: int
     attempt: int
     trace: str
     result: Result
     cost: int
 
 
-class UserChallenge(Relation, ChallengeData, ChallengeFields):
-    MODEL = ChallengeData
+class solution(Model):
+    filename: str
+
+    @property
+    def path(self):
+        return f"{env.BASE_DIR}/storage/solutions/{self.filename}"
+
+
+class UserChallenge(ChallengeConfig):
     attempt: int
     requested: datetime
     submited: datetime = None
@@ -29,14 +38,17 @@ class UserChallenge(Relation, ChallengeData, ChallengeFields):
     log: str = None
     _solution: str = None
 
-    def __init__(self, language: Language, level: int, **kwargs) -> None:
-        self.__dict__.update({**kwargs, **self.MODEL.read(language, level).__dict__})
+    def __init__(self, language: Language, id: str, **kwargs) -> None:
+        self.__dict__.update({**kwargs, **get_challenge_by_id(language, id).__dict__})
 
     @property
-    def solution(self):
+    def solution(self) -> solution:
         return (
-            self._solution
-            or f"assets/solutions/{self.language}/{int(datetime.now(UTC).timestamp())}.{self.extension}"
+            solution(
+                filename=f"{str(datetime.now(UTC).timestamp()).replace('.', '_')}.{self.extension}"
+            )
+            if self._solution is None
+            else solution(filename=self._solution)
         )
 
 
@@ -99,13 +111,15 @@ class UserData(Collection):
     @property
     def challenges(self):
         return [UserChallenge(**challenge_data) for challenge_data in self._challenges]
-    
+
     @property
     def mention(self):
         return f"<@{self.id}>"
 
     def sub_coins(self, amount: int, reason: str):
-        with open(os.path.join(os.path.abspath(env.BASE_DIR), "data", "transactions.csv"), "a") as f:
+        with open(
+            os.path.join(os.path.abspath(env.BASE_DIR), "data", "transactions.csv"), "a"
+        ) as f:
             print(
                 f"{datetime.now(UTC)},{self.id},{self.coins},sub,{amount},{reason}",
                 file=f,
@@ -115,7 +129,9 @@ class UserData(Collection):
         return self.coins
 
     def add_coins(self, amount: int | float, reason: str):
-        with open(os.path.join(os.path.abspath(env.BASE_DIR), "data", "transactions.csv"), "a") as f:
+        with open(
+            os.path.join(os.path.abspath(env.BASE_DIR), "data", "transactions.csv"), "a"
+        ) as f:
             print(
                 f"{datetime.now(UTC)},{self.id},{self.coins},add,{amount},{reason}",
                 file=f,
@@ -125,7 +141,7 @@ class UserData(Collection):
         return self.coins
 
     def request_challenge(self, language: Language):
-        all_challenges = ChallengeData.read_all(language)
+        all_challenges = get_challenges(language)
         user_challenges = self.challenges
 
         all_user_challenges: dict[tuple[int, str], list[UserChallenge]] = {}
@@ -154,11 +170,11 @@ class UserData(Collection):
         if level >= len(all_challenges):
             return None
 
-        challenge = ChallengeData.read(language, level)
+        challenge = get_challenge(language, level)
 
         self._challenge = {
-            "language": language,
-            "level": level,
+            "id": challenge.id,
+            "language": challenge.language,
             "attempt": attempt,
             "requested": str(datetime.now(UTC)),
         }
@@ -192,7 +208,9 @@ class UserData(Collection):
                 if not is_valid_link:
                     return None
             case "linkedin":
-                if not re.match(r"https:\/\/www\.linkedin\.com\/in\/[a-zA-Z0-9-]+", link):
+                if not re.match(
+                    r"https:\/\/www\.linkedin\.com\/in\/[a-zA-Z0-9-]+", link
+                ):
                     return None
         self._socials[social] = link
         self.update()
