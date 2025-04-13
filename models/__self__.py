@@ -1,6 +1,7 @@
-import os
-import env
 import json
+import os
+
+import env
 from utils import Log
 
 
@@ -22,6 +23,7 @@ class Migration:
         "subjects",
         "solutions",
         "logs",
+        "evaluations",
         "errors",
     ]
     config = {

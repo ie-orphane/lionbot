@@ -35,3 +35,10 @@ class EvaluationData(Document):
                 )
                 for x in json.load(file)
             ]
+
+    def log(self, *content: str, sep="\n", end="\n"):
+        with open(
+            f"{env.BASE_DIR}/storage/evaluations/{self.solution.filename.replace('.sh', '.ansi.log')}",
+            "a",
+        ) as f:
+            f.write(sep.join(content) + end)

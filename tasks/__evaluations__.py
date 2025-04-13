@@ -1,9 +1,11 @@
 import subprocess
+import traceback
 from datetime import UTC, datetime
 
 import discord
 from discord.ext import commands, tasks
 
+import env
 from config import get_emoji
 from consts import COLOR, MESSAGE
 from models import EvaluationData
@@ -15,6 +17,14 @@ async def evaluations(bot: commands.Bot):
     for evaluation in EvaluationData.read_all():
         Log.job(
             "Evaluation", f"{evaluation.challenge.name} from {evaluation.user.name}"
+        )
+        evaluation.log(
+            f"Datetime: {datetime.now(UTC)}",
+            f"User: {evaluation.user.id}",
+            f"Challenge: {evaluation.challenge.id}",
+            f"Language: {evaluation.challenge.language}",
+            f"Solution: {evaluation.solution.filename}",
+            f"Attempt: {evaluation.user.challenge.attempt}",
         )
 
         feedback = None
@@ -29,9 +39,8 @@ async def evaluations(bot: commands.Bot):
 
         if len(forbiddens) > 0:
             result = "FORBIDDEN"
-            print(f"\033[33mForbidden : {', '.join(forbiddens)}\033[0m")
-
-        if result == "OK":
+            evaluation.log(f"Forbidden: {', '.join(forbiddens)}")
+        else:
             for index, test in enumerate(evaluation.challenge.tests, 1):
                 try:
                     completed_process = subprocess.run(
@@ -43,7 +52,7 @@ async def evaluations(bot: commands.Bot):
                     )
                 except subprocess.TimeoutExpired:
                     result = "TIMEOUT"
-                    print(
+                    evaluation.log(
                         "\033[33m"
                         + " ".join(
                             ["Timeout :", evaluation.challenge.file]
@@ -63,18 +72,18 @@ async def evaluations(bot: commands.Bot):
                             ]
                             + test.args
                         )
-                        + f"\033[0m\t\n{completed_process.stderr}"
+                        + f"\033[0m\n{completed_process.stderr.replace(evaluation.solution.path, evaluation.challenge.file)}"
                     )
                     result = "ERROR"
-                    print(
+                    evaluation.log(
                         "\033[31m"
                         + " ".join(
                             ["Error :", evaluation.challenge.file]
                             + ['""' if arg == "" else arg for arg in test.args]
                         )
-                        + "\033[0m"
+                        + "\033[0m",
+                        completed_process.stderr,
                     )
-                    print(f"{completed_process.stderr}")
                     break
 
                 if completed_process.stdout != test.expected:
@@ -90,23 +99,21 @@ async def evaluations(bot: commands.Bot):
                         + f"\033[0m\t\n{completed_process.stdout}"
                     )
                     result = "KO"
-                    print(f"\u274c [{index}] {test.description}")
-                    print(
+                    evaluation.log(
+                        f"\u274c [{index}] {test.description}",
                         " ".join(
                             ["$", evaluation.challenge.file]
                             + ['""' if arg == "" else arg for arg in test.args]
-                        )
-                    )
-
-                    print(
+                        ),
                         "Expected \033[32m{}\033[0m got \033[31m{}\033[0m".format(
                             test.expected, completed_process.stdout
-                        ).replace("\n", "\\n")
+                        ).replace("\n", "\\n"),
                     )
                     break
+                evaluation.log(f"\u2705 [{index}] {test.description}")
 
-                print(f"\u2705 [{index}] {test.description}")
-
+            if result != "TIMEOUT":
+                evaluation.log(f"Result: {result}")
             if result == "OK":
                 evaluation.user.add_coins(
                     evaluation.challenge.coins, "challenge reward"
@@ -166,7 +173,20 @@ async def evaluations(bot: commands.Bot):
                 )
             )
         except Exception as e:
-            print(f"Failed to send a message to {evaluation.user.name}\nError: {e}")
+            Log.error("Evaluation", f"MessageFailed: {evaluation.user.name}")
+
+            with open(
+                f"{env.BASE_DIR}/storage/errors/{evaluation.solution.filename.replace('.sh', '.log')}",
+                "w",
+            ) as file:
+                file.writelines(
+                    [
+                        f"User: {evaluation.user.name} ({evaluation.user.id})\n",
+                        f"Challenge: {evaluation.challenge.name} ({evaluation.challenge.id}) #{evaluation.challenge.language}\n",
+                        f"Error: {e}\n",
+                    ]
+                )
+                traceback.print_exc(file=file)
 
         Log.job("Evaluation", f"{evaluation.challenge.name} Done!")
 
