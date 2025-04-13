@@ -91,6 +91,7 @@ class UserData(Collection):
     _socials: dict
     achievments: dict
     greylist: bool = False
+    quests: list[str] = None
 
     @property
     def socials(self):
@@ -215,3 +216,12 @@ class UserData(Collection):
         self._socials[social] = link
         self.update()
         return link
+
+    def add_quest(self, language: str) -> bool:
+        if not self.quests:
+            self.quests = []
+        if language in self.quests:
+            return False
+        self.quests.append(language)
+        self.update()
+        return True

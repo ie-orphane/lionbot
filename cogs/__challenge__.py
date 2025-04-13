@@ -5,8 +5,8 @@ from discord.ext import commands
 
 from cogs import GroupCog
 from config import ChallengeConfig, get_emoji
-from consts import MESSAGE
-from models import EvaluationData, UserChallenge
+from consts import COLOR, MESSAGE
+from models import EvaluationData, UserChallenge, UserData
 from utils import Language, RelativeDateTime, number
 
 
@@ -18,6 +18,18 @@ class Challenge(GroupCog, name="challenge"):
         await interaction.response.defer()
 
         if (user := await self.bot.user_is_unkown(interaction)) is None:
+            return
+
+        if (user.quests is None) or (language not in user.quests):
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    color=COLOR.red,
+                    description=(
+                        f"🚫 {interaction.user.mention},\n"
+                        "you don't have permission to embark on this **journey**."
+                    ),
+                ).set_footer(text="consider contacting our staff.")
+            )
             return
 
         current_challenge = user.challenge
@@ -258,5 +270,67 @@ class Challenge(GroupCog, name="challenge"):
         )
 
 
+@discord.app_commands.guild_only()
+@discord.app_commands.default_permissions(administrator=True)
+class _Challenge(GroupCog, name="__challenge"):
+    @discord.app_commands.command(description="Request a new challenge.")
+    @discord.app_commands.describe(
+        language="The challenge's language.", _geek="The geek(s) to assign."
+    )
+    @discord.app_commands.rename(_geek="geek")
+    async def assign(
+        self,
+        interaction: discord.Interaction,
+        language: Language,
+        _geek: discord.Member | discord.Role,
+    ):
+        await interaction.response.defer(ephemeral=True)
+
+        geeks: list[discord.Member] = []
+        users: list[UserData] = []
+        not_registred: list[discord.Member] = []
+
+        if isinstance(_geek, discord.Member):
+            geeks.append(_geek)
+        elif isinstance(_geek, discord.Role):
+            geeks = _geek.members
+
+        for geek in geeks:
+            if (user := UserData.read(geek.id)) is None:
+                not_registred.append(geek)
+                continue
+            users.append(user)
+
+        if not_registred:
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    color=COLOR.red,
+                    description=(
+                        f"✋ {interaction.user.mention},\n\n"
+                        + f"{'Geeks are' if len(not_registred) > 1 else 'A geek is'} not registered yet!\n"
+                        + "\n".join([f" - {geek.mention}" for geek in not_registred])
+                    ),
+                ),
+                ephemeral=True,
+            )
+            return
+
+        for user in users:
+            user.add_quest(language)
+
+        await interaction.followup.send(
+            embed=discord.Embed(
+                color=COLOR.yellow,
+                description=(
+                    f"⚔️ {interaction.user.mention},\n\n"
+                    + f"you assigned the **{language}** {get_emoji(language)} quest to:\n"
+                    + "\n".join([f"- {geek.mention}" for geek in geeks])
+                ),
+            ),
+            ephemeral=True,
+        )
+
+
 async def setup(bot: commands.Bot):
     await bot.add_cog(Challenge(bot))
+    await bot.add_cog(_Challenge(bot))
