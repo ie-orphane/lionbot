@@ -19,7 +19,7 @@ def __parse(context: str) -> tuple[str, dict]:
         tuple: A tuple containing the command and a dictionary of options.
     """
 
-    context = re.sub(r"\s+", " ", context).strip().lower()
+    context = re.sub(r"\s+", " ", context).strip()
 
     command = None
     options = {}
