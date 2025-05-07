@@ -1,13 +1,13 @@
 import math
-from utils import Message, Color
 from typing import Literal
 
+from utils import Color, Message
 
 GOLDEN_RATIO = (1 + math.sqrt(5)) / 2
 
 BOT_COINS_AMOUNT = GOLDEN_RATIO**29
 OUTLIST_AMOUNT = GOLDEN_RATIO**11
-INLIST_AMOUNT = OUTLIST_AMOUNT*GOLDEN_RATIO
+INLIST_AMOUNT = OUTLIST_AMOUNT * GOLDEN_RATIO
 
 MESSAGE = Message()
 COLOR = Color()

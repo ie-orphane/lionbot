@@ -6,9 +6,10 @@ load and store enviroment variables from the .env
 """
 
 import os
-from dotenv import load_dotenv
-from utils import Log
 
+from dotenv import load_dotenv
+
+from utils import Log
 
 IS_MISSING: bool = False
 

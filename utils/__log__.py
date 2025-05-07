@@ -1,6 +1,7 @@
+from datetime import UTC, datetime
 from typing import Literal
+
 from .__colorful__ import Color as clr
-from datetime import datetime, UTC
 
 
 def log(

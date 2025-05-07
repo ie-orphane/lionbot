@@ -1,8 +1,10 @@
-import env
 import traceback
+from datetime import UTC, datetime
+
 import discord
+
+import env
 from consts import COLOR
-from datetime import datetime, UTC
 
 
 async def on_error(self, interaction: discord.Interaction, error: Exception, name: str):
@@ -31,7 +33,7 @@ async def on_error(self, interaction: discord.Interaction, error: Exception, nam
             ).set_footer(
                 text="If this error occurs multiple times, please contact the owner."
             ),
-            ephemeral=True
+            ephemeral=True,
         )
     except discord.NotFound:
         await interaction.user.send(

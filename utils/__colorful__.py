@@ -1,8 +1,6 @@
 from typing import Callable
 
-__all__ = [
-    "Color",
-]
+__all__ = ["Color"]
 
 RESET = "\x1b[0m"
 BOLD = "\x1b[1m"
@@ -27,4 +25,3 @@ for i in range(8):
     exec(f"Color.{COLORS[i]} = lambda text: f'{BOLD}\x1b[3{i}m{"{text}"}{RESET}'")
     exec(f"Color._{COLORS[i]} = lambda text: f'\x1b[3{i}m{"{text}"}{RESET}'")
     exec(f"Color.{COLORS[i].upper()} = f'\x1b[3{i}m'")
-

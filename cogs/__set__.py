@@ -1,9 +1,10 @@
 import discord
 from discord.ext import commands
-from utils import Social
-from config import get_emoji
-from cogs import GroupCog
+
 from api import wakapi
+from cogs import GroupCog
+from config import get_emoji
+from notations import SOCIAL
 
 
 @discord.app_commands.guild_only()
@@ -12,7 +13,7 @@ class Set(GroupCog, name="set"):
     @discord.app_commands.describe(
         social="The social's name.", link="The social's link."
     )
-    async def social(self, interaction: discord.Interaction, social: Social, link: str):
+    async def social(self, interaction: discord.Interaction, social: SOCIAL, link: str):
         await interaction.response.defer()
         self.cog_interaction(interaction, social=social, link=link)
 
