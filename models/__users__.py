@@ -6,27 +6,45 @@ from urllib.parse import urlparse
 import requests
 
 import env
-from config import ChallengeConfig, get_challenge, get_challenge_by_id, get_challenges
+from config import (
+    ChallengeConfig,
+    get_challenge_by_id,
+    get_challenge_by_level,
+    get_challenges,
+)
 from models.__schema__ import Collection, Model
-from utils import Language, Result, Social
+from notations import CHALLENGE, SOCIAL
 
 
 class Log(Model):
     name: str
-    language: Language
+    language: CHALLENGE.LANGUAGE
     id: int
     attempt: int
     trace: str
-    result: Result
+    result: CHALLENGE.RESULT
     cost: int
 
 
-class solution(Model):
+class filebase(Model):
+    BASE: str
     filename: str
+
+    def __init_subclass__(cls, BASE=None):
+        if BASE is None:
+            raise ValueError("BASE must be defined in the subclass")
+        if not isinstance(BASE, str):
+            raise TypeError("BASE must be a string")
+        if not BASE:
+            raise ValueError("BASE cannot be empty")
+        cls.BASE = BASE
 
     @property
     def path(self):
-        return f"{env.BASE_DIR}/storage/solutions/{self.filename}"
+        return f"{env.BASE_DIR}/storage/{self.BASE}/{self.filename}"
+
+
+class solution(filebase, BASE="solutions"): ...
 
 
 class UserChallenge(ChallengeConfig):
@@ -34,22 +52,18 @@ class UserChallenge(ChallengeConfig):
     requested: datetime
     submited: datetime = None
     evaluated: datetime = None
-    result: Result = None
+    result: CHALLENGE.RESULT = None
     log: str = None
-    _solution: str = None
+    timestamp: str = None
 
-    def __init__(self, language: Language, id: str, **kwargs) -> None:
+    def __init__(self, language: CHALLENGE.LANGUAGE, id: str, **kwargs) -> None:
         self.__dict__.update({**kwargs, **get_challenge_by_id(language, id).__dict__})
 
     @property
     def solution(self) -> solution:
-        return (
-            solution(
-                filename=f"{str(datetime.now(UTC).timestamp()).replace('.', '_')}.{self.extension}"
-            )
-            if self._solution is None
-            else solution(filename=self._solution)
-        )
+        if self.timestamp is None:
+            self.timestamp = str(datetime.now(UTC).timestamp()).replace(".", "_")
+        return solution(filename=f"{self.timestamp}.{self.extension}")
 
 
 class UserSocials:
@@ -63,7 +77,7 @@ class UserSocials:
     def __iter__(self):
         return iter(self.__dict__.items())
 
-    def exists(self, social: Social) -> bool:
+    def exists(self, social: SOCIAL) -> bool:
         link = self.__dict__.get(social)
         return link is not None
 
@@ -141,7 +155,7 @@ class UserData(Collection):
         self.update()
         return self.coins
 
-    def request_challenge(self, language: Language):
+    def request_challenge(self, language: CHALLENGE.LANGUAGE):
         all_challenges = get_challenges(language)
         user_challenges = self.challenges
 
@@ -171,7 +185,7 @@ class UserData(Collection):
         if level >= len(all_challenges):
             return None
 
-        challenge = get_challenge(language, level)
+        challenge = get_challenge_by_level(language, level)
 
         self._challenge = {
             "id": challenge.id,
@@ -187,7 +201,7 @@ class UserData(Collection):
 
         return challenge
 
-    def add_social(self, social: Social, link: str):
+    def add_social(self, social: SOCIAL, link: str):
         is_valid_link = UserSocials.isvalid(link)
 
         match social:

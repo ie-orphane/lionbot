@@ -11,6 +11,7 @@ class EvaluationData(Document):
     solution: solution
     user: UserData
     challenge: ChallengeConfig
+    timestamp: str
 
     def __to_dict__(self):
         self.__dict__.update(
@@ -18,10 +19,7 @@ class EvaluationData(Document):
             id=self.challenge.id,
             language=self.challenge.language,
         )
-        if "challenge" in self.__dict__:
-            self.__dict__.pop("challenge")
-        if "solution" in self.__dict__:
-            self.__dict__["solution"] = self.solution.filename
+        self.__dict__.pop("challenge", None)
         return self.__dict__
 
     @classmethod
@@ -29,16 +27,20 @@ class EvaluationData(Document):
         with open(f"{env.BASE_DIR}/data/{cls.BASE}.json") as file:
             return [
                 cls(
-                    solution=solution(filename=x["solution"]),
+                    timestamp=x["timestamp"],
                     user=UserData.read(x["user"]),
                     challenge=get_challenge_by_id(x["language"], x["id"]),
                 )
                 for x in json.load(file)
             ]
 
+    @property
+    def solution(self):
+        return solution(filename=f"{self.timestamp}.{self.challenge.extension}")
+
     def log(self, *content: str, sep="\n", end="\n"):
         with open(
-            f"{env.BASE_DIR}/storage/evaluations/{self.solution.filename.replace('.sh', '.ansi.log')}",
+            f"{env.BASE_DIR}/storage/evaluations/{self.timestamp}.ansi.log",
             "a",
         ) as f:
             f.write(sep.join(content) + end)

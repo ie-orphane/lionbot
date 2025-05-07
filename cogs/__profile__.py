@@ -20,7 +20,7 @@ class Profile(Cog):
         private: bool = True,
     ):
         await interaction.response.defer(ephemeral=private)
-        self.cog_interaction(interaction, member=member)
+        self.cog_interaction(interaction, member=member, private=private)
 
         member = member or interaction.user
 

@@ -7,15 +7,19 @@ from cogs import GroupCog
 from config import ChallengeConfig, get_emoji
 from consts import COLOR, MESSAGE
 from models import EvaluationData, UserChallenge, UserData
-from utils import Language, RelativeDateTime, number
+from notations import CHALLENGE
+from utils import RelativeDateTime, number
 
 
 @discord.app_commands.dm_only()
 class Challenge(GroupCog, name="challenge"):
     @discord.app_commands.command(description="Request a new challenge.")
     @discord.app_commands.describe(language="The Challenge's language.")
-    async def request(self, interaction: discord.Interaction, language: Language):
+    async def request(
+        self, interaction: discord.Interaction, language: CHALLENGE.LANGUAGE
+    ):
         await interaction.response.defer()
+        self.cog_interaction(interaction, language=language)
 
         if (user := await self.bot.user_is_unkown(interaction)) is None:
             return
@@ -85,6 +89,7 @@ class Challenge(GroupCog, name="challenge"):
     @discord.app_commands.describe(file="The file to submit.")
     async def submit(self, interaction: discord.Interaction, file: discord.Attachment):
         await interaction.response.defer()
+        self.cog_interaction(interaction, file=file)
 
         if (user := await self.bot.user_is_unkown(interaction)) is None:
             return
@@ -136,7 +141,7 @@ class Challenge(GroupCog, name="challenge"):
         user._challenge.update({"submited": str(datetime.now(UTC))})
         EvaluationData.create(
             user=user,
-            solution=solution,
+            timestamp=current_challenge.timestamp,
             challenge=current_challenge,
         )
         user._log = None
@@ -151,8 +156,11 @@ class Challenge(GroupCog, name="challenge"):
 
     @discord.app_commands.command(description="See the history of your journey.")
     @discord.app_commands.describe(language="The language of the challenges.")
-    async def status(self, interaction: discord.Interaction, language: Language):
+    async def status(
+        self, interaction: discord.Interaction, language: CHALLENGE.LANGUAGE
+    ):
         await interaction.response.defer()
+        self.cog_interaction(interaction, language=language)
 
         if (user := await self.bot.user_is_unkown(interaction)) is None:
             return
@@ -195,6 +203,7 @@ class Challenge(GroupCog, name="challenge"):
     @discord.app_commands.command(description="See a failed challenge log.")
     async def log(self, interaction: discord.Interaction):
         await interaction.response.defer()
+        self.cog_interaction(interaction)
 
         if (user := await self.bot.user_is_unkown(interaction)) is None:
             return
@@ -241,6 +250,7 @@ class Challenge(GroupCog, name="challenge"):
     @discord.app_commands.command(description="Show the challenge's guidlines.")
     async def help(self, interaction: discord.Interaction):
         await interaction.response.defer()
+        self.cog_interaction(interaction)
 
         await interaction.followup.send(
             embed=discord.Embed(
@@ -281,10 +291,11 @@ class _Challenge(GroupCog, name="__challenge"):
     async def assign(
         self,
         interaction: discord.Interaction,
-        language: Language,
+        language: CHALLENGE.LANGUAGE,
         _geek: discord.Member | discord.Role,
     ):
         await interaction.response.defer(ephemeral=True)
+        self.cog_interaction(interaction, language=language, geek=_geek)
 
         geeks: list[discord.Member] = []
         users: list[UserData] = []

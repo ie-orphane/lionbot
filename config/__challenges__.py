@@ -2,10 +2,16 @@ from typing import Literal
 
 import env
 from consts import GOLDEN_RATIO
+from notations import CHALLENGE
 
 from .__self__ import config, get_config
 
-__all__ = ["get_challenges", "get_challenge", "get_challenge_by_id"]
+__all__ = [
+    "get_challenges",
+    "get_challenge_by_level",
+    "get_challenge_by_id",
+    "get_challenge_by_name",
+]
 
 
 class _test(config):
@@ -34,10 +40,10 @@ class challenge(config):
         subject (`str`): The subject of the challenge.
     """
 
-    runner: Literal["bash"]
-    extension: Literal["sh"]
+    runner: CHALLENGE.RUNNER
+    extension: CHALLENGE.EXTENSION
     forbidden: list[str]
-    COINS: dict[Literal["easy", "medium", "hard"], float] = {
+    COINS: dict[CHALLENGE.DIFFICULTY, float] = {
         "easy": GOLDEN_RATIO * 2,
         "medium": GOLDEN_RATIO * 29,
         "hard": GOLDEN_RATIO * 67,
@@ -48,7 +54,7 @@ class challenge(config):
     level: str
     language: str
     _tests: list[dict]
-    difficulty: Literal["easy", "medium", "hard"]
+    difficulty: CHALLENGE.DIFFICULTY
     additionales: str = ""
     not_allowed: list[str] = []
 
@@ -92,7 +98,7 @@ def get_challenges(language: Literal["SHELL"]) -> list[challenge]:
     ]
 
 
-def get_challenge(language: Literal["SHELL"], level: int) -> challenge | None:
+def get_challenge_by_level(language: Literal["BASH"], level: int) -> challenge | None:
     r"""
     Get a challenge for a given language and level.
     Args:
@@ -116,14 +122,14 @@ def get_challenge(language: Literal["SHELL"], level: int) -> challenge | None:
     )
 
 
-def get_challenge_by_id(language: Literal["SHELL"], id: str) -> challenge | None:
+def get_challenge_by_id(language: Literal["BASH"], id: str) -> challenge | None:
     r"""
-    Get a challenge for a given language and level.
+    Get a challenge for a given language and id.
     Args:
         language (`str`): The language to get the challenge for.
         id (`str`): The ID of the challenge to get.
     Returns:
-        `challenge` | `None`: The challenge for the given language and level, or None if not found.
+        `challenge` | `None`: The challenge for the given language and id, or None if not found.
     """
     challenges: dict[Literal["globals", "locals"], dict | list]
 
@@ -136,6 +142,35 @@ def get_challenge_by_id(language: Literal["SHELL"], id: str) -> challenge | None
 
     for level, local in enumerate(locals_):
         if local["id"] == id:
+            return challenge(
+                **globals_, **local, language=language.lower(), level=level
+            )
+
+    return None
+
+
+def get_challenge_by_name(
+    language: Literal["BASH", "JAVASCRIPT"], name: str
+) -> challenge | None:
+    r"""
+    Get a challenge for a given language and name.
+    Args:
+        language (`str`): The language to get the challenge for.
+        name: `str`: The name of the challenge to get.
+    Returns:
+        `challenge` | `None`: The challenge for the given language and name, or None if not found.
+    """
+    challenges: dict[Literal["globals", "locals"], dict | list]
+
+    if (
+        ((challenges := get_config(language.upper(), "challenges")) is None)
+        or ((globals_ := challenges.get("globals")) is None)
+        or ((locals_ := challenges.get("locals")) is None)
+    ):
+        return None
+
+    for level, local in enumerate(locals_):
+        if local["name"] == name:
             return challenge(
                 **globals_, **local, language=language.lower(), level=level
             )
