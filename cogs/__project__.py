@@ -1,8 +1,10 @@
+from datetime import UTC, datetime, timedelta
+from typing import Literal
+
 import discord
+
 from cogs import GroupCog
 from models import ProjectData, UserData
-from typing import Literal
-from datetime import datetime, UTC, timedelta
 
 
 @discord.app_commands.guild_only()
@@ -177,13 +179,16 @@ class _Project(GroupCog, name="__project"):
             return
 
         project = ProjectData.read(id)
-
-        content = project.name.lower().strip().replace(" ", "_")
+        content = "```\n" + project.name.lower().strip().replace(" ", "_")
 
         for user_id, link in project.links.items():
-            content += f"\n{UserData.read(user_id).name.lower().replace(" ", "_")}={link}"
+            content += "\n"
+            if link.get("dead", False):
+                content += "."
+            content += f"{UserData.read(user_id).name.lower().replace(" ", "_")}={link.get('link')}"
+        content += "\n```"
 
-        await interaction.followup.send(f"```bash\n{content}```")
+        await interaction.followup.send(content)
 
     @discord.app_commands.command(description="Create a new project.")
     @discord.app_commands.describe(
