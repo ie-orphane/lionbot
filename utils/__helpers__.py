@@ -1,10 +1,10 @@
-import pickle
 import json
 import os
-from .__colorful__ import Color as clr
+import pickle
+from datetime import UTC, date, datetime, timedelta
 from typing import Literal
-from datetime import datetime, timedelta, date, UTC
 
+from .__colorful__ import Color as clr
 
 __all__ = [
     "get_week",
@@ -13,7 +13,16 @@ __all__ = [
     "get_files",
     "Week",
     "convert_seconds",
+    "is_float",
 ]
+
+
+def is_float(value):
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
 
 
 def convert_seconds(total_seconds: int) -> str:

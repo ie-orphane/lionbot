@@ -92,7 +92,7 @@ class ThelistSelect(discord.ui.UserSelect):
 
         await member.add_roles(black_list_role)
 
-        user.sub_coins(INLIST_AMOUNT, f"blacklist in {member.id}")
+        user.sub_coins(INLIST_AMOUNT, f"inlist {member.id}")
 
         await interaction.edit_original_response(
             embed=discord.Embed(
@@ -191,7 +191,7 @@ class ThelistView(discord.ui.View):
         await interaction.user.remove_roles(black_list_role)
 
         user.greylist = False
-        user.sub_coins(OUTLIST_AMOUNT, "blacklist out")
+        user.sub_coins(OUTLIST_AMOUNT, "outlist")
 
         await interaction.followup.send(
             embed=discord.Embed(
