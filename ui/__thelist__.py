@@ -1,9 +1,9 @@
 import discord
 
 from config import get_emoji
-from consts import COLOR, OUTLIST_AMOUNT, INLIST_AMOUNT
-from utils import number, on_error
+from consts import COLOR, INLIST_AMOUNT, OUTLIST_AMOUNT
 from models import UserData
+from utils import number, on_error
 
 __all__ = ["ThelistView"]
 
@@ -52,6 +52,19 @@ class ThelistSelect(discord.ui.UserSelect):
             )
             return
 
+        if member.bot:
+            await interaction.edit_original_response(
+                embed=discord.Embed(
+                    color=COLOR.red,
+                    description=(
+                        f"{interaction.user.mention}, 🤔.\n"
+                        f"{member.mention} has no place in {black_list_role.mention}.\n"
+                    ),
+                ),
+                view=None,
+            )
+            return
+
         if member in black_list_role.members:
             await interaction.edit_original_response(
                 embed=discord.Embed(
@@ -59,6 +72,18 @@ class ThelistSelect(discord.ui.UserSelect):
                     description=(
                         f"{interaction.user.mention}, 🤔.\n"
                         f"{member.mention} is already in {black_list_role.mention}."
+                    ),
+                ),
+                view=None,
+            )
+            return
+
+        if user.coins < INLIST_AMOUNT:
+            await interaction.edit_original_response(
+                embed=discord.Embed(
+                    color=COLOR.red,
+                    description=(
+                        f"{interaction.user.mention}, 🤔.\nYou need {number(INLIST_AMOUNT - user.coins)} {get_emoji('coin')} more."
                     ),
                 ),
                 view=None,
