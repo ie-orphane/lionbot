@@ -19,13 +19,13 @@ async def __run__(
 
     coins = [user.coins for user in users]
     stats = {
-        clr.yellow("Total"): sum(coins),
+        clr.yellow("Total  "): sum(coins),
         clr.blue("Minimum"): min(coins),
         clr.blue("Maximum"): max(coins),
-        clr.blue("\nAverage"): statistics.mean(coins),
-        clr.yellow("Middle"): statistics.median(coins),
-        clr.blue("\nSpread"): statistics.stdev(coins),
-        clr.blue("Common"): statistics.mode(coins),
+        "\n" + clr.blue("Average"): statistics.mean(coins),
+        clr.yellow("Middle "): statistics.median(coins),
+        "\n" + clr.blue("Spread "): statistics.stdev(coins),
+        clr.blue("Common "): statistics.mode(coins),
     }
     max_l = max(len(f"{value:,}".split(".")[0]) for value in stats.values())
     formatted_stats = {
@@ -43,12 +43,13 @@ async def __run__(
         color=COLOR.blue, description=f"```ansi\n", url="https://lionsgeek.ma"
     ).set_footer(text="📊 statistics - coins")
     for key, value in formatted_stats.items():
-        embed.description += f"{key:>7}  :  {value}\n"
+        embed.description += f"{key} :  {value}\n"
     embed.description += (
-        f"\n{clr.green('Top')}      :{''.join(map(lambda x: f"\n  {' ' * (max_top - len(f"{x}".split('.')[0]))}{x}", top_3))}"
-        f"\n{clr.red('Last')}     :{''.join(map(lambda x: f"\n  {' ' * (max_last - len(f"{x}".split('.')[0]))}{x}", last_3))}"
+        f"\n{clr.green('Top')}     :{''.join(map(lambda x: f"\n  {' ' * (max_top - len(f"{x}".split('.')[0]))}{x}", top_3))}"
+        f"\n{clr.red('Last')}    :{''.join(map(lambda x: f"\n  {' ' * (max_last - len(f"{x}".split('.')[0]))}{x}", last_3))}"
     )
     embed.description += "```"
+    print(embed.description)
 
     files = []
     embeds = [embed]
