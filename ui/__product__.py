@@ -1,5 +1,6 @@
 import re
 from datetime import UTC, datetime
+from typing import Any, Coroutine
 
 import discord
 
@@ -107,6 +108,24 @@ class ProductBuyBtn(
     ):
         return cls(match["id"])
 
+    @staticmethod
+    async def __error(
+        interaction: discord.Interaction, /, *desc: tuple[str]
+    ) -> Coroutine[Any, Any, None]:
+        """
+        Send an error interaction to the user.
+        Args:
+            interaction (discord.Interaction): The interaction containing the command.
+            desc (tuple[str]): The error description.
+        """
+        await interaction.followup.send(
+            embed=discord.Embed(
+                color=COLOR.red,
+                description=f"😔 {interaction.user.mention},\n" + "\n".join(desc),
+            ),
+            ephemeral=True,
+        )
+
     async def callback(self, interaction: discord.Interaction) -> None:
         await interaction.response.defer(ephemeral=True)
 
@@ -127,53 +146,30 @@ class ProductBuyBtn(
         product: ProductData = ProductData.read(self.id)
 
         if product.author_id == user.id:
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    color=COLOR.red,
-                    description=(
-                        f"😔 {interaction.user.mention},\n"
-                        f"You can't buy your own product **{product.name}**."
-                    ),
-                ),
-                ephemeral=True,
+            return await self.__error(
+                interaction, f"You can't buy your own product **{product.name}**."
             )
-            return
 
         if product.buyers is not None and user.id in product.buyers:
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    color=COLOR.red,
-                    description=(
-                        f"🫣 {interaction.user.mention},\n"
-                        f"You've already bought **{product.name}**."
-                    ),
-                ),
-                ephemeral=True,
+            return await self.__error(
+                interaction, f"You've already bought **{product.name}**."
             )
-            return
 
         if product is None or product.status != "approved":
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    color=COLOR.red,
-                    description=f"😔 {interaction.user.mention},\n**{product.name}** is no longer available.",
-                ),
-                ephemeral=True,
+            return await self.__error(
+                interaction, f"**{product.name}** is no longer available."
             )
-            return
 
         if user.coins < product.price:
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    color=COLOR.red,
-                    description=(
-                        f"😔 {interaction.user.mention},\n"
-                        f"You need {number(product.price - user.coins)} more {get_emoji('coin')} to buy **{product.name}**."
-                    ),
-                ),
-                ephemeral=True,
+            return await self.__error(
+                interaction,
+                f"You need {number(product.price - user.coins)} more {get_emoji('coin')} to buy **{product.name}**.",
             )
-            return
+
+        if product.author is None:
+            return await self.__error(
+                interaction, f"The author of **{product.name}** is no longer available."
+            )
 
         product.buy(user)
 
@@ -200,13 +196,22 @@ class ProductBuyBtn(
                     embed=discord.Embed(
                         color=COLOR.yellow,
                         description=(
-                            f"Great news! Someone has just bought your product **{product.name}**! 🎉\n\n"
+                            f"Someone just bought **{product.name}**! 🎉\n\n"
+                            f"Profit: {number(product.price - product.fee)} {get_emoji('coin')}\n"
+                            f"Sales: **`{len(product.buyers)}`**"
                         ),
                     )
-                    .set_footer(
-                        text="Thank you for being a part of our marketplace! We look forward to your continued success!"
-                    )
+                    .set_footer(text="Keep coding and keep selling! 💻💰")
                     .set_thumbnail(url=product.image.url),
+                )
+            except discord.Forbidden:
+                pass
+
+        if product._source is not None:
+            try:
+                await interaction.user.send(
+                    file=product.source.file,
+                    content=f">>> Here is the source for **{product.name}**",
                 )
             except discord.Forbidden:
                 pass
@@ -253,6 +258,7 @@ class ProductReView(discord.ui.View):
 
         original = await interaction.original_response()
         embed = original.embeds[0]
+        await original.remove_attachments(*original.attachments)
 
         _id = None
         if (match := re.search(r"`([^`]+)`", embed.description)) is not None:
@@ -278,12 +284,22 @@ class ProductReView(discord.ui.View):
         embed.description = embed.description.replace(
             "Pending ⏳", f"Approved {get_emoji('yes', '✅')}"
         )
-        await original.edit(embed=embed, view=None)
+        embed.set_image(url=product.image.url)
+        await original.edit(
+            embed=embed,
+            view=None,
+            attachments=[
+                file
+                for file in (product.image.file, product.source.file)
+                if file is not discord.utils.MISSING
+            ],
+        )
 
         message = ""
         if product.description is not None:
             message = f"{product.description}\n"
         message += (
+            f"Source: **{'no' if product._source is None else 'yes'}**\n"
             f"Price: {number(product.price)} {get_emoji('coin')}\n"
             f"By: {product.author.mention} ({product.author.name})"
         )
@@ -300,6 +316,7 @@ class ProductReView(discord.ui.View):
         ) is not None:
             try:
                 await user.send(
+                    file=product.image.file,
                     embed=discord.Embed(
                         color=COLOR.green,
                         description=(
@@ -310,7 +327,7 @@ class ProductReView(discord.ui.View):
                     .set_footer(
                         text="Thank you for your submission, and we hope it performs well in the shop!"
                     )
-                    .set_thumbnail(url=product.image.url)
+                    .set_thumbnail(url=product.image.url),
                 )
             except discord.Forbidden:
                 pass

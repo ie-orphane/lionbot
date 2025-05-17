@@ -36,6 +36,17 @@ class Shop(GroupCog, name="shop"):
             ephemeral=True,
         )
 
+    async def __check(
+        self, interaction: discord.Interaction, check: bool, body: str, foot: str
+    ) -> bool:
+        if check:
+            await self.__error(
+                interaction,
+                body,
+                foot=foot,
+            )
+        return check
+
     @discord.app_commands.command(description="Add new product in the shop.")
     @discord.app_commands.describe(
         _name="Product's name",
@@ -47,10 +58,11 @@ class Shop(GroupCog, name="shop"):
     async def add(
         self,
         interaction: discord.Interaction,
-        _name: discord.app_commands.Range[str, 5, 13],
+        _name: discord.app_commands.Range[str, 5, 23],
         price: discord.app_commands.Range[int, 1],
         _description: discord.app_commands.Range[str, 17, 101],
         image: discord.Attachment = None,
+        source: discord.Attachment = None,
     ):
         await interaction.response.defer()
         self.cog_interaction(
@@ -63,6 +75,19 @@ class Shop(GroupCog, name="shop"):
         name = re.sub(r"\s+", " ", _name).strip()
         description = re.sub(r"\s+", " ", _description).strip()
 
+        if await self.__check(
+            interaction,
+            23 < len(name) < 3,
+            f"**{name}** is an invalid name! 🚫",
+            "It must be between 3 and 23 characters.",
+        ) or await self.__check(
+            interaction,
+            97 < len(description) < 11,
+            f"**{description}** is an invalid description! 🚫",
+            "It must be between 11 and 97 characters.",
+        ):
+            return
+
         if (channel := self.bot.get_listed_channel("approve")) is None:
             return await self.__error(
                 interaction,
@@ -70,28 +95,45 @@ class Shop(GroupCog, name="shop"):
                 foot="Please contact the owner.",
             )
 
-        product = ProductData.create(name, price, user.id, description, image.filename)
+        if (image is not None) and (
+            image.content_type is None or not image.content_type.startswith("image/")
+        ):
+            return await self.__error(
+                interaction,
+                f"**{image.filename}** is an invalid file!",
+                (
+                    f"`{image.content_type.split(";")[0].split('/')[-1]}` is not a supported type 🚫"
+                    if image.content_type is not None
+                    else "It has an unknown type 🚫."
+                ),
+                foot="It must be an image.",
+            )
+        if (image is not None) and ((image.size / (2**20)) > 1):
+            return await self.__error(
+                interaction,
+                f"**{image.filename}** is too large! 🚫",
+                f"It must be less than or equal 1 MB.",
+            )
+        if (source is not None) and ((source.size / (2**20)) > 1):
+            return await self.__error(
+                interaction,
+                f"**{source.filename}** is too large! 🚫",
+                f"It must be less than or equal 1 MB.",
+            )
+
+        product = ProductData.create(
+            name,
+            price,
+            user.id,
+            description,
+            None if image is None else image.filename,
+            None if source is None else source.filename,
+        )
+
         if image is not None:
-            if image.content_type is None or not image.content_type.startswith(
-                "image/"
-            ):
-                return await self.__error(
-                    interaction,
-                    f"**{image.filename}** is an invalid file!",
-                    (
-                        f"`{image.content_type.split(";")[0].split('/')[-1]}` is not a supported type 🚫"
-                        if image.content_type is not None
-                        else "It has an unknown type 🚫."
-                    ),
-                    foot="It must be an image.",
-                )
-            if (image.size / (2**20)) > 1:
-                return await self.__error(
-                    interaction,
-                    f"**{image.filename}** is too large! 🚫",
-                    f"It must be less than or equal 1 MB.",
-                )
             await image.save(product.image.path)
+        if source is not None:
+            await source.save(product.source.path)
 
         embed = discord.Embed(
             color=COLOR.orange,
@@ -109,7 +151,18 @@ class Shop(GroupCog, name="shop"):
         embed.set_image(url=product.image.url)
 
         await channel.send(
-            embed=embed, file=product.image.file, view=ProductReView(self.bot)
+            embed=embed,
+            content=(
+                f"Source: **{product.source.filename}**"
+                if product._source is not None
+                else None
+            ),
+            files=[
+                file
+                for file in (product.source.file, product.image.file)
+                if file is not discord.utils.MISSING
+            ],
+            view=ProductReView(self.bot),
         )
 
         embed.color = self.color.green

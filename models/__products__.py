@@ -10,6 +10,7 @@ from typing import Any, Literal
 import discord
 
 import env
+from consts import SHOP_FEE
 from models.__schema__ import Collection
 from models.__users__ import UserData
 
@@ -34,6 +35,24 @@ class ProductImage:
         )
 
 
+class ProductSource:
+    def __init__(self, _id: str, filename: str) -> None:
+        if filename is None:
+            self.filename = None
+            self.path = None
+            return
+        self.filename = filename
+        self.path = Path(env.BASE_DIR) / "storage" / "files" / f"{_id}_{filename}"
+
+    @property
+    def file(self) -> discord.File | Any:
+        return (
+            discord.utils.MISSING
+            if self.path is None
+            else discord.File(self.path, filename=self.filename)
+        )
+
+
 class ProductData(Collection):
     BASE = "products"
     id: str
@@ -46,8 +65,8 @@ class ProductData(Collection):
     denied_at: datetime = None
     approved_at: datetime = None
     feedback: str = None
-    image: ProductImage = None
     _image: str = None
+    _source: str = None
     status: Literal["pending", "denied", "approved"] = "pending"
 
     @property
@@ -67,8 +86,16 @@ class ProductData(Collection):
         return ProductImage(self.id, self._image)
 
     @property
+    def source(self) -> ProductSource:
+        return ProductSource(self.id, self._source)
+
+    @property
     def is_approved(self) -> bool:
         return self.status == "approved"
+
+    @property
+    def fee(self) -> float:
+        return self.price * SHOP_FEE
 
     @classmethod
     def __get_ids(cls) -> list[str]:
@@ -106,7 +133,8 @@ class ProductData(Collection):
         price: float,
         author_id: int,
         description: str,
-        filename: str | None = None,
+        image: str | None = None,
+        source: str | None = None,
     ):
         product = cls(
             id=cls.__get_id(),
@@ -116,13 +144,16 @@ class ProductData(Collection):
             created_at=str(datetime.now(UTC)),
             description=description,
         )
-        if filename is not None:
-            product._image = filename
+        if image is not None:
+            product._image = image
+        if source is not None:
+            product._source = source
         return product.update()
 
     def buy(self, buyer: UserData):
         self.buyers = self.buyers or []
         self.buyers.append(int(buyer.id))
         self.author.add_coins(self.price, f"{self.name} purchase")
+        self.author.sub_coins(self.fee, f"{self.name} purchase fee")
         buyer.sub_coins(self.price, f"{self.name} purchase")
         return self.update()

@@ -4,7 +4,7 @@ import discord
 
 from cogs import Cog
 from config import bot, get_emoji
-from consts import MESSAGE, TRANSACTION_FEE
+from consts import MESSAGE, TRANSFER_FEE
 from utils import number
 
 
@@ -81,7 +81,7 @@ class Transfer(Cog):
                 ).set_footer(text=MESSAGE.donation),
             )
 
-        if (amount + amount * TRANSACTION_FEE) > user.coins:
+        if (amount + amount * TRANSFER_FEE) > user.coins:
             return await self.__error(
                 interaction,
                 f"you don't have {number(amount)} {get_emoji('coin')}!",
@@ -96,9 +96,9 @@ class Transfer(Cog):
             return
 
         user.sub_coins(amount, "transfer")
-        user.sub_coins(amount * TRANSACTION_FEE, "fee")
+        user.sub_coins(amount * TRANSFER_FEE, "transfer fee")
         recipient.add_coins(amount, "transfer")
-        bot.coins += amount * TRANSACTION_FEE
+        bot.coins += amount * TRANSFER_FEE
 
         await interaction.followup.send(
             embed=discord.Embed(
@@ -106,7 +106,7 @@ class Transfer(Cog):
                 title="✅ Transaction completed!",
                 description=(
                     f"`Amount`: {number(amount)} {get_emoji("coin")}\n"
-                    f"`Fee`: {number(amount*TRANSACTION_FEE)} {get_emoji("coin")}\n"
+                    f"`Fee`: {number(amount*TRANSFER_FEE)} {get_emoji("coin")}\n"
                     f"`Sender`: {interaction.user.mention}\n"
                     f"`Recipient`: {geek.mention}"
                 ),
