@@ -1,11 +1,12 @@
 import re
+from typing import Any, Coroutine
 
 import discord
 from discord.ext import commands
 
 from cogs import GroupCog
 from config import get_emoji
-from consts import COLOR, OUTLIST_AMOUNT, INLIST_AMOUNT
+from consts import COLOR, INLIST_AMOUNT, OUTLIST_AMOUNT
 from models import ProductData
 from ui import ProductReView, ThelistView
 from utils import number
@@ -13,20 +14,27 @@ from utils import number
 
 @discord.app_commands.dm_only()
 class Shop(GroupCog, name="shop"):
-    @staticmethod
-    async def check(
-        interaction: discord.Interaction, check: bool, body: str, foot: str
-    ) -> bool:
-        if check:
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    title="❌ Submission failed",
-                    color=COLOR.red,
-                    description=f"{interaction.user.mention}, {body} 🚫",
-                ).set_footer(text=foot),
-                ephemeral=True,
-            )
-        return check
+    async def __error(
+        self,
+        interaction: discord.Interaction,
+        /,
+        *desc: tuple[str],
+        foot: str = None,
+    ) -> Coroutine[Any, Any, None]:
+        """
+        Send an error interaction to the user.
+        Args:
+            interaction (discord.Interaction): The interaction containing the command.
+            desc (tuple[str]): The error description.
+        """
+        await interaction.followup.send(
+            embed=discord.Embed(
+                color=self.color.red,
+                title="❌ Submission failed!",
+                description=f"✋ {interaction.user.mention},\n" + "\n".join(desc),
+            ).set_footer(text=foot),
+            ephemeral=True,
+        )
 
     @discord.app_commands.command(description="Add new product in the shop.")
     @discord.app_commands.describe(
@@ -39,9 +47,9 @@ class Shop(GroupCog, name="shop"):
     async def add(
         self,
         interaction: discord.Interaction,
-        _name: discord.app_commands.Range[str, 3, 11],
+        _name: discord.app_commands.Range[str, 5, 13],
         price: discord.app_commands.Range[int, 1],
-        _description: discord.app_commands.Range[str, 11, 97],
+        _description: discord.app_commands.Range[str, 17, 101],
         image: discord.Attachment = None,
     ):
         await interaction.response.defer()
@@ -55,88 +63,67 @@ class Shop(GroupCog, name="shop"):
         name = re.sub(r"\s+", " ", _name).strip()
         description = re.sub(r"\s+", " ", _description).strip()
 
-        if await self.check(
-            interaction,
-            11 < len(name) < 3,
-            f"**{name}** is an invalid name!",
-            "It must be between 3 and 11 characters.",
-        ) or await self.check(
-            interaction,
-            97 < len(description) < 11,
-            f"**{description}** is an invalid description!",
-            "It must be between 11 and 97 characters.",
-        ):
-            return
-
         if (channel := self.bot.get_listed_channel("approve")) is None:
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    title="❌ Submission failed",
-                    color=COLOR.red,
-                    description=f"{interaction.user.mention}, approval channel not found! 🫣",
-                ).set_footer(text="Please contact the owner."),
-                ephemeral=True,
+            return await self.__error(
+                interaction,
+                "the approval channel is not set up yet! 🫣",
+                foot="Please contact the owner.",
             )
-            return
 
-        product = ProductData.create(name, price, user.id, description)
+        product = ProductData.create(name, price, user.id, description, image.filename)
         if image is not None:
             if image.content_type is None or not image.content_type.startswith(
                 "image/"
             ):
-                await interaction.followup.send(
-                    embed=discord.Embed(
-                        title="❌ Submission failed",
-                        color=COLOR.red,
-                        description=(
-                            f"{interaction.user.mention},\n"
-                            + f"**{image.filename}** is an invalid file!\n"
-                            + (
-                                f"`{image.content_type.split(";")[0].split('/')[-1]}` is not a supported type 🚫"
-                                if image.content_type is not None
-                                else "It has an unknown type 🚫."
-                            )
-                        ),
-                    ).set_footer(text="It must be an image."),
-                    ephemeral=True,
+                return await self.__error(
+                    interaction,
+                    f"**{image.filename}** is an invalid file!",
+                    (
+                        f"`{image.content_type.split(";")[0].split('/')[-1]}` is not a supported type 🚫"
+                        if image.content_type is not None
+                        else "It has an unknown type 🚫."
+                    ),
+                    foot="It must be an image.",
                 )
-                return
-            product.image = image.url
-            product.update()
+            if (image.size / (2**20)) > 1:
+                return await self.__error(
+                    interaction,
+                    f"**{image.filename}** is too large! 🚫",
+                    f"It must be less than or equal 1 MB.",
+                )
+            await image.save(product.image.path)
+
+        embed = discord.Embed(
+            color=COLOR.orange,
+            title="📦 New Submission",
+            description=(
+                f"**ID**: `{product.id}`\n"
+                f"**Name**: {product.name}\n"
+                f"**Price**: {number(product.price)} {get_emoji('coin')}\n"
+                f"**Description**: {product.description}\n"
+                f"**Author**: {interaction.user.mention} ({product.author.name})\n"
+                f"**Status**: Pending ⏳"
+            ),
+        )
+
+        embed.set_image(url=product.image.url)
 
         await channel.send(
-            embed=discord.Embed(
-                color=COLOR.orange,
-                title="📦 New Submission",
-                description=(
-                    f"**ID**: `{product.id}`\n"
-                    f"**Name**: {product.name}\n"
-                    f"**Price**: {number(product.price)} {get_emoji('coin')}\n"
-                    f"**Description**: {product.description}\n"
-                    f"**Author**: {interaction.user.mention} ({product.author.name})\n"
-                    f"**Status**: Pending ⏳"
-                ),
-            ).set_image(url=product.image),
-            view=ProductReView(self.bot),
+            embed=embed, file=product.image.file, view=ProductReView(self.bot)
         )
 
-        embed = (
-            discord.Embed(
-                color=self.color.green,
-                title="✅ Submission Succeeded",
-                description=(
-                    f"{interaction.user.mention}, product sent for review! 🕵️\n\n"
-                    f"**ID**: `{product.id}`\n"
-                    f"**Name**: {product.name}\n"
-                    f"**Price**: {number(product.price)} {get_emoji('coin')}\n"
-                    f"**Description**: {product.description}"
-                ),
-            )
-            .set_footer(text="Please be patient. ⏳")
-            .set_image(url=product.image)
+        embed.color = self.color.green
+        embed.title = "✅ Submission Succeeded"
+        embed.description = (
+            f"{interaction.user.mention}, product sent for review! 🕵️\n\n"
+            f"**ID**: `{product.id}`\n"
+            f"**Name**: {product.name}\n"
+            f"**Price**: {number(product.price)} {get_emoji('coin')}\n"
+            f"**Description**: {product.description}"
         )
+        embed.set_footer(text="Please be patient. ⏳")
 
-        await interaction.followup.send(embed=embed)
+        await interaction.followup.send(embed=embed, file=product.image.file)
 
 
 @discord.app_commands.guild_only()

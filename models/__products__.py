@@ -1,13 +1,37 @@
 import json
-import env
 import os
 import random
 import string
 import time
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any, Literal
+
+import discord
+
+import env
 from models.__schema__ import Collection
 from models.__users__ import UserData
-from datetime import datetime, UTC
-from typing import Literal
+
+
+class ProductImage:
+    def __init__(self, _id: str, filename: str) -> None:
+        if filename is None:
+            self.filename = None
+            self.path = None
+            self.url = None
+            return
+        self.filename = filename
+        self.path = Path(env.BASE_DIR) / "storage" / "images" / f"{_id}_{filename}"
+        self.url = f"attachment://{filename}"
+
+    @property
+    def file(self) -> discord.File | Any:
+        return (
+            discord.utils.MISSING
+            if self.path is None
+            else discord.File(self.path, filename=self.filename)
+        )
 
 
 class ProductData(Collection):
@@ -22,7 +46,8 @@ class ProductData(Collection):
     denied_at: datetime = None
     approved_at: datetime = None
     feedback: str = None
-    image: str = None
+    image: ProductImage = None
+    _image: str = None
     status: Literal["pending", "denied", "approved"] = "pending"
 
     @property
@@ -36,6 +61,10 @@ class ProductData(Collection):
     @property
     def is_denied(self) -> bool:
         return self.status == "denied"
+
+    @property
+    def image(self) -> ProductImage:
+        return ProductImage(self.id, self._image)
 
     @property
     def is_approved(self) -> bool:
@@ -71,7 +100,14 @@ class ProductData(Collection):
             return None
 
     @classmethod
-    def create(cls, name: str, price: float, author_id: int, description: str):
+    def create(
+        cls,
+        name: str,
+        price: float,
+        author_id: int,
+        description: str,
+        filename: str | None = None,
+    ):
         product = cls(
             id=cls.__get_id(),
             name=name,
@@ -80,7 +116,8 @@ class ProductData(Collection):
             created_at=str(datetime.now(UTC)),
             description=description,
         )
-
+        if filename is not None:
+            product._image = filename
         return product.update()
 
     def buy(self, buyer: UserData):

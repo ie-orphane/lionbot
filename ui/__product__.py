@@ -1,13 +1,12 @@
-import discord
-from consts import COLOR
 import re
-from io import BytesIO
-import requests
-from datetime import datetime, UTC
+from datetime import UTC, datetime
+
+import discord
+
 from config import get_emoji
+from consts import COLOR
 from models import ProductData, UserData
 from utils import number, on_error
-
 
 __all__ = ["ProductReView", "ProductBuyBtn", "ProductBuyView"]
 
@@ -17,7 +16,7 @@ class ProductModal(discord.ui.Modal, title="Feedback"):
         label="What is the issue with this product?",
         style=discord.TextStyle.long,
         placeholder="Type your feedback here...",
-        min_length=41,
+        min_length=32,
         max_length=199,
     )
 
@@ -46,6 +45,7 @@ class ProductModal(discord.ui.Modal, title="Feedback"):
         ) is not None:
             try:
                 await user.send(
+                    file=product.image.file,
                     embed=discord.Embed(
                         color=COLOR.red,
                         description=(
@@ -56,7 +56,7 @@ class ProductModal(discord.ui.Modal, title="Feedback"):
                     .set_footer(
                         text="Please review the feedback, make the necessary changes, and feel free to resubmit it."
                     )
-                    .set_thumbnail(url=product.image)
+                    .set_thumbnail(url=product.image.url),
                 )
             except discord.Forbidden:
                 pass
@@ -126,6 +126,19 @@ class ProductBuyBtn(
 
         product: ProductData = ProductData.read(self.id)
 
+        if product.author_id == user.id:
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    color=COLOR.red,
+                    description=(
+                        f"😔 {interaction.user.mention},\n"
+                        f"You can't buy your own product **{product.name}**."
+                    ),
+                ),
+                ephemeral=True,
+            )
+            return
+
         if product.buyers is not None and user.id in product.buyers:
             await interaction.followup.send(
                 embed=discord.Embed(
@@ -183,6 +196,7 @@ class ProductBuyBtn(
         ) is not None:
             try:
                 await user.send(
+                    file=product.image.file,
                     embed=discord.Embed(
                         color=COLOR.yellow,
                         description=(
@@ -192,19 +206,20 @@ class ProductBuyBtn(
                     .set_footer(
                         text="Thank you for being a part of our marketplace! We look forward to your continued success!"
                     )
-                    .set_thumbnail(url=product.image)
+                    .set_thumbnail(url=product.image.url),
                 )
             except discord.Forbidden:
                 pass
 
         await interaction.followup.send(
+            file=product.image.file,
             embed=discord.Embed(
                 color=COLOR.green,
                 description=(
                     f"🎉 {interaction.user.mention},\n"
                     f"You've successfully bought **{product.name}** for {number(product.price)} {get_emoji('coin')}."
                 ),
-            ).set_thumbnail(url=product.image),
+            ).set_thumbnail(url=product.image.url),
             ephemeral=True,
         )
 
@@ -273,19 +288,11 @@ class ProductReView(discord.ui.View):
             f"By: {product.author.mention} ({product.author.name})"
         )
 
-        file = discord.utils.MISSING
-        if product.image is not None:
-            response = requests.get(product.image)
-            if response.status_code == 200:
-                file = discord.File(
-                    BytesIO(response.content), filename=f"{product.name}.png"
-                )
-
         await channel.create_thread(
             name=f"{product.name}",
             content=message,
             view=ProductBuyView(self.bot).add_item(ProductBuyBtn(product.id)),
-            file=file,
+            file=product.image.file,
         )
 
         if (
@@ -303,7 +310,7 @@ class ProductReView(discord.ui.View):
                     .set_footer(
                         text="Thank you for your submission, and we hope it performs well in the shop!"
                     )
-                    .set_thumbnail(url=product.image)
+                    .set_thumbnail(url=product.image.url)
                 )
             except discord.Forbidden:
                 pass
