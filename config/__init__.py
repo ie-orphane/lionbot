@@ -6,6 +6,7 @@ from .__emojis__ import *
 from .__messages__ import *
 from .__self__ import *
 from .__users__ import *
+from .__bot__ import *
 
 
 def check_config() -> str | None:

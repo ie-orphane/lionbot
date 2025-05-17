@@ -11,8 +11,9 @@ from config import (
     get_emoji,
     get_extension,
     get_users,
+    bot as bot_profile,
 )
-from consts import BOT_COINS_AMOUNT, COLOR, EXCLUDE_DIRS, GOLDEN_RATIO
+from consts import COLOR, EXCLUDE_DIRS, GOLDEN_RATIO
 from models import UserData
 from utils import convert_seconds, number
 
@@ -80,7 +81,7 @@ class SelfEmbeds:
             description=(
                 f"`Class`: **Coding** - Discord Integration"
                 f"\n`Favorite Language`: {get_emoji('Python')}  Python"
-                f"\n\n`Coins`: {number(BOT_COINS_AMOUNT)} {get_emoji("coin")}"
+                f"\n\n`Coins`: {number(bot_profile.coins)} {get_emoji("coin")}"
                 f"\n`Emblems`: {get_emblem("bot")}"
                 "\n\n`Socials`:\n"
                 f"{get_emoji('empty')}[{get_emoji("github")}  github]({get_config("REPOSITORY")})\n"

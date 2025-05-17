@@ -35,6 +35,7 @@ class Migration:
         },
         "leaderboard": {dict: ("ALL",)},
         "msgs": {dict: ("LEADERBOARD",)},
+        "bot": {float: ("COINS",)},
     }
 
     @classmethod

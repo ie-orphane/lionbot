@@ -110,6 +110,23 @@ class Message:
             ]
         )
 
+    @property
+    def donation(self):
+        return random.choice(
+            [
+                'git commit -m "feat: generous donation received 🙌" -m "Thanks a ton!"',
+                'print("Thanks for the 💸! — You rock! 🤘")',
+                "You're officially a part of our contributors array! 🎉",
+                "Gratitude.exe running… ⚙️ Thanks for the 💰!",
+                "Thanks for the support, code champion! 🧑‍💻",
+                "Thanks for the 💸! Our repo loves you! 💖",
+                "404: Words not found 😅 Just… thank you! 🙏",
+                "Thanks! You just added a feature to our day! 🚀",
+                "You’re the semicolon to our syntax — thanks! 😄;",
+                "git push donation && git merge thanks 💾💜",
+            ]
+        )
+
 
 class RelativeDateTime:
 
