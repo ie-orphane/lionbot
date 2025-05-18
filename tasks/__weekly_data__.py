@@ -1,14 +1,12 @@
 import os
-import env
-from discord.ext import tasks, commands
-from datetime import datetime, UTC
-from utils import get_files, Log, get_week, Week
-from models import UserData, WeekData
-from consts import GOLDEN_RATIO
-from api import wakapi
+from datetime import UTC, datetime
 
-THRESHOLD = 19_800
-FACTOR = THRESHOLD / GOLDEN_RATIO
+from discord.ext import commands, tasks
+
+import env
+from api import wakapi
+from models import WeekData
+from utils import Log, Week, get_files, get_week
 
 
 @tasks.loop(minutes=15)
@@ -33,14 +31,6 @@ async def weekly_data(bot: commands.Bot):
                 if not (user_summary is None)
             }
 
-            # update users data
-            for id, amount in geeks.items():
-                user_data = UserData.read(id)
-                if amount >= THRESHOLD:
-                    user_data.add_coins(amount / FACTOR, "coding gain")
-                    user_data.update()
-
-            # update weeks data
             WeekData(
                 id=current_week.count,
                 start=current_week.readable_start,
