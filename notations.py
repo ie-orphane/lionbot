@@ -26,3 +26,6 @@ class CHALLENGE:
 
 """SOCIAL: The social media platforms."""
 SOCIAL = Literal["github", "portfolio", "linkedin"]
+
+"""EMBLEM: The achievement emblems."""
+EMBLEM = Literal["geeks", "admins", "hunters", "coaches", "pros"]

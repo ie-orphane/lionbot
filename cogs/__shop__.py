@@ -50,9 +50,10 @@ class Shop(GroupCog, name="shop"):
     @discord.app_commands.command(description="Add new product in the shop.")
     @discord.app_commands.describe(
         _name="Product's name",
-        _description="Product's description",
         price="Product's price",
+        _description="Product's description",
         image="Product's image",
+        source="Product's source",
     )
     @discord.app_commands.rename(_name="name", _description="description")
     async def add(

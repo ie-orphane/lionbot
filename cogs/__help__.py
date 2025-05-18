@@ -36,7 +36,7 @@ class Help(Cog):
         }
 
         for command in commands:
-            if command.name in ["help", "challenge"]:
+            if command.name in ["help", "challenge", "shop"]:
                 continue
 
             is_group = False
