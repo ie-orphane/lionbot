@@ -4,7 +4,7 @@ import discord
 from discord.ext import commands
 
 from config import get_emoji
-from consts import COLOR
+from consts import COLOR, TRANSFER_FEE
 from models import UserData
 from utils import number
 
@@ -25,11 +25,8 @@ async def __error(
             title="❌ Transaction denied!",
             color=COLOR.red,
             description=f"✋ {message.author.mention},\n" + "\n".join(desc),
-        ),
-        delete_after=11,
-        mention_author=True,
+        )
     )
-    await message.delete(delay=11)
 
 
 async def __run__(
@@ -37,7 +34,7 @@ async def __run__(
     bot: commands.Bot,
     message: discord.Message,
     amount: int,
-    member: list[discord.Member],
+    members: list[discord.Member],
 ) -> Coroutine[Any, Any, None]:
     """
     Transfer coins to your fellow geek(s).
@@ -45,7 +42,7 @@ async def __run__(
         bot (commands.Bot): The bot instance.
         message (discord.Message): The message containing the command.
         amount (int): The amount of coins to transfer.
-        member (list): List of members to whom the coins will be transferred.
+        members (list): List of members to whom the coins will be transferred.
     """
 
     if amount < 1:
@@ -60,39 +57,41 @@ async def __run__(
         )
         return
 
-    recipient = []
+    recipients = []
 
-    for m in member:
-        if member.count(m) > 1:
+    for member in members:
+        if members.count(member) > 1:
             await __error(
-                message, f"you can't transfer coins to the {m.mention} multiple times!"
+                message,
+                f"you can't transfer coins to the {member.mention} multiple times!",
             )
             return
 
-        if m.id == message.author.id:
+        if member.id == message.author.id:
             await __error(message, f"you can't transfer coins to yourself!")
             return
 
-        if (r := UserData.read(m.id)) is None:
-            await __error(message, f"{m.mention} is not registered yet!")
+        if (recipient := UserData.read(member.id)) is None:
+            await __error(message, f"{member.mention} is not registered yet!")
             return
 
-        recipient.append(r)
+        recipients.append(recipient)
 
-    if (_amount := amount * len(recipient)) > user.coins:
+    _amount = amount * len(recipients)
+    fee = _amount * TRANSFER_FEE
+    if (_amount + fee) > user.coins:
         await __error(
             message,
-            f"you don't have {number(_amount)} ({number(amount)}) {get_emoji('coin')}!",
+            f"you don't have {number(_amount + fee)} ({number(amount)}) {get_emoji('coin')}!",
             f"Your current balance is {number(user.coins)} {get_emoji('coin')}.",
         )
         return
 
     user.sub_coins(_amount, "huge transfer")
-    user.update()
+    user.sub_coins(fee, "huge transfer fee")
 
-    for r in recipient:
-        r.add_coins(amount, "huge transfer")
-        r.update()
+    for recipient in recipients:
+        recipient.add_coins(amount, "huge transfer")
 
     await message.reply(
         embed=discord.Embed(
@@ -101,8 +100,9 @@ async def __run__(
             description=(
                 f"`Amount`: {number(amount)} {get_emoji("coin")}\n"
                 f"`Total`: {number(_amount)} {get_emoji("coin")}\n"
+                f"`Fee`: {number(_amount * TRANSFER_FEE)} {get_emoji("coin")}\n"
                 f"`Sender`: {message.author.mention}\n"
-                f"`Recipient(s)`: {', '.join([m.mention for m in member])}"
+                f"`Recipient(s)`: {', '.join([m.mention for m in members])}"
             ),
         ),
         mention_author=False,
