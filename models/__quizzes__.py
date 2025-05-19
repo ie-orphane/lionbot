@@ -4,7 +4,8 @@ import env
 import datetime as dt
 from typing import Literal, Self
 from .__schema__ import Collection
-
+import random
+from string import ascii_lowercase
 
 class QuizFields:
     id: int
@@ -44,19 +45,17 @@ class QuizData(Collection, QuizFields):
     def create(cls, **kwargs) -> Self:
         del kwargs["correct_answer"]
         new = cls(**kwargs)
-        new.answers = {
-            answerkey.removeprefix("answer_"): answer
+        answers = [
+           ( answer, new.correct_answers[answerkey+"_correct"] )
             for answerkey, answer in new.answers.items()
             if answer is not None
-        }
-        new.correct_answers = {
-            correct_answerkey.removeprefix("answer_").removesuffix(
-                "_correct"
-            ): json.loads(correct_answer)
-            for correct_answerkey, correct_answer in new.correct_answers.items()
-            if correct_answerkey.removeprefix("answer_").removesuffix("_correct")
-            in new.answers
-        }
+        ]
+        random.shuffle(answers)
+        new.answers = {}
+        new.correct_answers = {}
+        for key, (answer, is_correct) in zip(ascii_lowercase, answers):
+            new.answers[key] = answer
+            new.correct_answers[key] = is_correct
         new.multiple_correct_answers = json.loads(new.multiple_correct_answers)
         new.tags = [
             tag["name"] for tag in new.tags if tag["name"].lower() != new.category

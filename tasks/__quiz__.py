@@ -1,14 +1,16 @@
-import discord
-import env
 from datetime import datetime
-from utils import Log, charts, number
+from zoneinfo import ZoneInfo
+
+import discord
+from discord.ext import commands, tasks
+
+import env
 from api import QuizApi
-from models import QuizData, UserData
 from config import get_emoji, get_reaction
 from consts import Quiz
-from discord.ext import tasks, commands
-from ui import QuizView, QuizButton
-from zoneinfo import ZoneInfo
+from models import QuizData, UserData
+from ui import QuizButton, QuizView
+from utils import Log, charts, number
 
 
 @tasks.loop(seconds=45)
@@ -74,8 +76,10 @@ async def quiz(bot: commands.Bot):
             Log.job("Quiz", "Trivia ended.")
             return
 
-        if ((current_quiz is None) or (now.date() > current_quiz.date)) and (
-            Quiz.START_TIME <= (now.hour, now.minute) < Quiz.END_TIME
+        if (
+            ((current_quiz is None) or (now.date() > current_quiz.date))
+            and (Quiz.START_TIME <= (now.hour, now.minute) < Quiz.END_TIME)
+            and now.weekday() in Quiz.DAYS
         ):
             Log.job("Quiz", "Starting trivia event...")
             current_quiz = await QuizApi.get()

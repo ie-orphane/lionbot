@@ -9,7 +9,7 @@ import os
 
 from dotenv import load_dotenv
 
-from utils import Log
+from utils.__log__ import Log
 
 IS_MISSING: bool = False
 

@@ -8,8 +8,8 @@ GOLDEN_RATIO = (1 + math.sqrt(5)) / 2
 OUTLIST_AMOUNT = GOLDEN_RATIO**11
 INLIST_AMOUNT = OUTLIST_AMOUNT * GOLDEN_RATIO
 
-SHOP_FEE = (GOLDEN_RATIO*7)/100
-TRANSFER_FEE = (2.022*GOLDEN_RATIO)/100
+SHOP_FEE = (GOLDEN_RATIO * 7) / 100
+TRANSFER_FEE = (2.022 * GOLDEN_RATIO) / 100
 
 GIVEAWAY_THRESHOLD = GOLDEN_RATIO * 63
 
@@ -56,6 +56,7 @@ class Quiz:
         "Medium": GOLDEN_RATIO * 1.5,
         "Hard": GOLDEN_RATIO * 2.5,
     }
+    DAYS = [0, 2, 4]
 
 
 # Exlude files that should not be imported
