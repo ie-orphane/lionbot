@@ -55,6 +55,7 @@ class DiscordBot(commands.Bot):
         self.add_view(ui.ProductReView(self))
         self.add_view(ui.ProductBuyView(self))
         self.add_view(ui.ThelistView(self))
+        self.add_view(ui.GiveawayView(self))
         self.add_dynamic_items(ui.QuizButton, ui.ProductBuyBtn)
 
     async def on_ready(self):

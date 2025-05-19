@@ -10,7 +10,7 @@ class Migration:
         "dirs": ["projects", "quizes", "users", "weeks", "products"],
         "files": {
             "[]": ["channels", "evaluations", "files"],
-            "{}": ["outlist"],
+            "{}": ["outlist", "giveaway"],
         },
         "tables": [
             ("transactions", "datetime,id,current,operation,amount,reason"),

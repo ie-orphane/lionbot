@@ -1,8 +1,9 @@
 import random
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 
 __all__ = [
     "number",
+    "month",
     "Color",
     "Message",
     "RelativeDateTime",
@@ -14,6 +15,20 @@ class number(float):
         return "**{0}**.{1}".format(
             *(super().__format__("_").replace("_", " ").split("."))
         ).removesuffix(".0")
+
+
+class month:
+    def __init__(self, _datetime: datetime):
+        self.datetime = _datetime
+        self.date = _datetime.date()
+        self.id = f"{self.date:%Y-%m}"
+
+    def __repr__(self):
+        return f"month({self.date})"
+
+    @classmethod
+    def current(cls):
+        return cls(datetime.now(UTC))
 
 
 class Color:
