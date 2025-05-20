@@ -1,11 +1,14 @@
-import os
-import json
-import env
 import datetime as dt
-from typing import Literal, Self
-from .__schema__ import Collection
+import json
+import os
 import random
 from string import ascii_lowercase
+from typing import Literal, Self
+
+import env
+
+from .__schema__ import Collection
+
 
 class QuizFields:
     id: int
@@ -37,7 +40,7 @@ class QuizData(Collection, QuizFields):
 
     def __to_dict__(self):
         self_dict = super().__to_dict__()
-        if (date := self_dict.get("date")):
+        if date := self_dict.get("date"):
             self_dict["date"] = str(date)
         return self_dict
 
@@ -46,7 +49,7 @@ class QuizData(Collection, QuizFields):
         del kwargs["correct_answer"]
         new = cls(**kwargs)
         answers = [
-           ( answer, new.correct_answers[answerkey+"_correct"] )
+            (answer, json.loads(new.correct_answers[answerkey + "_correct"]))
             for answerkey, answer in new.answers.items()
             if answer is not None
         ]
